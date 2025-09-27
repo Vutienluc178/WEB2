@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tool Menu Studio — index.json (cấu trúc cũ + thêm mới)</title>
+<style>
+  :root{--fg:#1f2937;--bg:#f8fafc;--card:#ffffff;--border:#e5e7eb;--muted:#6b7280;--primary:#2563eb}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
+  header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+  header h1{font-size:18px;margin:0} header .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:1px solid var(--border);background:var(--card);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn.primary{background:var(--primary);color:#fff;border-color:transparent}
+  .btn.ghost{background:transparent}
+  .container{max-width:1100px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns: 1.3fr .7fr;gap:16px}
+  .left,.right{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  h2{margin:.2rem 0 1rem 0;font-size:18px}
+  .group{border:1px dashed var(--border);border-radius:12px;padding:10px;margin:10px 0;background:#fff}
+  .group-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .group-head input{flex:1;min-width:240px;padding:8px;border:1px solid var(--border);border-radius:10px}
+  .items{margin-top:8px}
+  .item{border-left:3px solid var(--border);padding:8px;margin:8px 0;background:#fafafa;border-radius:8px}
+  .item .row{display:grid;grid-template-columns: 1fr 1fr auto;gap:8px}
+  .item input{padding:8px;border:1px solid var(--border);border-radius:10px;width:100%}
+  .toolbar{display:flex;gap:6px;flex-wrap:wrap}
+  .muted{color:var(--muted);font-size:13px}
+  textarea{width:100%;min-height:220px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#0b1020;color:#e5e7eb;font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+  .hint{font-size:13px;color:var(--muted);margin-top:6px}
+  .danger{color:#b91c1c}
+  .ok{color:#065f46}
+  .grid-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .hr{height:1px;background:var(--border);margin:10px 0}
+  .bad{outline:2px solid #ef4444}
+  @media(max-width:980px){.container{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Tool Menu Studio — index.json</h1>
+  <div class="actions">
+    <label class="btn">
+      📂 Mở index.json
+      <input id="fileInput" type="file" accept=".json" hidden>
+    </label>
+    <button id="newEmpty"  class="btn">🧼 Tạo menu trống</button>
+    <button id="newDefault" class="btn">✨ Tạo menu mặc định</button>
+    <button id="exportBtn" class="btn primary">💾 Tải xuống index.json</button>
+  </div>
+</header>
+
+<div class="container">
+  <section class="left">
+    <h2>Danh mục nhóm & công cụ</h2>
+    <div class="grid-actions">
+      <button id="addGroup" class="btn">➕ Thêm nhóm</button>
+      <span class="muted">Mẹo: dùng các nút ⬆️⬇️ để sắp xếp nhóm/mục.</span>
+    </div>
+    <div id="groups"></div>
+  </section>
+
+  <aside class="right">
+    <h2>Xuất / Kiểm tra</h2>
+    <button id="refreshJSON" class="btn">🔄 Cập nhật JSON</button>
+    <div class="hint">Nhấn để đồng bộ nội dung bên trái sang JSON.</div>
+    <div class="hr"></div>
+    <textarea id="output" readonly></textarea>
+    <div id="issues" class="hint"></div>
+  </aside>
+</div>
+
+<script>
+  // ====== State ======
+  let groups = []; // array of {group: string, items: [{title, path}]}
+
+  // ====== Helpers ======
+  const el = sel => document.querySelector(sel);
+  const mk = (tag, props={}) => Object.assign(document.createElement(tag), props);
+  function download(name, text){
+    const blob = new Blob([text], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = mk('a',{href:url,download:name}); document.body.appendChild(a);
+    a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function moveInArray(arr, from, to){
+    if(to<0 || to>=arr.length) return;
+    const [sp] = arr.splice(from,1);
+    arr.splice(to,0,sp);
+  }
+
+  // ====== Render ======
+  const $groups = el('#groups');
+
+  function render(){
+    $groups.innerHTML = '';
+    groups.forEach((g, gi)=>{
+      const box = mk('div', {className:'group'});
+
+      // header
+      const head = mk('div', {className:'group-head'});
+      const input = mk('input', {value: g.group || '', placeholder:'Tên nhóm (VD: 🔢 Lớp 10)'});
+      input.addEventListener('input', ()=> g.group = input.value.trim());
+      head.appendChild(input);
+
+      const tb = mk('div', {className:'toolbar'});
+      const up = mk('button',{className:'btn', textContent:'⬆️'});
+      const down = mk('button',{className:'btn', textContent:'⬇️'});
+      const addItemBtn = mk('button',{className:'btn', textContent:'➕ Thêm tool'});
+      const del = mk('button',{className:'btn', textContent:'🗑️ Xoá nhóm'});
+      up.onclick = ()=>{ moveInArray(groups, gi, gi-1); render(); };
+      down.onclick = ()=>{ moveInArray(groups, gi, gi+1); render(); };
+      del.onclick = ()=>{ if(confirm('Xoá nhóm này?')){ groups.splice(gi,1); render(); } };
+      addItemBtn.onclick = ()=>{ g.items.push({title:'', path:''}); render(); };
+      tb.append(up, down, addItemBtn, del);
+      head.appendChild(tb);
+      box.appendChild(head);
+
+      // items
+      const itemsWrap = mk('div',{className:'items'});
+      (g.items || []).forEach((it, ii)=>{
+        const row = mk('div',{className:'item'});
+        const grid = mk('div',{className:'row'});
+
+        const tInput = mk('input',{value: it.title || '', placeholder:'Tiêu đề'});
+        const pInput = mk('input',{value: it.path  || '', placeholder:'lop10/ten-tool.html'});
+        const btns = mk('div',{className:'toolbar'});
+        const upI = mk('button',{className:'btn',textContent:'⬆️'});
+        const downI = mk('button',{className:'btn',textContent:'⬇️'});
+        const delI = mk('button',{className:'btn',textContent:'🗑️'});
+
+        tInput.oninput = ()=> it.title = tInput.value.trim();
+        pInput.oninput = ()=> it.path  = pInput.value.trim();
+
+        upI.onclick   = ()=>{ moveInArray(g.items, ii, ii-1); render(); };
+        downI.onclick = ()=>{ moveInArray(g.items, ii, ii+1); render(); };
+        delI.onclick  = ()=>{ g.items.splice(ii,1); render(); };
+
+        grid.append(tInput, pInput, btns);
+        btns.append(upI, downI, delI);
+        row.appendChild(grid);
+        itemsWrap.appendChild(row);
+      });
+
+      box.appendChild(itemsWrap);
+      $groups.appendChild(box);
+    });
+    // sync JSON preview
+    refreshJSON();
+  }
+
+  // ====== JSON I/O ======
+  function refreshJSON(){
+    // validate & produce JSON
+    const issues = [];
+    const out = [];
+
+    // validation helpers
+    const pathSet = new Set();
+    function markBad(input){
+      input.classList.add('bad'); setTimeout(()=>input.classList.remove('bad'), 1200);
+    }
+
+    // traverse DOM to capture latest values and validate
+    const groupBoxes = $groups.querySelectorAll('.group');
+    groupBoxes.forEach((box, gi)=>{
+      const nameInput = box.querySelector('.group-head input');
+      const groupName = nameInput.value.trim();
+      const itemNodes = box.querySelectorAll('.item');
+
+      const items = [];
+      itemNodes.forEach((node)=>{
+        const [ti, pi] = node.querySelectorAll('input');
+        const title = ti.value.trim();
+        const path  = pi.value.trim();
+
+        if(!title){ issues.push('Thiếu tiêu đề ở 1 mục'); markBad(ti); }
+        if(!path){ issues.push('Thiếu đường dẫn ở 1 mục'); markBad(pi); }
+
+        if(path){
+          if(pathSet.has(path)){
+            issues.push(`Trùng path: ${path}`);
+            markBad(pi);
+          } else {
+            pathSet.add(path);
+          }
+        }
+        if(title && path) items.push({title, path});
+      });
+
+      if(!groupName && items.length>0){
+        issues.push('Có nhóm chưa đặt tên');
+        markBad(nameInput);
+      }
+      if(groupName && items.length>0){
+        out.push({group: groupName, items});
+      }
+    });
+
+    el('#output').value = JSON.stringify(out, null, 2);
+    const $issues = el('#issues');
+    if(issues.length){
+      $issues.innerHTML = '⚠️ ' + [...new Set(issues)].join(' · ');
+      $issues.className = 'hint danger';
+    }else{
+      $issues.textContent = '✔ Không phát hiện lỗi cơ bản.';
+      $issues.className = 'hint ok';
+    }
+  }
+
+  function loadFromJSON(data){
+    if(!Array.isArray(data)) throw new Error('JSON phải là mảng các nhóm');
+    groups = data.map(g=>({
+      group: g.group || '',
+      items: Array.isArray(g.items) ? g.items.map(x=>({title:x.title||'', path:x.path||''})) : []
+    }));
+    render();
+  }
+
+  // ====== Defaults ======
+  function defaultMenu(){
+    return [
+      {
+        group: "🔢 Lớp 10",
+        items: [
+          {title:"Giải phương trình bậc hai", path:"lop10/pt-bac-hai.html"},
+          {title:"Hệ phương trình 2×2",       path:"lop10/he-pt-2x2.html"},
+          {title:"Đồ thị y = ax + b",         path:"lop10/ham-bac-nhat-plot.html"}
+        ]
+      },
+      {
+        group: "📐 Lớp 11",
+        items: [
+          {title:"Tam giác & Lượng giác", path:"lop11/tam-giac-trigon.html"},
+          {title:"Cấp số cộng",           path:"lop11/cap-so-cong.html"}
+        ]
+      },
+      {
+        group: "🧮 Lớp 12",
+        items: [
+          {title:"Tổ hợp & Xác suất", path:"lop12/to-hop-xac-suat.html"},
+          {title:"Giới hạn đơn giản", path:"lop12/gioi-han-don-gian.html"}
+        ]
+      },
+      {
+        group: "👨‍🏫 GVCN",
+        items: [
+          {title:"Bốc thăm học sinh", path:"gvcn/random-picker.html"},
+          {title:"Pomodoro 25/5",     path:"gvcn/pomodoro.html"},
+          {title:"Mẫu tin nhắn Zalo", path:"gvcn/mau-tin-zalo.html"}
+        ]
+      },
+      {
+        group: "🧰 Tiện ích",
+        items: [
+          {title:"Phân số ↔ Thập phân",     path:"tien-ich/fraction-decimal.html"},
+          {title:"Ma trận 3×3 (định thức)", path:"tien-ich/matrix-3x3.html"}
+        ]
+      }
+    ];
+  }
+
+  // ====== Events ======
+  el('#addGroup').onclick   = ()=>{ groups.push({group:'', items:[]}); render(); };
+  el('#refreshJSON').onclick= refreshJSON;
+  el('#exportBtn').onclick  = ()=> download('index.json', el('#output').value || '[]');
+  el('#newEmpty').onclick   = ()=>{ if(confirm('Tạo menu trống?')); groups=[]; render(); };
+  el('#newDefault').onclick = ()=>{ if(confirm('Tạo mới theo menu mặc định?')); groups=defaultMenu(); render(); };
+
+  el('#fileInput').addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const rd = new FileReader();
+    rd.onload = ev=>{
+      try{ const data = JSON.parse(ev.target.result); loadFromJSON(data); }
+      catch(err){ alert('⚠️ index.json không hợp lệ!'); }
+    };
+    rd.readAsText(f);
+  });
+
+  // ====== Boot ======
+  // Khởi tạo với menu mặc định cho tiện thử
+  groups = defaultMenu();
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cấp số cộng</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:800px;margin:24px auto}
+input{padding:10px;border:1px solid var(--border);border-radius:10px;width:140px}</style>
+</head><body>
+<main class="container card">
+  <h2>Tính nhanh cấp số cộng</h2>
+  <p>Cho u₁, d, n → tính uₙ và Sₙ.</p>
+  <label>u₁ <input id="u1" type="number" value="1" step="any"></label>
+  <label>d <input id="d" type="number" value="2" step="any"></label>
+  <label>n <input id="n" type="number" value="10"></label>
+  <button class="btn" id="calc">Tính</button>
+  <div id="out"></div>
+</main>
+<script>
+function format(x){return Number.isInteger(x)? x : +x.toFixed(5)}
+document.getElementById('calc').addEventListener('click', ()=>{
+  const u1=+u1_i.value, d=+d_i.value, n=+n_i.value;
+  const un = u1 + (n-1)*d;
+  const Sn = n*(u1+un)/2;
+  out.innerHTML = `uₙ = <b>${format(un)}</b><br>Sₙ = <b>${format(Sn)}</b>`;
+});
+const u1_i=u1,d_i=d,n_i=n,out=document.getElementById('out');
+</script>
+</body></html>

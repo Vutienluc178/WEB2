@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma trận 3×3 – Định thức</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:800px;margin:24px auto;text-align:center}
+table{margin:12px auto;border-collapse:collapse}
+td{border:1px solid var(--border);padding:4px}
+input{width:70px;padding:8px;border:1px solid var(--border);border-radius:10px;text-align:right}</style>
+</head><body>
+<main class="container card">
+  <h2>Tính định thức ma trận 3×3</h2>
+  <table>
+    <tbody id="tbl"></tbody>
+  </table>
+  <button class="btn" id="calc">Tính det</button>
+  <div id="out"></div>
+</main>
+<script>
+const tbl=document.getElementById('tbl');
+for(let i=0;i<3;i++){
+  const tr=document.createElement('tr');
+  for(let j=0;j<3;j++){
+    const td=document.createElement('td');
+    const inp=document.createElement('input'); inp.type='number'; inp.value=(i===j)?1:0;
+    td.appendChild(inp); tr.appendChild(td);
+  }
+  tbl.appendChild(tr);
+}
+function det3(m){
+  const a=m[0][0],b=m[0][1],c=m[0][2];
+  const d=m[1][0],e=m[1][1],f=m[1][2];
+  const g=m[2][0],h=m[2][1],k=m[2][2];
+  return a*(e*k - f*h) - b*(d*k - f*g) + c*(d*h - e*g);
+}
+document.getElementById('calc').addEventListener('click',()=>{
+  const m=[...tbl.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('input')].map(i=>+i.value));
+  out.textContent = "det = " + det3(m);
+});
+const out=document.getElementById('out');
+</script>
+</body></html>

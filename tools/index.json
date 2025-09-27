@@ -1,0 +1,75 @@
+[
+  {
+    "group": "🔢 Lớp 10",
+    "items": [
+      {
+        "title": "ĐỊNH NGHĨA VECTO",
+        "path": "lop10/hinh-hoc-vecto.html"
+      },
+      {
+        "title": "CÁC PHÉP TOÁN TẬP HỢP",
+        "path": "lop10/đại số -CÁC PHÉP TOÁN TRÊN TẬP HỢP.html"
+      },
+      {
+        "title": "Giải phương trình bậc hai",
+        "path": "lop10/pt-bac-hai.html"
+      },
+      {
+        "title": "Hệ phương trình 2×2",
+        "path": "lop10/he-pt-2x2.html"
+      },
+      {
+        "title": "Đồ thị y = ax + b",
+        "path": "lop10/ham-bac-nhat-plot.html"
+      }
+    ]
+  },
+  {
+    "group": "📐 Lớp 11",
+    "items": [
+      {
+        "title": "Tam giác & Lượng giác",
+        "path": "lop11/tam-giac-trigon.html"
+      },
+      {
+        "title": "Cấp số cộng",
+        "path": "lop11/cap-so-cong.html"
+      }
+    ]
+  },
+  {
+    "group": "🧮 Lớp 12",
+    "items": [
+      {
+        "title": "Tổ hợp & Xác suất",
+        "path": "lop12/to-hop-xac-suat.html"
+      },
+      {
+        "title": "Giới hạn đơn giản",
+        "path": "lop12/gioi-han-don-gian.html"
+      }
+    ]
+  },
+  {
+    "group": "👨‍🏫 GVCN",
+    "items": [
+      {
+        "title": "VÒNG QUAY KÌ DIỆU",
+        "path": "tien-ich/chiếc nón kì diệu.html"
+      },
+      {
+        "title": "Pomodoro 25/5",
+        "path": "gvcn/pomodoro.html"
+      }
+    ]
+  },
+  {
+    "group": "🧰 Tiện ích",
+    "items": [
+      {
+        "title": "Tạo menu WEB",
+        "path": "tien-ich/TÁOJSON.html"
+      }
+    ]
+  }
+]

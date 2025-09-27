@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro 25/5</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:600px;margin:24px auto;text-align:center}
+.time{font-size:64px;font-weight:900;margin:16px 0}</style>
+</head><body>
+<main class="container card">
+  <h2>Pomodoro 25/5</h2>
+  <div class="time" id="t">25:00</div>
+  <div>
+    <button class="btn" id="start">Start</button>
+    <button class="btn" id="pause">Pause</button>
+    <button class="btn" id="reset">Reset</button>
+  </div>
+</main>
+<script>
+let sec = 25*60, timer=null, work=true;
+function render(){ const m=Math.floor(sec/60), s=sec%60; t.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+function tick(){ sec--; if(sec<0){ work=!work; sec = work? 25*60 : 5*60; alert(work?'Giờ học!':'Giờ nghỉ!'); } render(); }
+start.onclick=()=>{ if(!timer) timer=setInterval(tick,1000) };
+pause.onclick=()=>{ clearInterval(timer); timer=null; };
+reset.onclick=()=>{ sec=25*60; work=true; render(); };
+render();
+</script>
+</body></html>

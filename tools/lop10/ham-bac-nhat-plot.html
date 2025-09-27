@@ -1,0 +1,42 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đồ thị y = ax + b</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:900px;margin:24px auto}
+canvas{border:1px solid var(--border);border-radius:12px;width:100%;max-width:800px;height:400px}</style>
+</head><body>
+<main class="container card">
+  <h2>Đồ thị y = ax + b</h2>
+  <label>a <input id="a" type="number" value="1" step="any"></label>
+  <label>b <input id="b" type="number" value="0" step="any"></label>
+  <button class="btn" id="draw">Vẽ</button>
+  <canvas id="cv" width="800" height="400"></canvas>
+</main>
+<script>
+const cv=document.getElementById('cv'); const ctx=cv.getContext('2d');
+function draw(){
+  const a=+document.getElementById('a').value; const b=+document.getElementById('b').value;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  // axes
+  ctx.strokeStyle='#999'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,cv.height/2); ctx.lineTo(cv.width,cv.height/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cv.width/2,0); ctx.lineTo(cv.width/2,cv.height); ctx.stroke();
+  // grid
+  for(let x=0;x<=cv.width;x+=40){ ctx.globalAlpha=0.15; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,cv.height); ctx.stroke(); }
+  for(let y=0;y<=cv.height;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke(); }
+  ctx.globalAlpha=1;
+  // line
+  ctx.strokeStyle='#2563eb'; ctx.lineWidth=2;
+  // map x in [-10,10] to canvas
+  function toCanvas(x,y){ return [cv.width/2 + x*40, cv.height/2 - y*40]; }
+  const x1=-10, y1=a*x1 + b;
+  const x2=10,  y2=a*x2 + b;
+  const [cx1,cy1]=toCanvas(x1,y1); const [cx2,cy2]=toCanvas(x2,y2);
+  ctx.beginPath(); ctx.moveTo(cx1,cy1); ctx.lineTo(cx2,cy2); ctx.stroke();
+  // label
+  ctx.fillStyle='#1f2937'; ctx.fillText(`y = ${a}x + ${b}`, 10, 16);
+}
+document.getElementById('draw').addEventListener('click', draw);
+draw();
+</script>
+</body></html>

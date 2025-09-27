@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bốc thăm học sinh</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:800px;margin:24px auto}
+textarea{width:100%;min-height:140px;padding:10px;border:1px solid var(--border);border-radius:10px}
+.big{font-size:40px;font-weight:800;margin:12px 0}</style>
+</head><body>
+<main class="container card">
+  <h2>Bốc thăm gọi tên học sinh</h2>
+  <p>Nhập mỗi tên một dòng. Bấm <b>Bốc thăm</b> hoặc nhấn <kbd>Space</kbd>.</p>
+  <textarea id="names" placeholder="Ví dụ:
+An
+Bình
+Chi
+..."></textarea>
+  <button class="btn" id="pick">Bốc thăm</button>
+  <div class="big" id="result">—</div>
+</main>
+<script>
+function pick(){
+  const arr = names.value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  if(arr.length===0){ result.textContent="(chưa có tên)"; return; }
+  const i = Math.floor(Math.random()*arr.length);
+  result.textContent = arr[i];
+}
+document.getElementById('pick').addEventListener('click', pick);
+document.addEventListener('keydown', e=>{ if(e.code==='Space'){ e.preventDefault(); pick(); }});
+const names=document.getElementById('names'), result=document.getElementById('result');
+</script>
+</body></html>

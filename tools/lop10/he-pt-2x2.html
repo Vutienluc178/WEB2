@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hệ phương trình 2×2</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:900px;margin:24px auto}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+input{padding:10px;border:1px solid var(--border);border-radius:10px;width:100%}
+</style></head><body>
+<main class="container card">
+  <h2>Giải hệ phương trình 2×2</h2>
+  <p>Dạng: a₁x + b₁y = c₁; a₂x + b₂y = c₂</p>
+  <div class="grid">
+    <label>a₁<input id="a1" type="number" value="1"></label>
+    <label>b₁<input id="b1" type="number" value="1"></label>
+    <label>c₁<input id="c1" type="number" value="0"></label>
+    <div></div>
+    <label>a₂<input id="a2" type="number" value="1"></label>
+    <label>b₂<input id="b2" type="number" value="2"></label>
+    <label>c₂<input id="c2" type="number" value="0"></label>
+    <div></div>
+  </div>
+  <button class="btn" id="solve">Giải</button>
+  <div id="out" style="margin-top:12px"></div>
+</main>
+<script>
+function format(x){ return Number.isInteger(x)? x : x.toFixed(5).replace(/0+$/,'').replace(/\.$/,''); }
+document.getElementById('solve').addEventListener('click', ()=>{
+  const a1=+a1_input.value, b1=+b1_input.value, c1=+c1_input.value;
+  const a2=+a2_input.value, b2=+b2_input.value, c2=+c2_input.value;
+  const D = a1*b2 - a2*b1;
+  const Dx = c1*b2 - c2*b1;
+  const Dy = a1*c2 - a2*c1;
+  if(D===0){
+    if(Dx===0 && Dy===0) out.innerHTML="Vô số nghiệm";
+    else out.innerHTML="Vô nghiệm";
+  }else{
+    const x = Dx/D, y = Dy/D;
+    out.innerHTML = "Nghiệm: x = <b>"+format(x)+"</b>, y = <b>"+format(y)+"</b>";
+  }
+});
+// aliases
+const a1_input=document.getElementById('a1');
+const b1_input=document.getElementById('b1');
+const c1_input=document.getElementById('c1');
+const a2_input=document.getElementById('a2');
+const b2_input=document.getElementById('b2');
+const c2_input=document.getElementById('c2');
+const out=document.getElementById('out');
+</script>
+</body></html>

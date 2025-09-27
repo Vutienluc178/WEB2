@@ -1,0 +1,29 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mẫu tin nhắn Zalo</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:800px;margin:24px auto}
+textarea,input{width:100%;padding:10px;border:1px solid var(--border);border-radius:10px}
+pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--border);padding:12px;border-radius:10px}</style>
+</head><body>
+<main class="container card">
+  <h2>Trình tạo mẫu tin nhắn Zalo</h2>
+  <label>Người nhận <input id="to" placeholder="Phụ huynh lớp 10A8 / Học sinh..."></label>
+  <label>Thông điệp chính <input id="msg" placeholder="Nội dung cốt lõi..."></label>
+  <label>Thời gian/Địa điểm <input id="when" placeholder="13h, thứ 6, tại ..."></label>
+  <label>Giọng văn <input id="tone" value="thân thiện, ngắn gọn, dùng icon"></label>
+  <button class="btn" id="gen">Tạo tin</button>
+  <h3>Kết quả</h3>
+  <pre id="out"></pre>
+</main>
+<script>
+document.getElementById('gen').addEventListener('click', ()=>{
+  const to = document.getElementById('to').value || 'Quý phụ huynh';
+  const msg = document.getElementById('msg').value || 'Thông báo';
+  const when = document.getElementById('when').value || '';
+  const tone = document.getElementById('tone').value || 'thân thiện';
+  const text = `${to} kính mến,\n\n${msg}.\nThời gian/Địa điểm: ${when}.\n\nTrân trọng!\n(giọng: ${tone})`;
+  document.getElementById('out').textContent = text;
+});
+</script>
+</body></html>

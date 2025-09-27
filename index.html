@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Kho Công Cụ Toán học & GVCN – Auto Menu</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="author">Tác giả — <strong>Thầy Vũ Tiến Lực</strong> — Trường <strong>THPT Nguyễn Hữu Cảnh</strong></div>
+    <span class="logo">∑</span>
+    <div>
+      <h1>Kho Công Cụ Toán học</h1>
+      <p class="subtitle">Lớp 10 · 11 · 12 · GVCN · Tiện ích</p>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="toggleTheme" class="btn" title="Chuyển nền sáng/tối">🌓</button>
+  </div>
+</header>
+<section class="filterbar">
+  <label for="subcatFilter">Mục con:</label>
+  <select id="subcatFilter"><option value="">— Tất cả —</option></select>
+</section>
+
+
+<div class="layout">
+  <!-- Vùng menu: sinh tự động từ tools/index.json -->
+  <nav class="sidebar">
+    <h3>Danh mục công cụ</h3>
+    <div id="autoMenu">Đang tải menu…</div>
+  </nav>
+
+  <!-- Khung hiển thị tool -->
+  <main class="main">
+    <div class="welcome card">
+      <h2>Chào mừng!</h2>
+      <p>Chọn công cụ từ menu bên trái, hoặc mở trực tiếp bằng query string <code>?tool=...</code>.</p>
+    </div>
+
+    <div class="viewer card">
+      <div class="viewer-bar">
+        <span id="viewerTitle">Xem nhanh</span>
+        <a id="openNewTab" class="btn small" href="#" target="_blank" rel="noopener">Mở tab mới ↗</a>
+      </div>
+      <iframe id="viewer" title="Xem nhanh công cụ" src="" loading="lazy"></iframe>
+    </div>
+  </main>
+</div>
+
+<footer class="footer">
+  <small>© 2025 · Tác giả: Thầy Vũ Tiến Lực – THPT Nguyễn Hữu Cảnh</small>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+// ========== Sinh menu từ tools/index.json ==========
+(async function buildMenu(){
+  const wrap = document.getElementById('autoMenu');
+  try {
+    const res = await fetch('tools/index.json', {cache:'no-store'});
+    const groups = await res.json();
+    wrap.innerHTML = '';
+
+    groups.forEach((g, gi)=>{
+      const det = document.createElement('details');
+      det.className = 'acc';
+      if(gi===0) det.open = true;
+
+      const sum = document.createElement('summary');
+      sum.textContent = g.group || 'Nhóm';
+      det.appendChild(sum);
+
+      const ul = document.createElement('ul');
+      (g.items||[]).forEach(item=>{
+        const li = document.createElement('li');
+        const a  = document.createElement('a');
+        a.textContent = item.title || item.path;
+        a.href = 'tools/' + item.path.replace(/^tools\//,'');
+        a.setAttribute('data-embed','');
+        a.addEventListener('click', e=>{
+          e.preventDefault();
+          const url = a.getAttribute('href');
+          const iframe = document.getElementById('viewer');
+          const title  = document.getElementById('viewerTitle');
+          const open   = document.getElementById('openNewTab');
+          iframe.src = url;
+          title.textContent = item.title || url;
+          open.href = url;
+        });
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      det.appendChild(ul);
+      wrap.appendChild(det);
+    });
+  } catch(err){
+    wrap.textContent = '⚠️ Không tải được menu (thiếu tools/index.json)';
+  }
+})();
+</script>
+</body>
+</html>

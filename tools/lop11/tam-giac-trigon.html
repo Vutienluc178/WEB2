@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tam giác & Lượng giác</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:900px;margin:24px auto}
+input{padding:10px;border:1px solid var(--border);border-radius:10px;width:140px}
+.row{display:flex;gap:8px;flex-wrap:wrap}</style>
+</head><body>
+<main class="container card">
+  <h2>Giải tam giác (định lý Cos & Sin)</h2>
+  <p>Nhập 3 đại lượng (cạnh/góc) hợp lệ để tính phần còn lại. Góc tính bằng độ (°).</p>
+  <div class="row">
+    <label>a <input id="a" type="number" step="any" placeholder="cạnh a"></label>
+    <label>b <input id="b" type="number" step="any" placeholder="cạnh b"></label>
+    <label>c <input id="c" type="number" step="any" placeholder="cạnh c"></label>
+    <label>A° <input id="A" type="number" step="any" placeholder="góc A"></label>
+    <label>B° <input id="B" type="number" step="any" placeholder="góc B"></label>
+    <label>C° <input id="C" type="number" step="any" placeholder="góc C"></label>
+  </div>
+  <button class="btn" id="solve">Tính</button>
+  <div id="out" style="margin-top:12px"></div>
+</main>
+<script>
+function d2r(d){return d*Math.PI/180} function r2d(r){return r*180/Math.PI}
+function format(x){return Number.isInteger(x)? x : +x.toFixed(5)}
+function solve(){
+  const a=+a_i.value||null,b=+b_i.value||null,c=+c_i.value||null;
+  const A=+A_i.value||null,B=+B_i.value||null,C=+C_i.value||null;
+  let aa=a,bb=b,cc=c,AA=A,BB=B,CC=C;
+  // Try SSS via cosine
+  if(aa&&bb&&cc){
+    AA=r2d(Math.acos((bb*bb+cc*cc-aa*aa)/(2*bb*cc)));
+    BB=r2d(Math.acos((aa*aa+cc*cc-bb*bb)/(2*aa*cc)));
+    CC=180-AA-BB;
+    return show(aa,bb,cc,AA,BB,CC);
+  }
+  // AAS or ASA (two angles + one side)
+  const ang = [AA,BB,CC].filter(x=>x).length;
+  const sid = [aa,bb,cc].filter(x=>x).length;
+  if(ang>=2 && sid>=1){
+    if(!AA) AA = 180 - (BB||0) - (CC||0);
+    if(!BB) BB = 180 - (AA||0) - (CC||0);
+    if(!CC) CC = 180 - (AA||0) - (BB||0);
+    // law of sines
+    if(aa){ bb = aa*Math.sin(d2r(BB))/Math.sin(d2r(AA)); cc = aa*Math.sin(d2r(CC))/Math.sin(d2r(AA)); }
+    else if(bb){ aa = bb*Math.sin(d2r(AA))/Math.sin(d2r(BB)); cc = bb*Math.sin(d2r(CC))/Math.sin(d2r(BB)); }
+    else if(cc){ aa = cc*Math.sin(d2r(AA))/Math.sin(d2r(CC)); bb = cc*Math.sin(d2r(BB))/Math.sin(d2r(CC)); }
+    return show(aa,bb,cc,AA,BB,CC);
+  }
+  // SAS via cosine
+  if(aa&&bb&&AA){ cc = Math.sqrt(aa*aa+bb*bb - 2*aa*bb*Math.cos(d2r(AA))); 
+    BB = r2d(Math.acos((aa*aa+cc*cc-bb*bb)/(2*aa*cc))); CC = 180-AA-BB;
+    return show(aa,bb,cc,AA,BB,CC);
+  }
+  out.innerHTML="⚠️ Cần nhập 3 đại lượng hợp lệ (ví dụ: a,b,c) hoặc (A,B và một cạnh).";
+}
+function show(a,b,c,A,B,C){
+  out.innerHTML = `a=${format(a)}, b=${format(b)}, c=${format(c)}<br>A=${format(A)}°, B=${format(B)}°, C=${format(C)}°`;
+}
+const a_i=a,b_i=b,c_i=c,A_i=A,B_i=B,C_i=C,out=document.getElementById('out');
+document.getElementById('solve').addEventListener('click', solve);
+</script>
+</body></html>

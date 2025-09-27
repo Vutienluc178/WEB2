@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tool JSON Generator (Edit + New)</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    h1 { font-size: 22px; }
+    label { display: block; margin-top: 6px; }
+    textarea { width: 100%; height: 200px; }
+    .group-box { border:1px solid #ccc; padding:10px; margin:10px 0; border-radius:8px; }
+    .item-box { margin:6px 0; padding:6px; border-left:3px solid #aaa; }
+    button { margin:5px; padding:6px 12px; }
+  </style>
+</head>
+<body>
+  <h1>🧮 Quản lý index.json cho menu công cụ</h1>
+
+  <p>
+    📂 Nạp file index.json cũ: 
+    <input type="file" id="fileInput" accept=".json">
+  </p>
+
+  <div id="groups"></div>
+  <button onclick="addGroup()">➕ Thêm nhóm</button>
+  <button onclick="generateJSON()">📤 Xuất JSON</button>
+
+  <h2>Kết quả</h2>
+  <textarea id="output" readonly></textarea>
+  <br>
+  <button onclick="downloadJSON()">💾 Tải xuống index.json</button>
+
+<script>
+let groups = [];
+
+// ======== Tải file JSON cũ ========
+document.getElementById('fileInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try {
+      const data = JSON.parse(evt.target.result);
+      groups = [];
+      document.getElementById("groups").innerHTML = "";
+      data.forEach(g=>{
+        const gIndex = addGroup(g.group);
+        g.items.forEach(item=>{
+          addItem(gIndex, item.title, item.path);
+        });
+      });
+    } catch(err){
+      alert("⚠️ File JSON không hợp lệ!");
+    }
+  };
+  reader.readAsText(file);
+});
+
+// ======== Thêm nhóm ========
+function addGroup(groupName=""){
+  const gIndex = groups.length;
+  const div = document.createElement("div");
+  div.className = "group-box";
+  div.innerHTML = `
+    <label>Nhóm: <input type="text" id="group-${gIndex}" value="${groupName}" placeholder="Ví dụ: 🔢 Lớp 10"></label>
+    <div id="items-${gIndex}"></div>
+    <button type="button" onclick="addItem(${gIndex})">➕ Thêm tool</button>
+  `;
+  document.getElementById("groups").appendChild(div);
+  groups.push([]);
+  return gIndex;
+}
+
+// ======== Thêm tool ========
+function addItem(gIndex, title="", path=""){
+  const itemsDiv = document.getElementById("items-"+gIndex);
+  const iIndex = groups[gIndex].length;
+  const wrap = document.createElement("div");
+  wrap.className = "item-box";
+  wrap.innerHTML = `
+    <label>Tiêu đề: <input type="text" id="title-${gIndex}-${iIndex}" value="${title}" placeholder="Tên tool"></label>
+    <label>Đường dẫn: <input type="text" id="path-${gIndex}-${iIndex}" value="${path}" placeholder="lop10/ten-tool.html"></label>
+  `;
+  itemsDiv.appendChild(wrap);
+  groups[gIndex].push({});
+}
+
+// ======== Sinh JSON ========
+function generateJSON(){
+  const result = [];
+  groups.forEach((items,gIndex)=>{
+    const groupName = document.getElementById("group-"+gIndex).value;
+    const arr = [];
+    items.forEach((_,iIndex)=>{
+      const title = document.getElementById(`title-${gIndex}-${iIndex}`).value;
+      const path  = document.getElementById(`path-${gIndex}-${iIndex}`).value;
+      if(title && path){
+        arr.push({title, path});
+      }
+    });
+    if(groupName && arr.length>0){
+      result.push({group: groupName, items: arr});
+    }
+  });
+  document.getElementById("output").value = JSON.stringify(result, null, 2);
+}
+
+// ======== Tải file JSON ========
+function downloadJSON(){
+  generateJSON();
+  const text = document.getElementById("output").value;
+  const blob = new Blob([text], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "index.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

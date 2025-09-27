@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tổ hợp & Xác suất</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:900px;margin:24px auto}
+input{padding:10px;border:1px solid var(--border);border-radius:10px;width:120px}</style>
+</head><body>
+<main class="container card">
+  <h2>Tổ hợp – Chỉnh hợp – Nhị thức & Xác suất</h2>
+  <section>
+    <h3>1) Tổ hợp C(n,k), Chỉnh hợp A(n,k)</h3>
+    <label>n <input id="n" type="number" value="5"></label>
+    <label>k <input id="k" type="number" value="2"></label>
+    <button class="btn" id="calc">Tính</button>
+    <div id="out"></div>
+  </section>
+  <hr/>
+  <section>
+    <h3>2) Xác suất biến cố (đồng khả năng)</h3>
+    <label>Không gian Ω (số phần tử) <input id="omega" type="number" value="36"></label>
+    <label>Biến cố A (thuận lợi) <input id="f" type="number" value="6"></label>
+    <button class="btn" id="pcalc">Tính P(A)</button>
+    <div id="pout"></div>
+  </section>
+</main>
+<script>
+function fact(x){let r=1n; for(let i=2n;i<=BigInt(x);i++) r*=i; return r}
+function comb(n,k){if(k<0||k>n)return 0n; return fact(n)/(fact(k)*fact(n-k))}
+function perm(n,k){if(k<0||k>n)return 0n; let r=1n; for(let i=0n;i<BigInt(k);i++) r*=BigInt(n)-i; return r}
+function fmt(x){return x.toString()}
+document.getElementById('calc').addEventListener('click',()=>{
+  const n=+document.getElementById('n').value, k=+document.getElementById('k').value;
+  const C = comb(n,k), A = perm(n,k);
+  out.innerHTML = `C(${n},${k}) = <b>${fmt(C)}</b><br>A(${n},${k}) = <b>${fmt(A)}</b>`;
+});
+document.getElementById('pcalc').addEventListener('click',()=>{
+  const om=+omega.value, f=+document.getElementById('f').value;
+  if(om<=0 || f<0 || f>om){ pout.innerHTML="⚠️ Dữ liệu không hợp lệ"; return; }
+  const p = f/om;
+  pout.innerHTML = `P(A) = <b>${p}</b>`;
+});
+const out=document.getElementById('out'), pout=document.getElementById('pout'), omega=document.getElementById('omega');
+</script>
+</body></html>

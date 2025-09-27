@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giới hạn đơn giản</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>.container{max-width:800px;margin:24px auto}
+input{padding:10px;border:1px solid var(--border);border-radius:10px;width:220px}</style>
+</head><body>
+<main class="container card">
+  <h2>Tính giới hạn dạng cơ bản</h2>
+  <p>Nhập biểu thức theo biến <code>x</code>. Ví dụ: <code>(x*x - 1)/(x - 1)</code></p>
+  <label>lim khi x → <input id="to" type="number" value="1" step="any"></label>
+  <input id="expr" placeholder="Biểu thức theo x" value="(x*x - 1)/(x - 1)">
+  <button class="btn" id="calc">Tính</button>
+  <div id="out"></div>
+</main>
+<script>
+// Đánh giá đơn giản và thay x → x0 + h, h nhỏ dần
+function evalExpr(expr, x){
+  return Function('x', 'with(Math){ return '+expr+' }')(x);
+}
+document.getElementById('calc').addEventListener('click', ()=>{
+  const x0 = parseFloat(document.getElementById('to').value);
+  const expr = document.getElementById('expr').value;
+  const hs = [1e-1,1e-2,1e-3,1e-4,1e-5];
+  let vals = [];
+  try{
+    hs.forEach(h=>{ vals.push(evalExpr(expr, x0+h)); vals.push(evalExpr(expr, x0-h)); });
+    const approx = vals.slice(-2).reduce((a,b)=>a+b,0)/2;
+    out.innerHTML = "≈ " + approx;
+  }catch(e){
+    out.innerHTML = "⚠️ Biểu thức không hợp lệ";
+  }
+});
+</script>
+</body></html>
