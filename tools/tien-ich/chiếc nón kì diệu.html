@@ -88,10 +88,46 @@
              -webkit-print-color-adjust: exact;
              print-color-adjust: exact;
         }
+        #quick-answer-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #quick-answer-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+        #quick-answer-timer {
+            font-size: 15rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 20px red;
+        }
+        #timer-fullscreen-overlay {
+            position: fixed; /* Changed to fixed for full viewport coverage */
+            inset: 0;
+            background-color: rgba(17, 24, 39, 0.95); /* bg-gray-900/95 */
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+        }
+        #fullscreen-timer-display {
+            font-size: 20vw;
+            font-weight: 900;
+            color: white;
+            font-variant-numeric: tabular-nums;
+        }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body class="p-4 sm:p-6 md:p-8">
 
@@ -106,6 +142,9 @@
             <div id="canvas-wrapper">
                  <canvas id="wheelCanvas"></canvas>
                  <canvas id="confettiCanvas"></canvas>
+                 <div id="quick-answer-overlay">
+                    <div id="quick-answer-timer">10</div>
+                 </div>
             </div>
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[150%] z-10">
                  <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-lg">
@@ -119,7 +158,9 @@
         <div class="control-panel flex flex-col space-y-4">
             <!-- Class Management -->
             <div>
-                 <label for="class-list-select" class="font-bold text-lg mb-2 block">Quản lý lớp học:</label>
+                 <label for="class-list-select" class="font-bold text-lg mb-2 block">Quản lý lớp học: 
+                    <span id="save-status" class="text-sm font-normal text-green-600 opacity-0 transition-opacity duration-500">Đã lưu tự động!</span>
+                 </label>
                  <div class="flex items-center gap-2">
                     <select id="class-list-select" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></select>
                     <button id="save-list-btn" title="Lưu danh sách mới" class="icon-btn bg-blue-500 hover:bg-blue-600">
@@ -153,6 +194,10 @@
                     <input type="checkbox" id="remove-winner-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
                     <label for="remove-winner-checkbox" class="font-medium settings-label">Xóa tên người thắng cuộc (khi quay)</label>
                 </div>
+                 <div class="flex items-center gap-2">
+                    <input type="checkbox" id="quick-answer-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
+                    <label for="quick-answer-checkbox" class="font-medium settings-label">Chế độ trả lời nhanh (10 giây)</label>
+                </div>
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="prize-mode-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
                     <label for="prize-mode-checkbox" class="font-medium settings-label">Bật ô phần thưởng đặc biệt ★</label>
@@ -175,6 +220,14 @@
         </div>
     </main>
 
+    <!-- Fullscreen Timer Overlay -->
+    <div id="timer-fullscreen-overlay" class="fixed inset-0 bg-gray-900/95 flex-col items-center justify-center z-50 hidden">
+        <div id="fullscreen-timer-display">00:00</div>
+        <button id="close-fullscreen-timer-btn" class="absolute top-8 right-8 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+
     <script>
         // --- DOM Elements ---
         const ui = {
@@ -185,6 +238,7 @@
             resetBtn: document.getElementById('reset-btn'),
             resultDisplay: document.getElementById('result-display'),
             removeWinnerCheckbox: document.getElementById('remove-winner-checkbox'),
+            quickAnswerCheckbox: document.getElementById('quick-answer-checkbox'),
             soundModeSelect: document.getElementById('sound-mode-select'),
             spinModeSelect: document.getElementById('spin-mode-select'),
             prizeModeCheckbox: document.getElementById('prize-mode-checkbox'),
@@ -193,6 +247,12 @@
             deleteListBtn: document.getElementById('delete-list-btn'),
             historyContainer: document.getElementById('history-container'),
             historyList: document.getElementById('history-list'),
+            saveStatus: document.getElementById('save-status'),
+            quickAnswerOverlay: document.getElementById('quick-answer-overlay'),
+            quickAnswerTimer: document.getElementById('quick-answer-timer'),
+            timerFullscreenOverlay: document.getElementById('timer-fullscreen-overlay'),
+            fullscreenTimerDisplay: document.getElementById('fullscreen-timer-display'),
+            closeFullscreenTimerBtn: document.getElementById('close-fullscreen-timer-btn'),
         };
         const wheelCtx = ui.wheelCanvas.getContext('2d');
         const confettiCtx = ui.confettiCanvas.getContext('2d');
@@ -200,16 +260,20 @@
         // --- State ---
         let state = {
             names: [], colors: [], rotation: 0, spinSpeed: 0, isSpinning: false,
-            lastTickAngle: 0, removeWinner: false, soundMode: 'default', spinMode: 'classic',
+            lastTickAngle: 0, removeWinner: false, quickAnswerMode: false,
+            soundMode: 'default', spinMode: 'classic',
             prizeMode: false, prizeName: null, confetti: [], history: [],
             isSuspenseAnimating: false, suspenseStartTime: 0, suspenseDuration: 2500,
             startRotation: 0, targetRotation: 0,
             classLists: {}, currentClass: 'Danh sách mặc định',
+            saveStatusTimeout: null, applauseInterval: null,
+            groupTimerInterval: null, groupTimeRemaining: 0, isGroupTimerRunning: false,
+            quickAnswerInterval: null,
         };
 
         // --- Constants ---
         const baseColors = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e"];
-        const prizeColor = "#facc15"; // Gold
+        const prizeColor = "#facc15";
         
         // --- Audio ---
         let audioCtx;
@@ -222,6 +286,7 @@
         };
         
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        
         function playSound(notes, duration = 0.1, type = 'sine') {
             if (!audioCtx || state.soundMode === 'mute') return;
             const now = audioCtx.currentTime;
@@ -235,10 +300,56 @@
             });
         }
         
+        function playApplauseSound() {
+            if (!audioCtx || state.soundMode === 'mute') return;
+            stopApplauseSound();
+            const createClap = () => {
+                const now = audioCtx.currentTime;
+                const clapSource = audioCtx.createBufferSource();
+                const bufferSize = audioCtx.sampleRate * 0.1;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) { data[i] = (Math.random() - 0.5) * 2; }
+                clapSource.buffer = buffer;
+                const bandpass = audioCtx.createBiquadFilter();
+                bandpass.type = 'bandpass';
+                bandpass.frequency.value = 800 + Math.random() * 400;
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                clapSource.connect(bandpass).connect(gain).connect(audioCtx.destination);
+                clapSource.start(now);
+            };
+            const clapLoop = () => {
+                createClap();
+                state.applauseInterval = setTimeout(clapLoop, 70 + Math.random() * 100);
+            };
+            clapLoop();
+        }
+
+        function stopApplauseSound() {
+            if (state.applauseInterval) {
+                clearTimeout(state.applauseInterval);
+                state.applauseInterval = null;
+            }
+        }
+        
+        function playTickSound(speed) {
+            if (!audioCtx || state.soundMode !== 'default') return;
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            o.type = 'sine'; o.frequency.value = 500 + speed * 1500;
+            g.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1);
+        }
+        
+        function playTimerEndSound() { playSound([523.25, 523.25, 523.25], 0.2, 'triangle'); }
+        function playQuickAnswerTick() { playSound([1200], 0.05, 'square'); }
+
         function getNames() { return ui.namesInput.value.split('\n').map(name => name.trim()).filter(name => name); }
         function generateColors(count) { return Array.from({length: count}, (_, i) => baseColors[i % baseColors.length]); }
-
-        // --- Drawing ---
+        
         function setupCanvases() {
             const dpr = window.devicePixelRatio || 1;
             const rect = ui.wheelCanvas.parentElement.getBoundingClientRect();
@@ -248,6 +359,7 @@
             });
             drawWheel();
         }
+
         function drawWheel() {
             state.names = getNames();
             const { names, rotation, prizeMode, prizeName } = state;
@@ -283,7 +395,6 @@
             wheelCtx.restore();
         }
 
-        // --- Confetti ---
         function triggerConfetti() {
             state.confetti = [];
             for (let i = 0; i < 150; i++) {
@@ -305,23 +416,30 @@
             confettiCtx.globalAlpha = 1;
         }
 
-        // --- Spinning Logic ---
         function spin() {
             if (state.isSpinning || state.names.length < 2) return;
-            initAudio();
+            initAudio(); stopApplauseSound();
             state.isSpinning = true; state.isSuspenseAnimating = false; ui.spinBtn.disabled = true;
             ui.resultDisplay.classList.remove('visible');
-            state.spinSpeed = Math.random() * 0.4 + 0.4;
+            
+            switch (state.spinMode) {
+                case 'rocket': state.spinSpeed = Math.random() * 0.5 + 0.8; break;
+                case 'fakeout': state.spinSpeed = -0.1; setTimeout(() => { state.spinSpeed = Math.random() * 0.4 + 0.4; }, 500); break;
+                default: state.spinSpeed = Math.random() * 0.4 + 0.4;
+            }
             if (state.prizeMode) pickPrizeName();
         }
+
         function getWinner() {
              const totalAngle = 2 * Math.PI, pointerAngle = (totalAngle * 3/4);
              const effectiveRotation = state.rotation % totalAngle;
              let finalAngle = (pointerAngle - effectiveRotation + totalAngle) % totalAngle;
              return state.names[Math.floor(finalAngle / (totalAngle / state.names.length))];
         }
+        
         function onSpinEnd() {
             state.isSpinning = false; state.isSuspenseAnimating = false; ui.spinBtn.disabled = false;
+            stopApplauseSound();
             const winner = getWinner();
             if(!winner) return;
 
@@ -332,17 +450,17 @@
 
             ui.resultDisplay.innerHTML = resultHTML;
             ui.resultDisplay.classList.add('visible');
-            triggerConfetti();
-            playSound(isPrize ? soundNotes.prizeWin : (soundNotes[`${state.soundMode}Win`] || soundNotes.defaultWin), 0.08);
             
-            updateHistory(winner);
-
-            if (state.removeWinner) {
-                const currentNames = getNames().filter(name => name !== winner);
-                ui.namesInput.value = currentNames.join('\n');
-                handleInput(true); // silent update
+            if (state.quickAnswerMode) {
+                startQuickAnswerCountdown(winner);
+            } else {
+                triggerConfetti();
+                playSound(isPrize ? soundNotes.prizeWin : (soundNotes[`${state.soundMode}Win`] || soundNotes.defaultWin), 0.08);
+                updateHistory(winner);
+                if (state.removeWinner) removeWinnerFromList(winner);
             }
         }
+
         const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
         function triggerSuspenseAnimation() {
             state.isSuspenseAnimating = true; state.suspenseStartTime = performance.now();
@@ -350,6 +468,7 @@
             const arcSize = (2 * Math.PI) / (state.names.length || 1);
             const randomOvershoot = arcSize * (1 + Math.random() * 1.5);
             state.targetRotation = state.rotation + randomOvershoot;
+            playApplauseSound();
         }
 
         function animate() {
@@ -358,7 +477,12 @@
                 state.rotation = state.startRotation + (state.targetRotation - state.startRotation) * easeOutCubic(progress);
                 if (progress >= 1) onSpinEnd();
             } else if (state.isSpinning) {
-                state.rotation += state.spinSpeed; state.spinSpeed *= 0.992;
+                const friction = state.spinMode === 'rocket' ? 0.98 : 0.992;
+                state.rotation += state.spinSpeed; 
+                if (state.spinMode !== 'fakeout' || state.spinSpeed > 0) {
+                     state.spinSpeed *= friction;
+                }
+
                 const arcSize = (2 * Math.PI) / (state.names.length || 1);
                 const currentAngle = Math.floor(state.rotation / arcSize);
                 if (currentAngle !== state.lastTickAngle) {
@@ -371,14 +495,62 @@
                 }
                 if (state.spinSpeed < 0.005 && state.spinMode === 'suspense') {
                     state.isSpinning = false; triggerSuspenseAnimation();
-                } else if (state.spinSpeed < 0.001) onSpinEnd();
+                } else if (state.spinSpeed < 0.001) {
+                    onSpinEnd();
+                }
             }
             drawWheel();
             if (state.confetti.length > 0) updateAndDrawConfetti();
             requestAnimationFrame(animate);
         }
 
-        // --- Grouping ---
+        function startQuickAnswerCountdown(winner) {
+            let timeLeft = 10;
+            ui.quickAnswerOverlay.classList.add('visible');
+            ui.quickAnswerTimer.textContent = timeLeft;
+            playQuickAnswerTick();
+            
+            state.quickAnswerInterval = setInterval(() => {
+                timeLeft--;
+                ui.quickAnswerTimer.textContent = timeLeft;
+                if (timeLeft > 0) {
+                    playQuickAnswerTick();
+                } else {
+                    clearInterval(state.quickAnswerInterval);
+                    ui.quickAnswerOverlay.classList.remove('visible');
+                    playSound([200, 150], 0.2, 'square');
+                    triggerConfetti();
+                    updateHistory(winner);
+                    if (state.removeWinner) removeWinnerFromList(winner);
+                }
+            }, 1000);
+        }
+
+        function updateGroupTimerDisplay() {
+            const minutes = Math.floor(state.groupTimeRemaining / 60).toString().padStart(2, '0');
+            const seconds = (state.groupTimeRemaining % 60).toString().padStart(2, '0');
+            const smallDisplay = document.getElementById('group-timer-display');
+            if (smallDisplay) smallDisplay.textContent = `${minutes}:${seconds}`;
+            ui.fullscreenTimerDisplay.textContent = `${minutes}:${seconds}`;
+        }
+        function startGroupTimer() {
+            if (state.isGroupTimerRunning || state.groupTimeRemaining <= 0) return;
+            state.isGroupTimerRunning = true;
+            state.groupTimerInterval = setInterval(() => {
+                state.groupTimeRemaining--;
+                updateGroupTimerDisplay();
+                if (state.groupTimeRemaining <= 0) {
+                    clearInterval(state.groupTimerInterval);
+                    state.isGroupTimerRunning = false;
+                    playTimerEndSound();
+                }
+            }, 1000);
+        }
+        function pauseGroupTimer() {
+            state.isGroupTimerRunning = false;
+            clearInterval(state.groupTimerInterval);
+        }
+
         function createGroups(groupSize) {
             initAudio(); const names = getNames();
             if (names.length < groupSize) {
@@ -391,153 +563,156 @@
             groups.forEach((g, i) => {
                 html += `<div class="bg-white/10 p-3 rounded-lg"><h4 class="font-bold text-white mb-2 border-b border-white/20 pb-1">Nhóm ${i + 1}</h4><ul class="list-disc list-inside">${g.map(m => `<li>${m}</li>`).join('')}</ul></div>`;
             });
-            ui.resultDisplay.innerHTML = html + '</div>'; ui.resultDisplay.classList.add('visible');
-            triggerConfetti(); playSound(soundNotes[`${state.soundMode}Win`] || soundNotes.defaultWin, 0.08);
+            html += '</div>';
+
+            html += `
+                <div class="mt-6 border-t border-white/20 pt-4">
+                    <h4 class="text-lg font-bold text-center mb-2">Đồng hồ bấm giờ</h4>
+                    <div class="flex items-center justify-center gap-2">
+                        <div id="group-timer-display" class="text-5xl font-bold text-center my-2 font-mono">${(state.groupTimeRemaining > 0 ? state.groupTimeRemaining : '00:00')}</div>
+                         <button id="timer-fullscreen-btn" title="Phóng to đồng hồ" class="icon-btn !p-3 bg-gray-500 hover:bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-center gap-2 mb-2">
+                        <button class="timer-set-btn" data-time="5">5 Phút</button>
+                        <button class="timer-set-btn" data-time="10">10 Phút</button>
+                        <button class="timer-set-btn" data-time="15">15 Phút</button>
+                    </div>
+                     <div class="flex justify-center gap-2">
+                        <button id="timer-start-btn">Bắt đầu</button>
+                        <button id="timer-pause-btn">Tạm dừng</button>
+                        <button id="timer-reset-btn">Đặt lại</button>
+                    </div>
+                </div>`;
+            const btnClasses = "bg-white/10 hover:bg-white/20 px-4 py-2 rounded-md";
+            html = html.replace(/class="timer-set-btn"/g, `class="timer-set-btn ${btnClasses}"`);
+            html = html.replace(/id="timer-start-btn"/g, `id="timer-start-btn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md"`);
+            html = html.replace(/id="timer-pause-btn"/g, `id="timer-pause-btn" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-md"`);
+            html = html.replace(/id="timer-reset-btn"/g, `id="timer-reset-btn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md"`);
+
+            ui.resultDisplay.innerHTML = html;
+            ui.resultDisplay.classList.add('visible');
+            updateGroupTimerDisplay();
+            
+            triggerConfetti();
+            playSound(soundNotes[`${state.soundMode}Win`] || soundNotes.defaultWin, 0.08);
         }
 
-        // --- Data & State Management ---
-        function handleInput(silent = false) {
-            if (!silent) reset();
+        function showSaveStatus() {
+            clearTimeout(state.saveStatusTimeout);
+            ui.saveStatus.classList.remove('opacity-0');
+            state.saveStatusTimeout = setTimeout(() => { ui.saveStatus.classList.add('opacity-0'); }, 2000);
+        }
+
+        function handleInput(isLiveUpdate = false) {
+            if (!isLiveUpdate) reset();
+            else drawWheel();
             const names = ui.namesInput.value;
-            if (state.classLists[state.currentClass]) {
-                state.classLists[state.currentClass] = names;
-            }
+            if (state.classLists.hasOwnProperty(state.currentClass)) state.classLists[state.currentClass] = names;
             saveClassLists();
         }
         function reset() {
             state.isSpinning = false; state.isSuspenseAnimating = false; ui.spinBtn.disabled = false;
             ui.resultDisplay.classList.remove('visible'); state.rotation = 0; state.spinSpeed = 0;
+            stopApplauseSound(); clearInterval(state.groupTimerInterval); state.isGroupTimerRunning = false;
             drawWheel();
         }
-        function pickPrizeName() {
-            if (state.names.length > 0) state.prizeName = state.names[Math.floor(Math.random() * state.names.length)];
-            else state.prizeName = null;
-        }
+        function pickPrizeName() { if (state.names.length > 0) state.prizeName = state.names[Math.floor(Math.random() * state.names.length)]; else state.prizeName = null; }
         function updateHistory(winner) {
-            state.history.unshift(winner);
-            if (state.history.length > 5) state.history.pop();
-            localStorage.setItem('spinHistory', JSON.stringify(state.history));
-            renderHistory();
+            state.history.unshift(winner); if (state.history.length > 5) state.history.pop();
+            localStorage.setItem('spinHistory', JSON.stringify(state.history)); renderHistory();
         }
         function renderHistory() {
-            if (state.history.length > 0) {
-                ui.historyContainer.classList.remove('hidden');
-                ui.historyList.innerHTML = state.history.map(name => `<li>${name}</li>`).join('');
-            } else {
-                ui.historyContainer.classList.add('hidden');
-            }
+            if (state.history.length > 0) { ui.historyContainer.classList.remove('hidden'); ui.historyList.innerHTML = state.history.map(name => `<li>${name}</li>`).join(''); } 
+            else { ui.historyContainer.classList.add('hidden'); }
         }
         function saveClassLists() { localStorage.setItem('studentClassLists', JSON.stringify(state.classLists)); }
         function populateClassSelect() {
             ui.classListSelect.innerHTML = '';
             Object.keys(state.classLists).forEach(name => {
-                const option = document.createElement('option');
-                option.value = name; option.textContent = name;
-                ui.classListSelect.appendChild(option);
+                const option = document.createElement('option'); option.value = name; option.textContent = name; ui.classListSelect.appendChild(option);
             });
             ui.classListSelect.value = state.currentClass;
         }
-
-        // --- Event Listeners ---
-        ui.namesInput.addEventListener('input', () => handleInput(true));
-        ui.namesInput.addEventListener('change', () => handleInput(false)); // To reset on paste
+         function removeWinnerFromList(winner) {
+            const currentNames = getNames().filter(name => name !== winner);
+            ui.namesInput.value = currentNames.join('\n');
+            handleInput(true);
+        }
+        
+        ui.namesInput.addEventListener('input', () => { handleInput(true); showSaveStatus(); });
+        ui.namesInput.addEventListener('change', () => handleInput(false));
         ui.spinBtn.addEventListener('click', spin);
         ui.resetBtn.addEventListener('click', () => { ui.namesInput.value = ''; handleInput(false); });
-        
-        ['group-4-btn', 'group-6-btn', 'group-8-btn'].forEach(id => {
-            document.getElementById(id).addEventListener('click', (e) => createGroups(parseInt(id.split('-')[1])));
-        });
-
+        ['group-4-btn', 'group-6-btn', 'group-8-btn'].forEach(id => { document.getElementById(id).addEventListener('click', (e) => createGroups(parseInt(id.split('-')[1]))); });
         ui.removeWinnerCheckbox.addEventListener('change', (e) => { state.removeWinner = e.target.checked; localStorage.setItem('removeWinner', state.removeWinner); });
+        ui.quickAnswerCheckbox.addEventListener('change', (e) => { state.quickAnswerMode = e.target.checked; localStorage.setItem('quickAnswerMode', state.quickAnswerMode); });
         ui.prizeModeCheckbox.addEventListener('change', (e) => { state.prizeMode = e.target.checked; localStorage.setItem('prizeMode', state.prizeMode); drawWheel(); });
         ui.soundModeSelect.addEventListener('change', (e) => { state.soundMode = e.target.value; localStorage.setItem('soundMode', state.soundMode); });
         ui.spinModeSelect.addEventListener('change', (e) => { state.spinMode = e.target.value; localStorage.setItem('spinMode', state.spinMode); });
-
-        ui.saveListBtn.addEventListener('click', () => {
-            const className = prompt('Nhập tên danh sách mới:', 'Lớp 12A1');
-            if (className && !state.classLists[className]) {
-                state.classLists[className] = ui.namesInput.value;
-                state.currentClass = className;
-                localStorage.setItem('currentClassName', state.currentClass);
-                saveClassLists();
-                populateClassSelect();
-            } else if (className) {
-                alert('Tên danh sách này đã tồn tại!');
-            }
-        });
-        ui.deleteListBtn.addEventListener('click', () => {
-            if (Object.keys(state.classLists).length <= 1) {
-                alert('Không thể xóa danh sách cuối cùng.'); return;
-            }
-            if (confirm(`Bạn có chắc chắn muốn xóa danh sách "${state.currentClass}" không?`)) {
-                delete state.classLists[state.currentClass];
-                state.currentClass = Object.keys(state.classLists)[0];
-                localStorage.setItem('currentClassName', state.currentClass);
-                ui.namesInput.value = state.classLists[state.currentClass];
-                saveClassLists();
-                populateClassSelect();
-                handleInput();
-            }
-        });
-        ui.classListSelect.addEventListener('change', (e) => {
-            state.currentClass = e.target.value;
-            localStorage.setItem('currentClassName', state.currentClass);
-            ui.namesInput.value = state.classLists[state.currentClass];
-            handleInput();
-        });
+        ui.saveListBtn.addEventListener('click', () => { const className = prompt('Nhập tên danh sách mới:', 'Lớp 12A1'); if (className && !state.classLists[className]) { state.classLists[className] = ui.namesInput.value; state.currentClass = className; localStorage.setItem('currentClassName', state.currentClass); saveClassLists(); populateClassSelect(); } else if (className) { alert('Tên danh sách này đã tồn tại!'); } });
+        ui.deleteListBtn.addEventListener('click', () => { if (Object.keys(state.classLists).length <= 1) { alert('Không thể xóa danh sách cuối cùng.'); return; } if (confirm(`Bạn có chắc chắn muốn xóa danh sách "${state.currentClass}" không?`)) { delete state.classLists[state.currentClass]; state.currentClass = Object.keys(state.classLists)[0]; localStorage.setItem('currentClassName', state.currentClass); ui.namesInput.value = state.classLists[state.currentClass]; saveClassLists(); populateClassSelect(); handleInput(); } });
+        ui.classListSelect.addEventListener('change', (e) => { state.currentClass = e.target.value; localStorage.setItem('currentClassName', state.currentClass); ui.namesInput.value = state.classLists[state.currentClass]; handleInput(); });
         
-        // --- Initialization ---
+        ui.resultDisplay.addEventListener('click', (e) => {
+            const target = e.target;
+            if (target.matches('.timer-set-btn')) {
+                ui.resultDisplay.querySelectorAll('.timer-set-btn').forEach(b => b.classList.remove('bg-indigo-400'));
+                target.classList.add('bg-indigo-400');
+                clearInterval(state.groupTimerInterval);
+                state.isGroupTimerRunning = false;
+                state.groupTimeRemaining = parseInt(target.dataset.time) * 60;
+                updateGroupTimerDisplay();
+            } else if (target.matches('#timer-start-btn')) {
+                startGroupTimer();
+            } else if (target.matches('#timer-pause-btn')) {
+                pauseGroupTimer();
+            } else if (target.matches('#timer-reset-btn')) {
+                clearInterval(state.groupTimerInterval);
+                state.isGroupTimerRunning = false;
+                const activeBtn = ui.resultDisplay.querySelector('.timer-set-btn.bg-indigo-400');
+                state.groupTimeRemaining = activeBtn ? parseInt(activeBtn.dataset.time) * 60 : 0;
+                updateGroupTimerDisplay();
+            } else if (target.closest('#timer-fullscreen-btn')) {
+                ui.timerFullscreenOverlay.classList.remove('hidden');
+                ui.timerFullscreenOverlay.classList.add('flex');
+                updateGroupTimerDisplay();
+            }
+        });
+
+        ui.closeFullscreenTimerBtn.addEventListener('click', () => {
+            ui.timerFullscreenOverlay.classList.add('hidden');
+            ui.timerFullscreenOverlay.classList.remove('flex');
+        });
+
         window.addEventListener('resize', setupCanvases);
         document.addEventListener('DOMContentLoaded', () => {
-            // Load data
-            let savedLists;
-            try {
-                savedLists = JSON.parse(localStorage.getItem('studentClassLists'));
-            } catch (e) { console.error("Could not parse class lists:", e); savedLists = null; }
-            if (savedLists && typeof savedLists === 'object' && Object.keys(savedLists).length > 0) {
-                 state.classLists = savedLists;
-            } else {
-                 state.classLists = {'Danh sách mặc định': "An\nBình\nCường\nDũng\nEm\nGiang\nHương"};
-            }
-            
+            let savedLists; try { savedLists = JSON.parse(localStorage.getItem('studentClassLists')); } catch (e) { console.error("Could not parse class lists:", e); savedLists = null; }
+            if (savedLists && typeof savedLists === 'object' && Object.keys(savedLists).length > 0) { state.classLists = savedLists; } 
+            else { state.classLists = {'Danh sách mặc định': "An\nBình\nCường\nDũng\nEm\nGiang\nHương"}; }
             state.currentClass = localStorage.getItem('currentClassName') || Object.keys(state.classLists)[0];
             if (!state.classLists[state.currentClass]) state.currentClass = Object.keys(state.classLists)[0];
-            
-            let historyData;
-            try {
-                historyData = JSON.parse(localStorage.getItem('spinHistory'));
-            } catch (e) { console.error("Could not parse history:", e); historyData = null; }
+            let historyData; try { historyData = JSON.parse(localStorage.getItem('spinHistory')); } catch (e) { console.error("Could not parse history:", e); historyData = null; }
             state.history = Array.isArray(historyData) ? historyData : [];
-            
             state.removeWinner = localStorage.getItem('removeWinner') === 'true';
+            state.quickAnswerMode = localStorage.getItem('quickAnswerMode') === 'true';
             state.prizeMode = localStorage.getItem('prizeMode') === 'true';
             state.soundMode = localStorage.getItem('soundMode') || 'default';
             state.spinMode = localStorage.getItem('spinMode') || 'classic';
-
-            // Populate UI
             populateClassSelect();
             ui.namesInput.value = state.classLists[state.currentClass] || '';
             ui.removeWinnerCheckbox.checked = state.removeWinner;
+            ui.quickAnswerCheckbox.checked = state.quickAnswerMode;
             ui.prizeModeCheckbox.checked = state.prizeMode;
             ui.soundModeSelect.innerHTML = `<option value="default">Mặc định</option><option value="mario">Mario</option><option value="journey">Tây Du Ký</option><option value="arcade">Arcade</option><option value="musical">Nhạc Cụ</option><option value="mute">Tắt tiếng</option>`;
             ui.soundModeSelect.value = state.soundMode;
-            ui.spinModeSelect.innerHTML = `<option value="classic">Cổ điển</option><option value="suspense">Hồi hộp</option>`;
+            ui.spinModeSelect.innerHTML = `<option value="classic">Cổ điển</option><option value="suspense">Hồi hộp</option><option value="rocket">Tên lửa</option><option value="fakeout">Giả vờ</option>`;
             ui.spinModeSelect.value = state.spinMode;
             renderHistory();
-
             setupCanvases();
             animate();
         });
-
-        function playTickSound(speed) {
-            if (!audioCtx || state.soundMode !== 'default') return;
-            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-            o.connect(g); g.connect(audioCtx.destination);
-            o.type = 'sine'; o.frequency.value = 500 + speed * 1500;
-            g.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-            o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1);
-        }
     </script>
 </body>
 </html>
