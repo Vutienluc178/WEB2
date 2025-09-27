@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Tool Menu Studio — index.json (cấu trúc cũ + thêm mới)</title>
+<title>Tool Menu Studio — sinh tools/index.json</title>
 <style>
   :root{--fg:#1f2937;--bg:#f8fafc;--card:#ffffff;--border:#e5e7eb;--muted:#6b7280;--primary:#2563eb}
   *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
@@ -11,7 +11,6 @@
   header h1{font-size:18px;margin:0} header .actions{display:flex;gap:8px;flex-wrap:wrap}
   .btn{border:1px solid var(--border);background:var(--card);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
   .btn.primary{background:var(--primary);color:#fff;border-color:transparent}
-  .btn.ghost{background:transparent}
   .container{max-width:1100px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns: 1.3fr .7fr;gap:16px}
   .left,.right{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
   h2{margin:.2rem 0 1rem 0;font-size:18px}
@@ -24,7 +23,7 @@
   .item input{padding:8px;border:1px solid var(--border);border-radius:10px;width:100%}
   .toolbar{display:flex;gap:6px;flex-wrap:wrap}
   .muted{color:var(--muted);font-size:13px}
-  textarea{width:100%;min-height:220px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#0b1020;color:#e5e7eb;font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+  textarea{width:100%;min-height:240px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#0b1020;color:#e5e7eb;font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
   .hint{font-size:13px;color:var(--muted);margin-top:6px}
   .danger{color:#b91c1c}
   .ok{color:#065f46}
@@ -36,14 +35,14 @@
 </head>
 <body>
 <header>
-  <h1>Tool Menu Studio — index.json</h1>
+  <h1>Tool Menu Studio — sinh tools/index.json</h1>
   <div class="actions">
     <label class="btn">
       📂 Mở index.json
       <input id="fileInput" type="file" accept=".json" hidden>
     </label>
+    <button id="loadMySample" class="btn">✨ Nạp mẫu của tôi</button>
     <button id="newEmpty"  class="btn">🧼 Tạo menu trống</button>
-    <button id="newDefault" class="btn">✨ Tạo menu mặc định</button>
     <button id="exportBtn" class="btn primary">💾 Tải xuống index.json</button>
   </div>
 </header>
@@ -65,12 +64,13 @@
     <div class="hr"></div>
     <textarea id="output" readonly></textarea>
     <div id="issues" class="hint"></div>
+    <div class="hint">⚠️ Có thể để nguyên <b>dấu/khoảng trắng</b> trong <code>path</code> nếu thầy muốn giữ đúng tên file trên repo.</div>
   </aside>
 </div>
 
 <script>
   // ====== State ======
-  let groups = []; // array of {group: string, items: [{title, path}]}
+  let groups = []; // [{group, items: [{title, path}]}]
 
   // ====== Helpers ======
   const el = sel => document.querySelector(sel);
@@ -85,6 +85,16 @@
     if(to<0 || to>=arr.length) return;
     const [sp] = arr.splice(from,1);
     arr.splice(to,0,sp);
+  }
+  // slug (tuỳ chọn): bỏ dấu, thường hoá
+  function toSlug(s){
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+            .toLowerCase()
+            .replace(/[^a-z0-9\-_\s/]+/g,'')
+            .replace(/\s+/g,'-')
+            .replace(/-+/g,'-')
+            .replace(/\/+/g,'/')
+            .replace(/^-|-$/g,'');
   }
 
   // ====== Render ======
@@ -123,6 +133,7 @@
         const tInput = mk('input',{value: it.title || '', placeholder:'Tiêu đề'});
         const pInput = mk('input',{value: it.path  || '', placeholder:'lop10/ten-tool.html'});
         const btns = mk('div',{className:'toolbar'});
+        const auto = mk('button',{className:'btn',textContent:'🔧 Tạo path từ tiêu đề'});
         const upI = mk('button',{className:'btn',textContent:'⬆️'});
         const downI = mk('button',{className:'btn',textContent:'⬇️'});
         const delI = mk('button',{className:'btn',textContent:'🗑️'});
@@ -130,12 +141,25 @@
         tInput.oninput = ()=> it.title = tInput.value.trim();
         pInput.oninput = ()=> it.path  = pInput.value.trim();
 
+        auto.onclick = ()=>{
+          // đoán thư mục theo group
+          const gName = (g.group||'').toLowerCase();
+          let base = '';
+          if(gName.includes('lớp 10')) base = 'lop10/';
+          else if(gName.includes('lớp 11')) base = 'lop11/';
+          else if(gName.includes('lớp 12')) base = 'lop12/';
+          else if(gName.includes('gvcn')) base = 'gvcn/';
+          else if(gName.includes('tiện ích') || gName.includes('tien ich')) base = 'tien-ich/';
+          const slug = toSlug(tInput.value||'cong-cu');
+          pInput.value = base + slug + '.html';
+          it.path = pInput.value;
+        };
         upI.onclick   = ()=>{ moveInArray(g.items, ii, ii-1); render(); };
         downI.onclick = ()=>{ moveInArray(g.items, ii, ii+1); render(); };
         delI.onclick  = ()=>{ g.items.splice(ii,1); render(); };
 
         grid.append(tInput, pInput, btns);
-        btns.append(upI, downI, delI);
+        btns.append(auto, upI, downI, delI);
         row.appendChild(grid);
         itemsWrap.appendChild(row);
       });
@@ -143,23 +167,19 @@
       box.appendChild(itemsWrap);
       $groups.appendChild(box);
     });
-    // sync JSON preview
     refreshJSON();
   }
 
   // ====== JSON I/O ======
   function refreshJSON(){
-    // validate & produce JSON
     const issues = [];
     const out = [];
-
-    // validation helpers
     const pathSet = new Set();
+
     function markBad(input){
       input.classList.add('bad'); setTimeout(()=>input.classList.remove('bad'), 1200);
     }
 
-    // traverse DOM to capture latest values and validate
     const groupBoxes = $groups.querySelectorAll('.group');
     groupBoxes.forEach((box, gi)=>{
       const nameInput = box.querySelector('.group-head input');
@@ -177,8 +197,7 @@
 
         if(path){
           if(pathSet.has(path)){
-            issues.push(`Trùng path: ${path}`);
-            markBad(pi);
+            issues.push(`Trùng path: ${path}`); markBad(pi);
           } else {
             pathSet.add(path);
           }
@@ -187,8 +206,7 @@
       });
 
       if(!groupName && items.length>0){
-        issues.push('Có nhóm chưa đặt tên');
-        markBad(nameInput);
+        issues.push('Có nhóm chưa đặt tên'); markBad(nameInput);
       }
       if(groupName && items.length>0){
         out.push({group: groupName, items});
@@ -215,44 +233,44 @@
     render();
   }
 
-  // ====== Defaults ======
-  function defaultMenu(){
+  // ====== MẪU CỦA THẦY ======
+  function mySample(){
     return [
       {
-        group: "🔢 Lớp 10",
-        items: [
-          {title:"Giải phương trình bậc hai", path:"lop10/pt-bac-hai.html"},
-          {title:"Hệ phương trình 2×2",       path:"lop10/he-pt-2x2.html"},
-          {title:"Đồ thị y = ax + b",         path:"lop10/ham-bac-nhat-plot.html"}
+        "group": "🔢 Lớp 10",
+        "items": [
+          {"title":"ĐỊNH NGHĨA VECTO","path":"lop10/hinh-hoc-vecto.html"},
+          {"title":"CÁC PHÉP TOÁN TẬP HỢP","path":"lop10/đại số -CÁC PHÉP TOÁN TRÊN TẬP HỢP.html"},
+          {"title":"Giải phương trình bậc hai","path":"lop10/pt-bac-hai.html"},
+          {"title":"Hệ phương trình 2×2","path":"lop10/he-pt-2x2.html"},
+          {"title":"Đồ thị y = ax + b","path":"lop10/ham-bac-nhat-plot.html"}
         ]
       },
       {
-        group: "📐 Lớp 11",
-        items: [
-          {title:"Tam giác & Lượng giác", path:"lop11/tam-giac-trigon.html"},
-          {title:"Cấp số cộng",           path:"lop11/cap-so-cong.html"}
+        "group": "📐 Lớp 11",
+        "items": [
+          {"title":"Tam giác & Lượng giác","path":"lop11/tam-giac-trigon.html"},
+          {"title":"Cấp số cộng","path":"lop11/cap-so-cong.html"}
         ]
       },
       {
-        group: "🧮 Lớp 12",
-        items: [
-          {title:"Tổ hợp & Xác suất", path:"lop12/to-hop-xac-suat.html"},
-          {title:"Giới hạn đơn giản", path:"lop12/gioi-han-don-gian.html"}
+        "group": "🧮 Lớp 12",
+        "items": [
+          {"title":"Tổ hợp & Xác suất","path":"lop12/to-hop-xac-suat.html"},
+          {"title":"Giới hạn đơn giản","path":"lop12/gioi-han-don-gian.html"}
         ]
       },
       {
-        group: "👨‍🏫 GVCN",
-        items: [
-          {title:"Bốc thăm học sinh", path:"gvcn/random-picker.html"},
-          {title:"Pomodoro 25/5",     path:"gvcn/pomodoro.html"},
-          {title:"Mẫu tin nhắn Zalo", path:"gvcn/mau-tin-zalo.html"}
+        "group": "👨‍🏫 GVCN",
+        "items": [
+          {"title":"VÒNG QUAY KÌ DIỆU","path":"tien-ich/chiếc nón kì diệu.html"},
+          {"title":"Pomodoro 25/5","path":"gvcn/pomodoro.html"}
         ]
       },
       {
-        group: "🧰 Tiện ích",
-        items: [
-          {title:"Phân số ↔ Thập phân",     path:"tien-ich/fraction-decimal.html"},
-          {title:"Ma trận 3×3 (định thức)", path:"tien-ich/matrix-3x3.html"}
+        "group": "🧰 Tiện ích",
+        "items": [
+          {"title":"Tạo menu WEB","path":"tien-ich/TÁOJSON.html"}
         ]
       }
     ];
@@ -262,8 +280,8 @@
   el('#addGroup').onclick   = ()=>{ groups.push({group:'', items:[]}); render(); };
   el('#refreshJSON').onclick= refreshJSON;
   el('#exportBtn').onclick  = ()=> download('index.json', el('#output').value || '[]');
-  el('#newEmpty').onclick   = ()=>{ if(confirm('Tạo menu trống?')); groups=[]; render(); };
-  el('#newDefault').onclick = ()=>{ if(confirm('Tạo mới theo menu mặc định?')); groups=defaultMenu(); render(); };
+  el('#newEmpty').onclick   = ()=>{ if(confirm('Tạo menu trống?')){ groups=[]; render(); } };
+  el('#loadMySample').onclick = ()=>{ if(confirm('Nạp mẫu của thầy? Dữ liệu hiện tại sẽ bị thay.')){ groups=mySample(); render(); } };
 
   el('#fileInput').addEventListener('change', (e)=>{
     const f = e.target.files[0]; if(!f) return;
@@ -275,10 +293,8 @@
     rd.readAsText(f);
   });
 
-  // ====== Boot ======
-  // Khởi tạo với menu mặc định cho tiện thử
-  groups = defaultMenu();
-  render();
+  // Khởi tạo trống
+  groups = []; render();
 </script>
 </body>
 </html>
