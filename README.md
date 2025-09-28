@@ -27,3 +27,26 @@ Mỗi công cụ là **một file HTML độc lập** – mở trực tiếp cũ
 
 ## GitHub Actions (tùy chọn)
 See `.github/workflows/pages.yml`.
+Thêm công cụ mới (2 cách)
+
+Chỉ cần chỉnh tools/index.json:
+
+{
+  "group": "Lớp 11",
+  "items": [
+    {
+      "title": "Hàm số bậc nhất",
+      "url": "tools/lop11/dai-so/ham-so/ham-so-bac-nhat.html",
+      "subcat": "ham-so"   // (khuyến nghị; nếu thiếu, code sẽ suy luận từ đường dẫn)
+    }
+  ]
+}
+
+
+Hoặc dựa vào đường dẫn để code tự suy luận:
+
+Đặt file theo mẫu: tools/lop11/dai-so/ham-so/ten-file.html
+
+App sẽ tự hiểu: grade=11, track=dai-so, subcat=ham-so.
+
+Xong cập nhật → mở trang và Ctrl/Cmd + Shift + R để tải lại mạnh. Nếu cần thêm mẫu index.json có nhiều “mục con” sẵn (hàm số, đạo hàm, vectơ…), nói mình biết, mình gói luôn để thầy chỉ việc tải về dùng.
