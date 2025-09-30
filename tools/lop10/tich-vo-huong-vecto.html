@@ -88,7 +88,7 @@
                 <div class="space-y-6">
                     <div>
                         <h3 class="text-xl font-bold mb-2 text-blue-600">1. Tương tác với Đồ thị</h3>
-                        <p class="text-sm bg-blue-50 p-3 rounded-lg">Dùng chuột <span class="font-bold">kéo và thả</span> vào <span class="font-bold">điểm đầu</span> hoặc <span class="font-bold">điểm cuối</span> của mỗi vectơ để thay đổi chúng. Mọi kết quả sẽ được cập nhật tức thì.</p>
+                        <p class="text-sm bg-blue-50 p-3 rounded-lg">Dùng chuột <span class="font-bold">kéo và thả</span> vào các điểm A, B, C, D để thay đổi các vectơ. Mọi kết quả sẽ được cập nhật tức thì.</p>
                     </div>
 
                     <div>
@@ -171,13 +171,13 @@
             ctx.fillRect(0, 0, width, height);
         }
         
-        function drawVector({start, end}, color, label, isGhost = false) {
+        function drawVector({start, end}, color, vecLabel, startLabel, endLabel, isGhost = false) {
             // Line
             ctx.beginPath();
             ctx.moveTo(start.x, start.y);
             ctx.lineTo(end.x, end.y);
             ctx.strokeStyle = color;
-            ctx.lineWidth = isGhost ? 2 : 3;
+            ctx.lineWidth = isGhost ? 6 : 9;
             if (isGhost) ctx.setLineDash([4, 4]);
             ctx.stroke();
             ctx.setLineDash([]);
@@ -189,36 +189,46 @@
             ctx.rotate(angle);
             ctx.beginPath();
             ctx.moveTo(0, 0);
-            ctx.lineTo(-10, -5);
-            ctx.lineTo(-10, 5);
+            ctx.lineTo(-30, -16);
+            ctx.lineTo(-30, 16);
             ctx.closePath();
             ctx.fillStyle = color;
             ctx.fill();
             ctx.restore();
             
-            if (label) {
+            if (vecLabel) {
                 // Label near the middle of the vector
                 const midX = (start.x + end.x) / 2;
                 const midY = (start.y + end.y) / 2;
                 ctx.font = 'bold 18px "Be Vietnam Pro"';
                 ctx.fillStyle = color;
-                ctx.fillText(label, midX, midY - 10);
+                ctx.fillText(vecLabel, midX, midY - 15);
             }
 
             if (!isGhost) {
                 // Draw draggable points
                 ctx.beginPath();
-                ctx.arc(start.x, start.y, 6, 0, 2 * Math.PI);
+                ctx.arc(start.x, start.y, 8, 0, 2 * Math.PI);
                 ctx.fillStyle = 'white';
                 ctx.fill();
                 ctx.strokeStyle = color;
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 6;
                 ctx.stroke();
 
                 ctx.beginPath();
-                ctx.arc(end.x, end.y, 6, 0, 2 * Math.PI);
+                ctx.arc(end.x, end.y, 8, 0, 2 * Math.PI);
                 ctx.fillStyle = color;
                 ctx.fill();
+
+                // Draw point labels
+                ctx.font = 'bold 18px "Be Vietnam Pro"';
+                ctx.fillStyle = '#374151'; // Dark gray
+                if (startLabel) {
+                    ctx.fillText(startLabel, start.x - 25, start.y - 10);
+                }
+                if (endLabel) {
+                    ctx.fillText(endLabel, end.x + 15, end.y + 10);
+                }
             }
         }
         
@@ -234,7 +244,7 @@
             ctx.beginPath();
             ctx.arc(commonOrigin.x, commonOrigin.y, 30, angleU, angleV);
             ctx.strokeStyle = '#a855f7';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 6;
             ctx.stroke();
             
             // Label
@@ -263,7 +273,7 @@
              ctx.moveTo(commonOrigin.x, commonOrigin.y);
              ctx.lineTo(projEnd.x, projEnd.y);
              ctx.strokeStyle = '#f97316';
-             ctx.lineWidth = 4;
+             ctx.lineWidth = 12;
              ctx.setLineDash([3, 4]);
              ctx.stroke();
              
@@ -272,7 +282,7 @@
              ctx.moveTo(ghostVEnd.x, ghostVEnd.y);
              ctx.lineTo(projEnd.x, projEnd.y);
              ctx.strokeStyle = '#a1a1aa';
-             ctx.lineWidth = 1;
+             ctx.lineWidth = 3;
              ctx.setLineDash([2, 3]);
              ctx.stroke();
              ctx.setLineDash([]);
@@ -327,13 +337,13 @@
             const ghostVEnd = { x: commonOrigin.x + v_comp.x, y: commonOrigin.y + v_comp.y };
 
             drawProjection(u_comp, v_comp);
-            drawVector({ start: commonOrigin, end: ghostUEnd }, 'rgba(59, 130, 246, 0.3)', null, true);
-            drawVector({ start: commonOrigin, end: ghostVEnd }, 'rgba(239, 68, 68, 0.3)', null, true);
+            drawVector({ start: commonOrigin, end: ghostUEnd }, 'rgba(59, 130, 246, 0.3)', null, null, null, true);
+            drawVector({ start: commonOrigin, end: ghostVEnd }, 'rgba(239, 68, 68, 0.3)', null, null, null, true);
             drawAngle(u_comp, v_comp);
             
             // Draw original vectors
-            drawVector(vecU, '#3b82f6', 'u');
-            drawVector(vecV, '#ef4444', 'v');
+            drawVector(vecU, '#3b82f6', 'u', 'A', 'B');
+            drawVector(vecV, '#ef4444', 'v', 'C', 'D');
 
             if (showResultsOnCanvas) {
                 drawResultsOnCanvas(angleDeg, dot / 100);
