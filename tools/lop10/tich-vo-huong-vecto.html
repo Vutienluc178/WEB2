@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài học Trực quan: Tích Vô Hướng của Hai Vectơ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f4f7fc;
+        }
+        .math {
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+        }
+        .vector-u { color: #3b82f6; }
+        .vector-v { color: #ef4444; }
+        #interactiveCanvas {
+            cursor: grab;
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+        #interactiveCanvas:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 lg:p-6 relative">
+        <!-- Header -->
+        <header class="text-center mb-6 p-4 bg-white rounded-lg shadow-md">
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-600">Bài học Trực quan: Tích Vô Hướng của Hai Vectơ</h1>
+            <p class="text-sm text-gray-600 mt-1">Chương trình Toán 10 - Sách Chân trời sáng tạo</p>
+        </header>
+
+        <!-- Main Content Layout -->
+        <main class="flex flex-col lg:flex-row gap-6">
+            
+            <!-- Cột Trái: Trực quan hóa và Kết quả -->
+            <div class="w-full lg:w-3/5 flex flex-col gap-6">
+                <div id="canvas-container" class="relative bg-white rounded-lg shadow-md p-4 flex justify-center items-center aspect-square">
+                    <canvas id="interactiveCanvas"></canvas>
+                    <button id="fullscreen-canvas-btn" title="Toàn màn hình" class="absolute top-2 right-2 z-10 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0-.707 0L1.732 9.566H4.5a.5.5 0 0 0 0-1H.525a.5.5 0 0 0-.5.5V11.5a.5.5 0 0 0 1 0V8.732l4.096-4.096a.5.5 0 0 0 .707 0zM11.5 1a.5.5 0 0 1 .5.5v2.768l-4.096 4.096a.5.5 0 0 1-.707 0L1.732 5.066H4.5a.5.5 0 0 1 0 1H.525a.5.5 0 0 1-.5-.5V1.5a.5.5 0 0 1 1 0v2.768l4.096-4.096a.5.5 0 0 1 .707 0l4.096 4.096V1.5a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                     <h3 class="text-xl font-bold mb-4 text-blue-600 border-b pb-2">Kết quả tính toán</h3>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <p class="font-bold text-lg vector-u">Vectơ <span class="math">u</span></p>
+                            <p class="text-sm">Độ dài <span class="math">|u|</span>: <span id="vector-u-mag" class="font-bold">0</span></p>
+                        </div>
+                         <div class="p-3 bg-red-50 rounded-lg">
+                            <p class="font-bold text-lg vector-v">Vectơ <span class="math">v</span></p>
+                            <p class="text-sm">Độ dài <span class="math">|v|</span>: <span id="vector-v-mag" class="font-bold">0</span></p>
+                        </div>
+                         <div class="p-3 bg-gray-100 rounded-lg col-span-1 sm:col-span-2">
+                            <p class="font-bold text-lg">Góc giữa hai vectơ</p>
+                             <p class="text-sm">Góc <span class="math">α</span> = <span id="angle-deg" class="font-bold">0°</span></p>
+                             <p class="text-sm">cos(<span class="math">α</span>) = <span id="angle-cos" class="font-bold">0</span></p>
+                        </div>
+                         <div class="p-4 bg-green-100 rounded-lg col-span-1 sm:col-span-2">
+                            <p class="font-bold text-xl text-green-700">Tích vô hướng <span class="math">u · v</span></p>
+                             <p id="dot-product-result" class="font-mono text-3xl font-bold text-green-800">0</p>
+                        </div>
+                     </div>
+                     <div class="mt-6 flex items-center justify-center">
+                        <input type="checkbox" id="show-results-checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="show-results-checkbox" class="ml-2 block text-sm text-gray-900 font-medium">
+                            Hiện kết quả trên đồ thị
+                        </label>
+                    </div>
+                      <button id="save-btn" class="mt-4 w-full bg-green-500 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-green-600 transition duration-200 shadow">Lưu Hình Minh Họa</button>
+                </div>
+            </div>
+
+            <!-- Cột Phải: Lý thuyết và Hướng dẫn -->
+            <div class="w-full lg:w-2/5 bg-white rounded-lg shadow-md p-6">
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-blue-600">1. Tương tác với Đồ thị</h3>
+                        <p class="text-sm bg-blue-50 p-3 rounded-lg">Dùng chuột <span class="font-bold">kéo và thả</span> vào <span class="font-bold">điểm đầu</span> hoặc <span class="font-bold">điểm cuối</span> của mỗi vectơ để thay đổi chúng. Mọi kết quả sẽ được cập nhật tức thì.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-blue-600">2. Xác định Góc Giữa Hai Vectơ</h3>
+                        <div class="p-4 bg-gray-50 rounded-lg space-y-3 text-sm">
+                             <p>Để xác định góc giữa hai vectơ <span class="math">u</span> và <span class="math">v</span>, ta thực hiện theo quy tắc <span class="font-bold">"chung gốc"</span>:</p>
+                             <ul class="list-decimal list-inside space-y-2 pl-2">
+                                 <li>Tịnh tiến các vectơ để chúng có <span class="font-bold">cùng điểm đầu</span>.</li>
+                                 <li>Góc <span class="math">α</span> giữa hai vectơ là góc có số đo từ 0° đến 180°.</li>
+                             </ul>
+                             <p class="mt-2 font-bold">Trên đồ thị, phiên bản "mờ" của hai vectơ được tịnh tiến về tâm để minh họa trực quan quy tắc này.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-blue-600">3. Định nghĩa & Công thức</h3>
+                        <div class="p-4 bg-gray-50 rounded-lg space-y-4">
+                            <p>Tích vô hướng của hai vectơ <span class="math">u</span> và <span class="math">v</span> là một <span class="font-bold">con số</span>, ký hiệu là <span class="math">u · v</span>.</p>
+                            <p class="mt-1 font-mono bg-gray-200 p-2 rounded text-center text-lg"><span class="math">u · v = |u| · |v| · cos(α)</span></p>
+                            <p class="text-xs mt-1">Trong đó <span class="math">α</span> là góc giữa hai vectơ.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold mb-2 text-blue-600">4. Ý nghĩa Hình học</h3>
+                        <div class="p-4 bg-gray-50 rounded-lg space-y-3">
+                            <p>Tích vô hướng cho biết "mức độ cùng hướng" của hai vectơ. Hình minh họa <span class="font-bold" style="color: #f97316;">hình chiếu</span> được vẽ ở tâm đồ thị.</p>
+                            <ul class="list-disc list-inside space-y-2 text-sm">
+                                <li>Nếu <span class="font-bold">góc nhọn (cos > 0)</span>: Tích vô hướng <span class="font-bold text-green-600">dương</span>.</li>
+                                <li>Nếu <span class="font-bold">góc tù (cos < 0)</span>: Tích vô hướng <span class="font-bold text-red-600">âm</span>.</li>
+                                <li>Nếu <span class="font-bold">góc vuông (cos = 0)</span>: Tích vô hướng <span class="font-bold">bằng 0</span> (vuông góc).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                     <div>
+                        <h3 class="text-xl font-bold mb-2 text-blue-600">5. Ứng dụng Thực tế</h3>
+                        <div class="p-4 bg-gray-50 rounded-lg space-y-2">
+                            <p class="font-bold">Vật lý:</p>
+                            <p class="text-sm">Dùng để tính <span class="font-bold">Công (W)</span> sinh ra bởi một lực (<span class="math">F</span>) khi vật di chuyển một đoạn đường (<span class="math">d</span>). Công thức: <span class="math">W = F · d</span>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('interactiveCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+
+        let vecU = { start: { x: 100, y: 250 }, end: { x: 250, y: 150 } };
+        let vecV = { start: { x: 400, y: 300 }, end: { x: 300, y: 400 } };
+
+        let dragging = null; // { vec: 'U'|'V', point: 'start'|'end' }
+        let showResultsOnCanvas = false;
+
+        // --- SETUP ---
+        function setupCanvas() {
+            const container = canvas.parentElement;
+            // When in fullscreen, the container might be the fullscreen element itself
+            const size = document.fullscreenElement === container 
+                ? Math.min(container.clientWidth, container.clientHeight)
+                : Math.min(container.clientWidth, container.clientHeight, 600);
+
+            canvas.width = size;
+            canvas.height = size;
+
+            width = canvas.width;
+            height = canvas.height;
+            
+            updateAndDraw();
+        }
+
+        // --- DRAWING FUNCTIONS ---
+        function clearCanvas() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+        }
+        
+        function drawVector({start, end}, color, label, isGhost = false) {
+            // Line
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = isGhost ? 2 : 3;
+            if (isGhost) ctx.setLineDash([4, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Arrowhead
+            const angle = Math.atan2(end.y - start.y, end.x - start.x);
+            ctx.save();
+            ctx.translate(end.x, end.y);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-10, -5);
+            ctx.lineTo(-10, 5);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+            
+            if (label) {
+                // Label near the middle of the vector
+                const midX = (start.x + end.x) / 2;
+                const midY = (start.y + end.y) / 2;
+                ctx.font = 'bold 18px "Be Vietnam Pro"';
+                ctx.fillStyle = color;
+                ctx.fillText(label, midX, midY - 10);
+            }
+
+            if (!isGhost) {
+                // Draw draggable points
+                ctx.beginPath();
+                ctx.arc(start.x, start.y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(end.x, end.y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+        
+        function drawAngle(u_comp, v_comp) {
+            const magU = Math.hypot(u_comp.x, u_comp.y);
+            const magV = Math.hypot(v_comp.x, v_comp.y);
+            if (magU < 1 || magV < 1) return;
+            
+            const commonOrigin = { x: width / 2, y: height / 2 };
+            const angleU = Math.atan2(u_comp.y, u_comp.x);
+            const angleV = Math.atan2(v_comp.y, v_comp.x);
+            
+            ctx.beginPath();
+            ctx.arc(commonOrigin.x, commonOrigin.y, 30, angleU, angleV);
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Label
+            const midAngle = angleU + (angleV - angleU) / 2;
+            const labelX = commonOrigin.x + 45 * Math.cos(midAngle);
+            const labelY = commonOrigin.y + 45 * Math.sin(midAngle);
+            ctx.fillStyle = '#a855f7';
+            ctx.font = '14px "Be Vietnam Pro"';
+            ctx.fillText('α', labelX, labelY);
+        }
+
+        function drawProjection(u_comp, v_comp) {
+             const magU = Math.hypot(u_comp.x, u_comp.y);
+             if (magU < 1) return;
+             
+             const commonOrigin = { x: width / 2, y: height / 2 };
+             const dot = u_comp.x * v_comp.x + u_comp.y * v_comp.y;
+             const projScalar = dot / (magU * magU);
+             const projVec = { x: projScalar * u_comp.x, y: projScalar * u_comp.y };
+
+             const ghostVEnd = { x: commonOrigin.x + v_comp.x, y: commonOrigin.y + v_comp.y };
+             const projEnd = { x: commonOrigin.x + projVec.x, y: commonOrigin.y + projVec.y };
+
+             // Projection line
+             ctx.beginPath();
+             ctx.moveTo(commonOrigin.x, commonOrigin.y);
+             ctx.lineTo(projEnd.x, projEnd.y);
+             ctx.strokeStyle = '#f97316';
+             ctx.lineWidth = 4;
+             ctx.setLineDash([3, 4]);
+             ctx.stroke();
+             
+             // Dotted line from v's head to projection point
+             ctx.beginPath();
+             ctx.moveTo(ghostVEnd.x, ghostVEnd.y);
+             ctx.lineTo(projEnd.x, projEnd.y);
+             ctx.strokeStyle = '#a1a1aa';
+             ctx.lineWidth = 1;
+             ctx.setLineDash([2, 3]);
+             ctx.stroke();
+             ctx.setLineDash([]);
+        }
+
+        function drawResultsOnCanvas(angle, dotProduct) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.font = 'bold 16px "Be Vietnam Pro"';
+            ctx.textAlign = 'left';
+            
+            const text1 = `Góc α = ${angle.toFixed(1)}°`;
+            const text2 = `Tích vô hướng u · v = ${dotProduct.toFixed(2)}`;
+            
+            ctx.fillText(text1, 15, 30);
+            ctx.fillText(text2, 15, 55);
+            ctx.restore();
+        }
+
+        // --- CALCULATIONS ---
+        function updateAndDraw() {
+            // Get vector components
+            const u_comp = { x: vecU.end.x - vecU.start.x, y: vecU.end.y - vecU.start.y };
+            const v_comp = { x: vecV.end.x - vecV.start.x, y: vecV.end.y - vecV.start.y };
+
+            // Calculations
+            const magU = Math.hypot(u_comp.x, u_comp.y);
+            const magV = Math.hypot(v_comp.x, v_comp.y);
+            const dot = u_comp.x * v_comp.x + u_comp.y * v_comp.y;
+            
+            let cosAngle = 0;
+            if (magU > 1e-9 && magV > 1e-9) {
+                cosAngle = dot / (magU * magV);
+                cosAngle = Math.max(-1, Math.min(1, cosAngle)); // Clamp
+            }
+            const angleRad = Math.acos(cosAngle);
+            const angleDeg = angleRad * 180 / Math.PI;
+
+            // Update UI Text
+            document.getElementById('vector-u-mag').textContent = (magU/10).toFixed(2); // Divide by 10 for a more relatable scale
+            document.getElementById('vector-v-mag').textContent = (magV/10).toFixed(2);
+            document.getElementById('angle-deg').textContent = angleDeg.toFixed(1) + '°';
+            document.getElementById('angle-cos').textContent = cosAngle.toFixed(3);
+            document.getElementById('dot-product-result').textContent = (dot/100).toFixed(2); // Divide by 100 as dot is mag*mag
+
+            // --- Drawing ---
+            clearCanvas();
+
+            // Draw "common origin" visualization
+            const commonOrigin = { x: width / 2, y: height / 2 };
+            const ghostUEnd = { x: commonOrigin.x + u_comp.x, y: commonOrigin.y + u_comp.y };
+            const ghostVEnd = { x: commonOrigin.x + v_comp.x, y: commonOrigin.y + v_comp.y };
+
+            drawProjection(u_comp, v_comp);
+            drawVector({ start: commonOrigin, end: ghostUEnd }, 'rgba(59, 130, 246, 0.3)', null, true);
+            drawVector({ start: commonOrigin, end: ghostVEnd }, 'rgba(239, 68, 68, 0.3)', null, true);
+            drawAngle(u_comp, v_comp);
+            
+            // Draw original vectors
+            drawVector(vecU, '#3b82f6', 'u');
+            drawVector(vecV, '#ef4444', 'v');
+
+            if (showResultsOnCanvas) {
+                drawResultsOnCanvas(angleDeg, dot / 100);
+            }
+        }
+        
+        // --- MOUSE INTERACTIVITY ---
+        function getMousePos(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const mousePos = getMousePos(e);
+            const grabRadius = 15;
+
+            const points = [
+                { vec: 'U', point: 'start', pos: vecU.start },
+                { vec: 'U', point: 'end', pos: vecU.end },
+                { vec: 'V', point: 'start', pos: vecV.start },
+                { vec: 'V', point: 'end', pos: vecV.end },
+            ];
+
+            let closest = { dist: Infinity, point: null };
+            for(const p of points) {
+                const dist = Math.hypot(mousePos.x - p.pos.x, mousePos.y - p.pos.y);
+                if (dist < closest.dist) {
+                    closest = { dist, point: p };
+                }
+            }
+            
+            if (closest.dist < grabRadius) {
+                dragging = { vec: closest.point.vec, point: closest.point.point };
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            const mousePos = getMousePos(e);
+            
+            if (dragging.vec === 'U') {
+                vecU[dragging.point] = mousePos;
+            } else if (dragging.vec === 'V') {
+                vecV[dragging.point] = mousePos;
+            }
+            updateAndDraw();
+        });
+
+        const stopDragging = () => { dragging = null; };
+        canvas.addEventListener('mouseup', stopDragging);
+        canvas.addEventListener('mouseleave', stopDragging);
+        
+        // --- UI BUTTONS ---
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'tich-vo-huong.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+        
+        const showResultsCheckbox = document.getElementById('show-results-checkbox');
+        showResultsCheckbox.addEventListener('change', () => {
+            showResultsOnCanvas = showResultsCheckbox.checked;
+            updateAndDraw();
+        });
+        
+        const fullscreenCanvasBtn = document.getElementById('fullscreen-canvas-btn');
+        const canvasContainer = document.getElementById('canvas-container');
+
+        function toggleCanvasFullScreen() {
+            if (!document.fullscreenElement) {
+                canvasContainer.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode for canvas: ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        if (fullscreenCanvasBtn && canvasContainer) {
+            fullscreenCanvasBtn.addEventListener('click', toggleCanvasFullScreen);
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            // A brief delay to allow the container to resize before redrawing canvas
+            setTimeout(() => {
+                setupCanvas();
+            }, 50);
+        });
+
+
+        // --- INITIALIZATION ---
+        window.addEventListener('resize', setupCanvas);
+        window.addEventListener('load', () => {
+            setupCanvas();
+            
+            const fullscreenCanvasBtn = document.getElementById('fullscreen-canvas-btn');
+            // Hide the button if fullscreen is not available/allowed by permissions policy
+            if (fullscreenCanvasBtn && !document.fullscreenEnabled) {
+                fullscreenCanvasBtn.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+
