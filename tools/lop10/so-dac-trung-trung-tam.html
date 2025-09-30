@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Trực quan Số đặc trưng Thống kê</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js and boxplot plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot/build/index.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .math {
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .tab-active {
+            border-bottom-width: 2px;
+            border-color: #4f46e5; /* indigo-600 */
+            color: #4f46e5;
+        }
+        .tab-inactive {
+            color: #6b7280; /* gray-500 */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 lg:p-6">
+        <!-- Header -->
+        <header class="text-center mb-6 p-4 bg-white rounded-lg shadow-md">
+            <h1 class="text-4xl md:text-5xl font-bold text-indigo-600">Ứng dụng Trực quan: Các Số Đặc Trưng Thống Kê</h1>
+            <p class="text-2xl text-gray-600 mt-2">Chương trình Toán 10 - Sách Chân trời sáng tạo</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="space-y-6">
+            <!-- Input and Results Section -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Input Column -->
+                    <div class="w-full md:w-1/3">
+                        <h3 class="text-3xl font-bold text-gray-700 mb-4">1. Nhập Dữ liệu</h3>
+                        <!-- Tab buttons -->
+                        <div class="flex border-b border-gray-200 mb-4">
+                            <button id="tab-raw" class="px-4 py-2 -mb-px font-semibold text-2xl focus:outline-none tab-active">
+                                Mẫu số liệu
+                            </button>
+                            <button id="tab-freq" class="px-4 py-2 font-semibold text-2xl focus:outline-none tab-inactive">
+                                Bảng tần số
+                            </button>
+                        </div>
+                
+                        <!-- Tab content -->
+                        <div id="content-raw">
+                            <p class="text-xl text-gray-500 mb-4">Nhập các số, cách nhau bởi dấu phẩy (,), dấu chấm phẩy (;) hoặc khoảng trắng.</p>
+                            <textarea id="data-input" class="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-xl" placeholder="ví dụ: 5, 8, 8, 9, 10, 12, 15, 16, 20"></textarea>
+                        </div>
+                        <div id="content-freq" class="hidden">
+                            <p class="text-xl text-gray-500 mb-4">Nhập giá trị và tần số tương ứng, cách nhau bởi dấu phẩy, chấm phẩy hoặc khoảng trắng.</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <label for="values-input" class="block text-xl font-medium text-gray-700">Giá trị (<span class="math">x</span>)</label>
+                                    <textarea id="values-input" class="mt-1 w-full h-20 p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-xl" placeholder="ví dụ: 8, 9, 10, 11"></textarea>
+                                </div>
+                                <div>
+                                    <label for="frequencies-input" class="block text-xl font-medium text-gray-700">Tần số (<span class="math">n</span>)</label>
+                                    <textarea id="frequencies-input" class="mt-1 w-full h-20 p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-xl" placeholder="ví dụ: 3, 5, 2, 1"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="calculate-btn" class="mt-4 w-full bg-indigo-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition duration-200 shadow text-2xl">Tính toán & Vẽ Biểu đồ</button>
+                    </div>
+
+                    <!-- Results Column -->
+                    <div class="w-full md:w-2/3 md:pl-6 border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0">
+                        <h3 class="text-3xl font-bold text-gray-700 mb-4">2. Các Số Đặc Trưng Đo Xu Thế Trung Tâm</h3>
+                        <div id="results-container" class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                            <!-- Results will be injected here -->
+                            <p class="col-span-full text-gray-500 text-2xl">Kết quả tính toán sẽ hiển thị ở đây.</p>
+                        </div>
+                        <div id="analysis-container" class="mt-4 p-4 bg-gray-50 rounded-lg border">
+                             <h4 class="font-bold text-2xl text-gray-700">Nhận xét về phân bố</h4>
+                             <p id="analysis-text" class="text-xl mt-2 text-gray-600">...</p>
+                        </div>
+                         <!-- Practice Section -->
+                        <div id="practice-section" class="mt-6 hidden">
+                            <h3 class="text-3xl font-bold text-gray-700 mb-4">3. Bài tập vận dụng</h3>
+                            <div id="questions-container" class="space-y-4 text-xl bg-white p-4 rounded-lg border">
+                                <!-- Questions will be injected here -->
+                            </div>
+                            <button id="toggle-answers-btn" class="mt-4 bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition text-xl">
+                                Hiện Đáp án
+                            </button>
+                            <div id="answers-container" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg space-y-4 text-xl">
+                                <!-- Answers will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualizations Section -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                 <h3 class="text-3xl font-bold text-gray-700 mb-4">4. Trực quan hóa Dữ liệu</h3>
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-semibold text-2xl text-center mb-2">Biểu đồ Phân bố (Histogram)</h4>
+                        <div class="chart-container">
+                             <canvas id="histogramChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-2xl text-center mb-2">Biểu đồ Hộp (Box Plot)</h4>
+                        <div class="chart-container">
+                             <canvas id="boxPlotChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <h4 class="font-semibold text-2xl text-center mb-2">Trục số Minh họa</h4>
+                        <div class="chart-container !h-32">
+                             <canvas id="numberLineCanvas"></canvas>
+                        </div>
+                    </div>
+                 </div>
+                 <button id="export-btn" class="mt-6 w-full max-w-sm mx-auto block bg-green-500 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-green-600 transition duration-200 shadow text-2xl">Lưu Biểu đồ</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let histogramChart, boxPlotChart;
+        let currentInputMode = 'raw';
+
+        // --- UTILITY & STATS FUNCTIONS ---
+        function parseInput() {
+            if (currentInputMode === 'raw') {
+                const input = document.getElementById('data-input').value;
+                if (!input.trim()) return [];
+                return input.trim()
+                    .split(/[\s,;]+/)
+                    .filter(n => n !== "")
+                    .map(Number)
+                    .filter(n => !isNaN(n))
+                    .sort((a, b) => a - b);
+            } else { // 'freq' mode
+                const valuesInput = document.getElementById('values-input').value;
+                const frequenciesInput = document.getElementById('frequencies-input').value;
+
+                const values = valuesInput.trim().split(/[\s,;]+/).filter(n => n !== "").map(Number);
+                const frequencies = frequenciesInput.trim().split(/[\s,;]+/).filter(n => n !== "").map(Number);
+
+                if (values.length !== frequencies.length || values.length === 0) {
+                    return null; // indicates error
+                }
+
+                let data = [];
+                for (let i = 0; i < values.length; i++) {
+                    if (isNaN(values[i]) || isNaN(frequencies[i]) || !Number.isInteger(frequencies[i]) || frequencies[i] < 0) {
+                        return null; // invalid data
+                    }
+                    for (let j = 0; j < frequencies[i]; j++) {
+                        data.push(values[i]);
+                    }
+                }
+                return data.sort((a, b) => a - b);
+            }
+        }
+
+
+        function getMean(data) {
+            if (data.length === 0) return 0;
+            return data.reduce((a, b) => a + b, 0) / data.length;
+        }
+
+        function getMedian(sortedData) {
+            if (sortedData.length === 0) return 0;
+            const mid = Math.floor(sortedData.length / 2);
+            return sortedData.length % 2 !== 0 ? sortedData[mid] : (sortedData[mid - 1] + sortedData[mid]) / 2;
+        }
+
+        function getMode(data) {
+            if (data.length === 0) return [];
+            const frequency = {};
+            data.forEach(value => frequency[value] = (frequency[value] || 0) + 1);
+            
+            let maxFreq = 0;
+            for (const key in frequency) {
+                if (frequency[key] > maxFreq) {
+                    maxFreq = frequency[key];
+                }
+            }
+            if (maxFreq <= 1 && data.length > 1) return ["Không có"];
+
+            const modes = [];
+            for (const key in frequency) {
+                if (frequency[key] === maxFreq) {
+                    modes.push(Number(key));
+                }
+            }
+            return modes;
+        }
+        
+        function getQuartiles(sortedData) {
+            const n = sortedData.length;
+            if (n === 0) return { q1: 0, q2: 0, q3: 0 };
+
+            const median = getMedian(sortedData);
+            
+            const lowerHalf = sortedData.filter((_, i) => i < n / 2);
+            const upperHalf = sortedData.filter((_, i) => i >= Math.ceil(n / 2));
+            
+            const q1 = getMedian(lowerHalf);
+            const q3 = getMedian(upperHalf);
+
+            return { q1, q2: median, q3 };
+        }
+
+        // --- DRAWING FUNCTIONS ---
+        function drawHistogram(data) {
+            const ctx = document.getElementById('histogramChart').getContext('2d');
+            if (histogramChart) histogramChart.destroy();
+
+            if (data.length === 0) return;
+
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const numBins = Math.ceil(Math.sqrt(data.length));
+            const binWidth = (max - min) / numBins || 1;
+
+            const bins = Array(numBins).fill(0);
+            const labels = [];
+            
+            for (let i = 0; i < numBins; i++) {
+                const binStart = min + i * binWidth;
+                const binEnd = binStart + binWidth;
+                labels.push(`${binStart.toFixed(1)}-${binEnd.toFixed(1)}`);
+                data.forEach(val => {
+                    if ((i === numBins - 1 && val >= binStart && val <= binEnd) || (val >= binStart && val < binEnd)) {
+                        bins[i]++;
+                    }
+                });
+            }
+
+            histogramChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tần suất',
+                        data: bins,
+                        backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Tần suất' } },
+                        x: { title: { display: true, text: 'Giá trị' } }
+                    }
+                }
+            });
+        }
+        
+        function drawBoxPlot(stats, min, max) {
+            const ctx = document.getElementById('boxPlotChart').getContext('2d');
+            if (boxPlotChart) boxPlotChart.destroy();
+            if (!stats) return;
+
+            boxPlotChart = new Chart(ctx, {
+                type: 'boxplot',
+                data: {
+                    labels: ['Mẫu số liệu'],
+                    datasets: [{
+                        label: 'Phân bố',
+                        data: [{
+                            min: min,
+                            q1: stats.q1,
+                            median: stats.q2,
+                            q3: stats.q3,
+                            max: max
+                        }],
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1,
+                        itemStyle: 'circle'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                         x: { display: false },
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        function drawNumberLine(data, stats) {
+            const canvas = document.getElementById('numberLineCanvas');
+            const ctx = canvas.getContext('2d');
+            const { width, height } = canvas;
+            ctx.clearRect(0, 0, width, height);
+
+            if (data.length === 0) return;
+            
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const padding = 40;
+            const range = max - min || 1;
+
+            const toCanvasX = (val) => padding + ((val - min) / range) * (width - 2 * padding);
+            
+            // Draw axis line
+            const y = height * 0.4;
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(width - padding, y);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw min/max ticks
+            ctx.textAlign = 'center';
+            ctx.font = '20px "Be Vietnam Pro"';
+            ctx.fillText(min.toFixed(1), padding, y + 30);
+            ctx.fillText(max.toFixed(1), width - padding, y + 30);
+
+            // Draw stat points
+            const statItems = [
+                { label: 'TB', value: stats.mean, color: '#ef4444' },
+                { label: 'Mốt', value: stats.mode[0], color: '#f97316' }, // Only first mode
+                { label: 'Q1', value: stats.q1, color: '#8b5cf6' },
+                { label: 'Q2 (TV)', value: stats.q2, color: '#3b82f6' },
+                { label: 'Q3', value: stats.q3, color: '#8b5cf6' }
+            ];
+
+            statItems.forEach((item, index) => {
+                if (typeof item.value !== 'number') return;
+                const x = toCanvasX(item.value);
+                const itemY = y - 25 - (index % 2) * 40;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, itemY + 10);
+                ctx.strokeStyle = item.color;
+                ctx.stroke();
+                
+                ctx.fillText(`${item.label}: ${item.value.toFixed(1)}`, x, itemY - 10);
+            });
+        }
+        
+        // --- MAIN LOGIC ---
+        function calculateAndDisplay() {
+            const data = parseInput();
+            const resultsContainer = document.getElementById('results-container');
+            const analysisText = document.getElementById('analysis-text');
+            const practiceSection = document.getElementById('practice-section');
+
+            if (data === null) {
+                resultsContainer.innerHTML = '<p class="col-span-full text-red-500 text-2xl">Lỗi: Số lượng giá trị và tần số không khớp hoặc dữ liệu không hợp lệ.</p>';
+                practiceSection.classList.add('hidden');
+                return;
+            }
+
+            if (data.length === 0) {
+                resultsContainer.innerHTML = '<p class="col-span-full text-red-500 text-2xl">Dữ liệu không hợp lệ hoặc rỗng.</p>';
+                analysisText.textContent = '...';
+                practiceSection.classList.add('hidden');
+                if(histogramChart) histogramChart.destroy();
+                if(boxPlotChart) boxPlotChart.destroy();
+                const nlCtx = document.getElementById('numberLineCanvas').getContext('2d');
+                nlCtx.clearRect(0, 0, nlCtx.canvas.width, nlCtx.canvas.height);
+                return;
+            }
+
+            const mean = getMean(data);
+            const median = getMedian(data);
+            const mode = getMode(data);
+            const quartiles = getQuartiles(data);
+            const min = data[0];
+            const max = data[data.length - 1];
+
+            const allStats = { ...quartiles, mean, mode };
+
+            resultsContainer.innerHTML = `
+                <div class="p-3 bg-red-50 rounded-lg"><p class="font-bold text-2xl">Số Trung Bình</p><p class="font-mono text-3xl">${mean.toFixed(2)}</p></div>
+                <div class="p-3 bg-blue-50 rounded-lg"><p class="font-bold text-2xl">Trung Vị (Q2)</p><p class="font-mono text-3xl">${median.toFixed(2)}</p></div>
+                <div class="p-3 bg-orange-50 rounded-lg"><p class="font-bold text-2xl">Mốt</p><p class="font-mono text-3xl">${mode.join(', ')}</p></div>
+                <div class="p-3 bg-purple-50 rounded-lg"><p class="font-bold text-2xl">Tứ Phân Vị</p><p class="font-mono text-2xl">Q1: ${quartiles.q1.toFixed(2)}<br>Q3: ${quartiles.q3.toFixed(2)}</p></div>
+            `;
+            
+            let analysisContent = "";
+            if (mean > median) {
+                analysisContent = "Số trung bình lớn hơn trung vị, cho thấy mẫu số liệu có xu hướng lệch về bên phải (có các giá trị lớn bất thường kéo trung bình lên).";
+            } else if (mean < median) {
+                analysisContent = "Số trung bình nhỏ hơn trung vị, cho thấy mẫu số liệu có xu hướng lệch về bên trái (có các giá trị nhỏ bất thường kéo trung bình xuống).";
+            } else {
+                analysisContent = "Số trung bình và trung vị xấp xỉ nhau, cho thấy mẫu số liệu có xu hướng phân bố đối xứng.";
+            }
+            analysisText.textContent = analysisContent;
+
+            // --- Populate and show the practice section ---
+            const questionsContainer = document.getElementById('questions-container');
+            const answersContainer = document.getElementById('answers-container');
+
+            const q1_text = `<p><strong>Câu 1:</strong> Dựa vào mẫu số liệu đã cho, hãy tính số trung bình, trung vị (Q2) và mốt.</p>`;
+            const a1_text = `<p><strong>Đáp án 1:</strong><br> - Số trung bình: <span class="font-mono">${mean.toFixed(2)}</span><br> - Trung vị (Q2): <span class="font-mono">${median.toFixed(2)}</span><br> - Mốt: <span class="font-mono">${mode.join(', ')}</span></p>`;
+
+            const q2_text = `<p><strong>Câu 2:</strong> Xác định các tứ phân vị Q1 và Q3 của mẫu số liệu.</p>`;
+            const a2_text = `<p><strong>Đáp án 2:</strong><br> - Tứ phân vị thứ nhất (Q1): <span class="font-mono">${quartiles.q1.toFixed(2)}</span><br> - Tứ phân vị thứ ba (Q3): <span class="font-mono">${quartiles.q3.toFixed(2)}</span></p>`;
+
+            const q3_text = `<p><strong>Câu 3:</strong> So sánh số trung bình và trung vị. Mẫu số liệu này có xu hướng phân bố đối xứng, lệch trái hay lệch phải? Tại sao?</p>`;
+            const a3_text = `<p><strong>Đáp án 3:</strong> ${analysisContent}</p>`;
+
+            questionsContainer.innerHTML = `${q1_text}<hr class="my-2">${q2_text}<hr class="my-2">${q3_text}`;
+            answersContainer.innerHTML = `${a1_text}<hr class="my-2">${a2_text}<hr class="my-2">${a3_text}`;
+            
+            practiceSection.classList.remove('hidden');
+
+            const toggleBtn = document.getElementById('toggle-answers-btn');
+            answersContainer.classList.add('hidden');
+            toggleBtn.textContent = 'Hiện Đáp án';
+            // --- End of practice section population ---
+
+            drawHistogram(data);
+            drawBoxPlot(quartiles, min, max);
+            drawNumberLine(data, allStats);
+        }
+        
+        // --- EVENT LISTENERS ---
+        document.getElementById('calculate-btn').addEventListener('click', calculateAndDisplay);
+        
+        document.getElementById('export-btn').addEventListener('click', () => {
+             const tempCanvas = document.createElement('canvas');
+             const histCanvas = document.getElementById('histogramChart');
+             const boxCanvas = document.getElementById('boxPlotChart');
+             const lineCanvas = document.getElementById('numberLineCanvas');
+
+             tempCanvas.width = Math.max(histCanvas.width, boxCanvas.width, lineCanvas.width);
+             tempCanvas.height = histCanvas.height + boxCanvas.height + lineCanvas.height + 60; // Add padding
+             const tempCtx = tempCanvas.getContext('2d');
+
+             // Add white background and title
+             tempCtx.fillStyle = 'white';
+             tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+             tempCtx.fillStyle = '#333';
+             tempCtx.font = 'bold 30px "Be Vietnam Pro"';
+             tempCtx.textAlign = 'center';
+             tempCtx.fillText('Báo cáo Thống kê', tempCanvas.width / 2, 40);
+             
+             // Draw charts onto the temp canvas
+             tempCtx.drawImage(histCanvas, 0, 60);
+             tempCtx.drawImage(boxCanvas, 0, 60 + histCanvas.height);
+             tempCtx.drawImage(lineCanvas, 0, 60 + histCanvas.height + boxCanvas.height);
+             
+             const link = document.createElement('a');
+             link.download = 'bao-cao-thong-ke.png';
+             link.href = tempCanvas.toDataURL('image/png');
+             link.click();
+        });
+
+        const tabRaw = document.getElementById('tab-raw');
+        const tabFreq = document.getElementById('tab-freq');
+        const contentRaw = document.getElementById('content-raw');
+        const contentFreq = document.getElementById('content-freq');
+
+        tabRaw.addEventListener('click', () => {
+            currentInputMode = 'raw';
+            contentRaw.classList.remove('hidden');
+            contentFreq.classList.add('hidden');
+            tabRaw.classList.add('tab-active');
+            tabRaw.classList.remove('tab-inactive');
+            tabFreq.classList.remove('tab-active');
+            tabFreq.classList.add('tab-inactive');
+        });
+
+        tabFreq.addEventListener('click', () => {
+            currentInputMode = 'freq';
+            contentFreq.classList.remove('hidden');
+            contentRaw.classList.add('hidden');
+            tabFreq.classList.add('tab-active');
+            tabFreq.classList.remove('tab-inactive');
+            tabRaw.classList.remove('tab-active');
+            tabRaw.classList.add('tab-inactive');
+        });
+
+        const toggleAnswersBtn = document.getElementById('toggle-answers-btn');
+        toggleAnswersBtn.addEventListener('click', () => {
+            const answersContainer = document.getElementById('answers-container');
+            const isHidden = answersContainer.classList.toggle('hidden');
+            toggleAnswersBtn.textContent = isHidden ? 'Hiện Đáp án' : 'Ẩn Đáp án';
+        });
+
+        window.addEventListener('load', () => {
+            document.getElementById('data-input').value = "5, 8, 8, 9, 10, 12, 15, 16, 20";
+            document.getElementById('values-input').value = "5, 8, 9, 10, 12, 15, 16, 20";
+            document.getElementById('frequencies-input').value = "1, 2, 1, 1, 1, 1, 1, 1";
+            calculateAndDisplay();
+        });
+    </script>
+</body>
+</html>
+
