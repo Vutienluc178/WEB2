@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Máy Tính Giải Tam Giác</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Be Vietnam Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Apply the font to the whole page */
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        /* Hide number input spinners for a cleaner look */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Application Container -->
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- Header with Author's Name -->
+        <header class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">Máy Tính Giải Tam Giác</h1>
+            <p class="text-sm text-gray-500">Vũ Tiến Lực - Trường THPT Nguyễn Hữu Cảnh</p>
+        </header>
+
+        <!-- Main content grid: visualization on the left, controls on the right -->
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            
+            <!-- Left Column: Visualization -->
+            <div class="lg:col-span-3 bg-white p-4 rounded-lg shadow-lg flex items-center justify-center min-h-[300px] md:min-h-[500px]">
+                <canvas id="triangleCanvas" class="w-full h-full"></canvas>
+            </div>
+
+            <!-- Right Column: Controls & Data -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">Nhập Dữ Liệu</h2>
+                <p class="text-sm text-gray-500 mb-4">Nhập chính xác 3 giá trị (cạnh hoặc góc). Để trống các ô không xác định.</p>
+
+                <!-- Input fields for sides and angles -->
+                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <!-- Sides -->
+                    <div>
+                        <label for="sideA" class="block text-sm font-medium text-gray-700">Cạnh a</label>
+                        <input type="number" id="sideA" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="Đối diện góc A">
+                    </div>
+                    <!-- Angles -->
+                     <div>
+                        <label for="angleA" class="block text-sm font-medium text-gray-700">Góc A (°)</label>
+                        <input type="number" id="angleA" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="Đơn vị độ">
+                    </div>
+                    <div>
+                        <label for="sideB" class="block text-sm font-medium text-gray-700">Cạnh b</label>
+                        <input type="number" id="sideB" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="Đối diện góc B">
+                    </div>
+                     <div>
+                        <label for="angleB" class="block text-sm font-medium text-gray-700">Góc B (°)</label>
+                        <input type="number" id="angleB" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="Đơn vị độ">
+                    </div>
+                    <div>
+                        <label for="sideC" class="block text-sm font-medium text-gray-700">Cạnh c</label>
+                        <input type="number" id="sideC" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="Đối diện góc C">
+                    </div>
+                    <div>
+                        <label for="angleC" class="block text-sm font-medium text-gray-700">Góc C (°)</label>
+                        <input type="number" id="angleC" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="Đơn vị độ">
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-4 mt-6">
+                    <button id="solveBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Giải Tam Giác</button>
+                    <button id="resetBtn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Làm Mới</button>
+                </div>
+
+                <!-- Results Display -->
+                <div id="results" class="mt-6 pt-4 border-t">
+                     <h2 class="text-xl font-bold mb-3">KẾT QUẢ</h2>
+                     <p id="errorMsg" class="text-red-500 text-sm font-semibold mb-2"></p>
+                    <div class="space-y-2 text-gray-700 text-sm md:text-base">
+                        <p>📐 <strong>Góc:</strong> A=<span id="resAngleA">?</span>°, B=<span id="resAngleB">?</span>°, C=<span id="resAngleC">?</span>°</p>
+                        <p>📏 <strong>Cạnh:</strong> a=<span id="resSideA">?</span>, b=<span id="resSideB">?</span>, c=<span id="resSideC">?</span></p>
+                        <p>🔵 <strong>Bán kính:</strong> Nội tiếp r=<span id="resInradius">?</span>, Ngoại tiếp R=<span id="resCircumradius">?</span></p>
+                        <p>↕️ <strong>Đường cao:</strong> h<sub>a</sub>=<span id="resHa">?</span>, h<sub>b</sub>=<span id="resHb">?</span>, h<sub>c</sub>=<span id="resHc">?</span></p>
+                        <p>↔️ <strong>Trung tuyến:</strong> m<sub>a</sub>=<span id="resMa">?</span>, m<sub>b</sub>=<span id="resMb">?</span>, m<sub>c</sub>=<span id="resMc">?</span></p>
+                        <p>↗️ <strong>Phân giác:</strong> l<sub>a</sub>=<span id="resLa">?</span>, l<sub>b</sub>=<span id="resLb">?</span>, l<sub>c</sub>=<span id="resLc">?</span></p>
+                        <p>🌐 <strong>Diện tích:</strong> S=<span id="resArea">?</span> | <strong>Chu vi:</strong> P=<span id="resPerimeter">?</span></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const sideAInput = document.getElementById('sideA');
+            const sideBInput = document.getElementById('sideB');
+            const sideCInput = document.getElementById('sideC');
+            const angleAInput = document.getElementById('angleA');
+            const angleBInput = document.getElementById('angleB');
+            const angleCInput = document.getElementById('angleC');
+
+            const solveBtn = document.getElementById('solveBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            const resAngleA = document.getElementById('resAngleA'), resAngleB = document.getElementById('resAngleB'), resAngleC = document.getElementById('resAngleC');
+            const resSideA = document.getElementById('resSideA'), resSideB = document.getElementById('resSideB'), resSideC = document.getElementById('resSideC');
+            const resInradius = document.getElementById('resInradius'), resCircumradius = document.getElementById('resCircumradius');
+            const resHa = document.getElementById('resHa'), resHb = document.getElementById('resHb'), resHc = document.getElementById('resHc');
+            const resMa = document.getElementById('resMa'), resMb = document.getElementById('resMb'), resMc = document.getElementById('resMc');
+            const resLa = document.getElementById('resLa'), resLb = document.getElementById('resLb'), resLc = document.getElementById('resLc');
+            const resArea = document.getElementById('resArea'), resPerimeter = document.getElementById('resPerimeter');
+            const errorMsg = document.getElementById('errorMsg');
+
+            const canvas = document.getElementById('triangleCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            let lastSolvedTriangle = null; // Store the last valid triangle to redraw on resize
+
+            // --- Utility Functions ---
+            const toRad = (deg) => deg * Math.PI / 180;
+            const toDeg = (rad) => rad * 180 / Math.PI;
+            const F = (val) => val ? parseFloat(val) : null; // Parse float or return null
+
+            // --- Core Functions ---
+
+            /**
+             * Sets up the canvas size to match its container and attaches event listeners.
+             */
+            const init = () => {
+                setupCanvas();
+                drawInitialMessage();
+                solveBtn.addEventListener('click', solveTriangle);
+                resetBtn.addEventListener('click', resetAll);
+                window.addEventListener('resize', () => {
+                    setupCanvas();
+                    if (lastSolvedTriangle) {
+                        drawTriangle(lastSolvedTriangle);
+                    } else {
+                        drawInitialMessage();
+                    }
+                });
+            };
+
+            /**
+             * Adjusts canvas resolution to its display size.
+             */
+            const setupCanvas = () => {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            };
+
+            /**
+             * Draws the initial helper text on the canvas.
+             */
+            const drawInitialMessage = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.fillStyle = "#6b7280";
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '16px "Be Vietnam Pro"';
+                ctx.fillText('Nhập dữ liệu và nhấn "Giải" để vẽ tam giác', canvas.width / 2, canvas.height / 2);
+                ctx.restore();
+            };
+
+            /**
+             * Resets all input fields, results, and the canvas.
+             */
+            const resetAll = () => {
+                [sideAInput, sideBInput, sideCInput, angleAInput, angleBInput, angleCInput].forEach(input => input.value = '');
+                [resAngleA, resAngleB, resAngleC, resSideA, resSideB, resSideC, resInradius, resCircumradius, resHa, resHb, resHc, resMa, resMb, resMc, resLa, resLb, resLc, resArea, resPerimeter].forEach(res => res.textContent = '?');
+                errorMsg.textContent = '';
+                lastSolvedTriangle = null;
+                drawInitialMessage();
+            };
+            
+            /**
+             * Displays an error message to the user.
+             */
+            const displayError = (message) => {
+                errorMsg.textContent = `Lỗi: ${message}`;
+                lastSolvedTriangle = null;
+                drawInitialMessage();
+            };
+
+            /**
+             * Main controller function to read inputs and determine the solving case.
+             */
+            const solveTriangle = () => {
+                errorMsg.textContent = '';
+                let a = F(sideAInput.value), b = F(sideBInput.value), c = F(sideCInput.value);
+                let A = F(angleAInput.value), B = F(angleBInput.value), C = F(angleCInput.value);
+
+                const sides = [a, b, c].filter(v => v > 0);
+                const angles = [A, B, C].filter(v => v > 0);
+
+                if (sides.length + angles.length !== 3) {
+                    return displayError('Vui lòng nhập chính xác 3 giá trị.');
+                }
+                
+                if (angles.reduce((sum, angle) => sum + angle, 0) >= 180) {
+                    return displayError("Tổng các góc đã cho phải nhỏ hơn 180°.");
+                }
+
+                try {
+                    // SSS Case: Three sides known
+                    if (sides.length === 3) {
+                        [a, b, c] = sides;
+                        if (a + b <= c || a + c <= b || b + c <= a) throw new Error("Các cạnh không tạo thành tam giác hợp lệ.");
+                        A = toDeg(Math.acos((b * b + c * c - a * a) / (2 * b * c)));
+                        B = toDeg(Math.acos((a * a + c * c - b * b) / (2 * a * c)));
+                        C = 180 - A - B;
+                    }
+                    // AAS/ASA Case: Two angles and one side known
+                    else if (angles.length === 2) {
+                        if (A && B) C = 180 - A - B;
+                        else if (A && C) B = 180 - A - C;
+                        else if (B && C) A = 180 - B - C;
+
+                        let Ar = toRad(A), Br = toRad(B), Cr = toRad(C);
+                        
+                        if (a) {
+                            b = a * Math.sin(Br) / Math.sin(Ar);
+                            c = a * Math.sin(Cr) / Math.sin(Ar);
+                        } else if (b) {
+                            a = b * Math.sin(Ar) / Math.sin(Br);
+                            c = b * Math.sin(Cr) / Math.sin(Br);
+                        } else { // c is known
+                            a = c * Math.sin(Ar) / Math.sin(Cr);
+                            b = c * Math.sin(Br) / Math.sin(Cr);
+                        }
+                    }
+                    // SAS/SSA Case: Two sides and one angle known
+                    else if (sides.length === 2) {
+                        // SAS Case
+                        if ((a && b && C) || (a && c && B) || (b && c && A)) {
+                            let Ar = toRad(A), Br = toRad(B), Cr = toRad(C);
+                            if (C) {
+                                c = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(Cr));
+                                Ar = Math.asin(a * Math.sin(Cr) / c);
+                                A = toDeg(Ar);
+                                B = 180 - A - C;
+                            } else if (B) {
+                                b = Math.sqrt(a * a + c * c - 2 * a * c * Math.cos(Br));
+                                Ar = Math.asin(a * Math.sin(Br) / b);
+                                A = toDeg(Ar);
+                                C = 180 - A - B;
+                            } else { // A is known
+                                a = Math.sqrt(b * b + c * c - 2 * b * c * Math.cos(Ar));
+                                Br = Math.asin(b * Math.sin(Ar) / a);
+                                B = toDeg(Br);
+                                C = 180 - A - B;
+                            }
+                        } 
+                        // SSA Case (ambiguous) - solves for one valid case
+                        else {
+                            let knownAngle, sideOpposite, sideAdjacent, rA, rB, rC;
+                            if (A) { knownAngle = A; sideOpposite = a; sideAdjacent = b ? b : c; }
+                            else if (B) { knownAngle = B; sideOpposite = b; sideAdjacent = a ? a : c; }
+                            else { knownAngle = C; sideOpposite = c; sideAdjacent = a ? a : b; }
+
+                            let knownAngleR = toRad(knownAngle);
+                            let h = sideAdjacent * Math.sin(knownAngleR);
+                            if (sideOpposite < h - 1e-9) throw new Error("Cạnh đối nhỏ hơn đường cao, không có tam giác.");
+
+                            let angleAdjOppRad = Math.asin(sideAdjacent * Math.sin(knownAngleR) / sideOpposite);
+                            let angleAdjOpp = toDeg(angleAdjOppRad);
+
+                            let thirdAngle = 180 - knownAngle - angleAdjOpp;
+                            if(thirdAngle < 0) throw new Error("Không thể tạo tam giác hợp lệ với các giá trị này (trường hợp góc tù SSA).");
+
+
+                            if (A) {
+                                rC = c ? angleAdjOppRad : toRad(thirdAngle);
+                                rB = b ? angleAdjOppRad : toRad(thirdAngle);
+                                C = toDeg(rC); B = toDeg(rB);
+                                c = a * Math.sin(rC) / Math.sin(toRad(A));
+                                b = a * Math.sin(rB) / Math.sin(toRad(A));
+                            } else if (B) {
+                                rC = c ? angleAdjOppRad : toRad(thirdAngle);
+                                rA = a ? angleAdjOppRad : toRad(thirdAngle);
+                                C = toDeg(rC); A = toDeg(rA);
+                                c = b * Math.sin(rC) / Math.sin(toRad(B));
+                                a = b * Math.sin(rA) / Math.sin(toRad(B));
+                            } else { // C
+                                rB = b ? angleAdjOppRad : toRad(thirdAngle);
+                                rA = a ? angleAdjOppRad : toRad(thirdAngle);
+                                B = toDeg(rB); A = toDeg(rA);
+                                b = c * Math.sin(rB) / Math.sin(toRad(C));
+                                a = c * Math.sin(rA) / Math.sin(toRad(C));
+                            }
+                        }
+                    }
+                    
+                    if ([a,b,c,A,B,C].some(v => v<=0 || isNaN(v))) {
+                        throw new Error("Không thể giải được. Kiểm tra lại dữ liệu đầu vào.");
+                    }
+                    
+                    lastSolvedTriangle = { a, b, c, A, B, C };
+                    calculateAndDisplayAll(lastSolvedTriangle);
+
+                } catch (e) {
+                    displayError(e.message);
+                }
+            };
+            
+            /**
+             * Calculates all derived properties and updates the UI.
+             */
+            const calculateAndDisplayAll = (tri) => {
+                const { a, b, c, A, B, C } = tri;
+                const s = (a + b + c) / 2; // semi-perimeter
+                const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+                const perimeter = a + b + c;
+
+                const R = a / (2 * Math.sin(toRad(A))); // Circumradius
+                const r = area / s; // Inradius
+
+                const ha = 2 * area / a, hb = 2 * area / b, hc = 2 * area / c;
+                const ma = 0.5 * Math.sqrt(2 * b * b + 2 * c * c - a * a);
+                const mb = 0.5 * Math.sqrt(2 * a * a + 2 * c * c - b * b);
+                const mc = 0.5 * Math.sqrt(2 * a * a + 2 * b * b - c * c);
+                const la = (2 / (b + c)) * Math.sqrt(b * c * s * (s - a));
+                const lb = (2 / (a + c)) * Math.sqrt(a * c * s * (s - b));
+                const lc = (2 / (a + b)) * Math.sqrt(a * b * s * (s - c));
+
+                // Display results formatted to 2 decimal places
+                const dp = 2; 
+                resSideA.textContent = a.toFixed(dp); resSideB.textContent = b.toFixed(dp); resSideC.textContent = c.toFixed(dp);
+                resAngleA.textContent = A.toFixed(dp); resAngleB.textContent = B.toFixed(dp); resAngleC.textContent = C.toFixed(dp);
+                resArea.textContent = area.toFixed(dp); resPerimeter.textContent = perimeter.toFixed(dp);
+                resInradius.textContent = r.toFixed(dp); resCircumradius.textContent = R.toFixed(dp);
+                resHa.textContent = ha.toFixed(dp); resHb.textContent = hb.toFixed(dp); resHc.textContent = hc.toFixed(dp);
+                resMa.textContent = ma.toFixed(dp); resMb.textContent = mb.toFixed(dp); resMc.textContent = mc.toFixed(dp);
+                resLa.textContent = la.toFixed(dp); resLb.textContent = lb.toFixed(dp); resLc.textContent = lc.toFixed(dp);
+                
+                drawTriangle(tri);
+            }
+            
+            /**
+             * Draws the solved triangle on the canvas, scaled and centered.
+             */
+            const drawTriangle = (tri) => {
+                const { a, b, c, A } = tri;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Calculate vertex coordinates in a local system (C at top)
+                const pA = { x: 0, y: 0 };
+                const pB = { x: c, y: 0 };
+                const pC = { x: b * Math.cos(toRad(A)), y: b * Math.sin(toRad(A)) };
+
+                const points = [pA, pB, pC];
+                const minX = Math.min(...points.map(p=>p.x)), maxX = Math.max(...points.map(p=>p.x));
+                const minY = Math.min(...points.map(p=>p.y)), maxY = Math.max(...points.map(p=>p.y));
+
+                const triWidth = maxX - minX;
+                const triHeight = maxY - minY;
+                
+                // Determine scale to fit canvas with padding
+                const padding = 50;
+                const scale = Math.min((canvas.width - padding * 2) / triWidth, (canvas.height - padding * 2) / triHeight);
+                
+                // Calculate offset to center the scaled triangle
+                const offsetX = (canvas.width - triWidth * scale) / 2 - minX * scale;
+                const offsetY = (canvas.height - triHeight * scale) / 2 - minY * scale;
+
+                // Transform points to canvas coordinates (inverting Y-axis)
+                const T = (p) => ({ x: p.x * scale + offsetX, y: canvas.height - (p.y * scale + offsetY) });
+                const finalA = T(pA), finalB = T(pB), finalC = T(pC);
+                
+                // Draw Triangle lines
+                ctx.beginPath();
+                ctx.moveTo(finalA.x, finalA.y);
+                ctx.lineTo(finalB.x, finalB.y);
+                ctx.lineTo(finalC.x, finalC.y);
+                ctx.closePath();
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 6; // Increased from 3
+                ctx.stroke();
+                
+                // --- Draw Labels ---
+                ctx.fillStyle = "#1f2937";
+                ctx.font = 'bold 28px "Be Vietnam Pro"'; // Increased from 14px
+                ctx.textAlign = 'center';
+                
+                // Vertices (A, B, C)
+                ctx.fillText('A', finalA.x, finalA.y + 40); // Increased offset
+                ctx.fillText('B', finalB.x, finalB.y + 40); // Increased offset
+                ctx.fillText('C', finalC.x, finalC.y - 20); // Increased offset
+                
+                // Sides (a, b, c)
+                ctx.save();
+                ctx.fillStyle = '#374151';
+                ctx.font = 'italic 28px "Be Vietnam Pro"'; // Increased from 14px
+                ctx.textBaseline = 'middle';
+                
+                const placeLabel = (p1, p2, text, offset) => {
+                    ctx.save();
+                    ctx.translate((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+                    ctx.rotate(Math.atan2(p2.y - p1.y, p2.x - p1.x));
+                    ctx.fillText(text, 0, offset);
+                    ctx.restore();
+                };
+                
+                placeLabel(finalB, finalC, `a=${a.toFixed(1)}`, -16); // Increased offset
+                placeLabel(finalA, finalC, `b=${b.toFixed(1)}`, -16); // Increased offset
+                placeLabel(finalA, finalB, `c=${c.toFixed(1)}`, 30); // Increased offset
+                
+                ctx.restore();
+            };
+
+            // Start the application
+            init();
+        });
+    </script>
+
+</body>
+</html>
