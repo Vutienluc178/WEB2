@@ -3,33 +3,77 @@
     "group": "🔢 Lớp 10",
     "items": [
       {
-        "title": "ĐỊNH NGHĨA VECTO",
-        "path": "lop10/hinh-hoc-vecto.html"
-      },
-            {
-        "title": "GIẢI TAM GIÁC",
-        "path": "lop10/hinh-hoc/GIẢI TAM GIÁC/giaitamgiac.html"
-      },
-      {
-        "title": "CÁC PHÉP TOÁN TẬP HỢP",
-        "path": "lop10/đại số -CÁC PHÉP TOÁN TRÊN TẬP HỢP.html"
-      },
-      {
-        "title": "Giải phương trình bậc hai",
-        "path": "lop10/pt-bac-hai.html"
-      },
-      {
-        "title": "Hệ phương trình 2×2",
-        "path": "lop10/he-pt-2x2.html"
-      },
-      {
-        "title": "Đồ thị y = ax + b",
-        "path": "lop10/ham-bac-nhat-plot.html"
-      },
-      {
-        "title": "BIỂU DIỄN HỆ BPT",
-        "path": "lop10/HE-BPTB1-2AN.html"
-      }
+    "title": "I-1: Mệnh đề",
+    "path": "lop10/menh-de.html"
+  },
+  {
+    "title": "I-2: Tập hợp",
+    "path": "lop10/tap-hop.html"
+  },
+  {
+    "title": "I-3: Các phép toán trên tập hợp",
+    "path": "lop10/đại số -CÁC PHÉP TOÁN TRÊN TẬP HỢP.html"
+  },
+  {
+    "title": "II-1: Bất phương trình bậc nhất hai ẩn",
+    "path": "lop10/bpt-bac-nhat-hai-an.html"
+  },
+  {
+    "title": "II-2: Hệ bất phương trình bậc nhất hai ẩn",
+    "path": "lop10/HE-BPTB1-2AN.html"
+  },
+  {
+    "title": "III-1: Hàm số và đồ thị",
+    "path": "lop10/ham-so-va-do-thi.html"
+  },
+  {
+    "title": "III-2: Hàm số bậc hai",
+    "path": "lop10/ham-so-bac-hai.html"
+  },
+  {
+    "title": "IV-1: Giá trị lượng giác của một góc từ 0° đến 180°",
+    "path": "lop10/gia-tri-luong-giac.html"
+  },
+  {
+    "title": "IV-2: Định lí cosin và định lí sin",
+    "path": "lop10/dinh-li-cosin-sin.html"
+  },
+  {
+    "title": "IV-3: Giải tam giác và ứng dụng thực tế",
+    "path": "lop10/hinh-hoc/GIẢI TAM GIÁC/giaitamgiac.html"
+  },
+  {
+    "title": "V-1: Khái niệm vectơ",
+    "path": "lop10/hinh-hoc-vecto.html"
+  },
+  {
+    "title": "V-2: Tổng và hiệu của hai vectơ",
+    "path": "lop10/tong-hieu-vecto.html"
+  },
+  {
+    "title": "V-3: Tích của một số với một vectơ",
+    "path": "lop10/tich-so-vecto.html"
+  },
+  {
+    "title": "V-4: Tích vô hướng của hai vectơ",
+    "path": "lop10/tich-vo-huong-vecto.html"
+  },
+  {
+    "title": "VI-1: Số gần đúng và sai số",
+    "path": "lop10/so-gan-dung-sai-so.html"
+  },
+  {
+    "title": "VI-2: Mô tả biểu diễn dữ liệu trên các bảng và biểu đồ",
+    "path": "lop10/bieu-dien-du-lieu.html"
+  },
+  {
+    "title": "VI-3: Các số đặc trưng đo xu thế trung tâm của mẫu số liệu",
+    "path": "lop10/so-dac-trung-trung-tam.html"
+  },
+  {
+    "title": "VI-4: Các số đặc trưng đo mức độ phân tán của mẫu số liệu",
+    "path": "lop10/so-dac-trung-phan-tan.html"
+  }
     ]
   },
   {
