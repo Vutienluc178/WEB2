@@ -96,6 +96,15 @@
                         <input type="checkbox" id="shade-toggle" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <label for="shade-toggle" class="ml-2 block text-sm text-gray-900">Gạch bỏ phần ngoài miền nghiệm</label>
                     </div>
+                    
+                    <!-- Thanh trượt hàm mục tiêu -->
+                    <div id="objective-slider-container" class="mt-6 hidden">
+                        <h3 class="text-lg font-bold mb-2 text-blue-600">3. Di chuyển đường mục tiêu</h3>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="objective-slider" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled>
+                            <span id="objective-value-display" class="font-mono text-sm w-24 text-center">F = ?</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Vùng kết quả -->
@@ -134,7 +143,8 @@
             optimalPoints: [],
             isUnbounded: false,
             hasSolution: false,
-            showShadedArea: false
+            showShadedArea: false,
+            currentFValue: null
         };
 
         const colors = ['#3b82f6', '#ef4444', '#10b981', '#f97316', '#8b5cf6', '#ec4899'];
@@ -165,36 +175,7 @@
 
         function drawGrid() {
             ctx.clearRect(0, 0, width, height);
-            ctx.strokeStyle = '#e5e7eb';
-            ctx.lineWidth = 1;
-
-            // Lưới dọc
-            for (let i = originX + scale; i < width; i += scale) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, height);
-                ctx.stroke();
-            }
-            for (let i = originX - scale; i > 0; i -= scale) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, height);
-                ctx.stroke();
-            }
-            // Lưới ngang
-            for (let i = originY + scale; i < height; i += scale) {
-                ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(width, i);
-                ctx.stroke();
-            }
-            for (let i = originY - scale; i > 0; i -= scale) {
-                ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(width, i);
-                ctx.stroke();
-            }
-
+            
             // Trục tọa độ
             ctx.strokeStyle = '#4b5563';
             ctx.lineWidth = 2;
@@ -500,9 +481,9 @@
                 }
             });
             
-            // Vẽ đường đồng mức tối ưu
-            if (state.optimalValue !== null && (state.objective.p !== 0 || state.objective.q !== 0)) {
-                drawLine({a: state.objective.p, b: state.objective.q, c: state.optimalValue}, '#8b5cf6', true);
+            // Vẽ đường mục tiêu di động
+            if (state.currentFValue !== null && (state.objective.p !== 0 || state.objective.q !== 0)) {
+                drawLine({a: state.objective.p, b: state.objective.q, c: state.currentFValue}, '#8b5cf6', true);
             }
 
             // Vẽ các đỉnh khả thi
@@ -554,10 +535,12 @@
                 state.regionPoints = [];
                 state.feasibleVertices = [];
                 state.optimalValue = null;
+                state.currentFValue = null;
+                document.getElementById('objective-slider-container').classList.add('hidden');
+                document.getElementById('objective-slider').disabled = true;
                 return;
             }
 
-            // state.constraints = constraints; // Dòng này không cần nữa
             state.objective = parseObjective(document.getElementById('objective-input').value);
             state.objectiveType = document.getElementById('objective-type').value;
 
@@ -631,6 +614,7 @@
                         optimalValue = Math.min(...uniqueVertices.map(p => p.value));
                     }
                     state.optimalValue = optimalValue;
+                    state.currentFValue = optimalValue; // Initialize the movable line value
 
                     state.optimalPoints = uniqueVertices.filter(p => Math.abs(p.value - optimalValue) < 1e-9);
 
@@ -665,9 +649,33 @@
                          html += `</div>`;
                     }
                     resultsContent.innerHTML = html;
+                    
+                    // Cập nhật và hiển thị slider
+                    const sliderContainer = document.getElementById('objective-slider-container');
+                    const slider = document.getElementById('objective-slider');
+                    const valueDisplay = document.getElementById('objective-value-display');
+
+                    if (state.objective.p !== 0 || state.objective.q !== 0) {
+                        sliderContainer.classList.remove('hidden');
+                        const allValues = uniqueVertices.map(p => p.value);
+                        const minVal = Math.min(...allValues);
+                        const maxVal = Math.max(...allValues);
+                        const range = maxVal - minVal;
+
+                        slider.min = range > 1e-9 ? minVal - range * 0.2 : minVal - 1; // Add 20% padding or default
+                        slider.max = range > 1e-9 ? maxVal + range * 0.2 : maxVal + 1;
+                        slider.step = range > 1e-9 ? range / 100 : 0.01; // 100 steps in the core range
+                        slider.value = optimalValue;
+                        slider.disabled = false;
+                        valueDisplay.textContent = `F = ${optimalValue.toFixed(2)}`;
+                    } else {
+                         sliderContainer.classList.add('hidden');
+                         slider.disabled = true;
+                    }
 
                 } else {
-                    state.feasibleVertices = []; state.optimalValue = null; state.optimalPoints = [];
+                    state.feasibleVertices = []; state.optimalValue = null; state.optimalPoints = []; state.currentFValue = null;
+                    document.getElementById('objective-slider-container').classList.add('hidden');
                     if (regionPointsRaw.length < 3) {
                          resultsContent.innerHTML = `<p class="mt-4 p-2 bg-red-100 text-red-800 rounded-md"><strong>Vô nghiệm:</strong> Không tìm thấy miền nghiệm thỏa mãn tất cả các ràng buộc (miền nghiệm là tập rỗng).</p>`;
                     } else {
@@ -677,6 +685,8 @@
 
             } else {
                  state.hasSolution = false;
+                 state.currentFValue = null;
+                 document.getElementById('objective-slider-container').classList.add('hidden');
                  resultsContent.innerHTML = `<p class="mt-4 p-2 bg-red-100 text-red-800 rounded-md"><strong>Vô nghiệm:</strong> Không tìm thấy miền nghiệm thỏa mãn tất cả các ràng buộc (miền nghiệm là tập rỗng).</p>`;
             }
         }
@@ -723,7 +733,7 @@
         
         function resetApp() {
             document.getElementById('shade-toggle').checked = false;
-            state = { constraints: [], objective: { p: 0, q: 0 }, objectiveType: 'max', feasibleVertices: [], regionPoints: [], optimalValue: null, optimalPoints: [], isUnbounded: false, hasSolution: false, showShadedArea: false };
+            state = { constraints: [], objective: { p: 0, q: 0 }, objectiveType: 'max', feasibleVertices: [], regionPoints: [], optimalValue: null, optimalPoints: [], isUnbounded: false, hasSolution: false, showShadedArea: false, currentFValue: null };
 
             const container = document.getElementById('constraints-container');
             while(container.children.length > 2) {
@@ -743,7 +753,13 @@
 
             document.getElementById('objective-input').value = '';
             document.getElementById('results-content').innerHTML = '<p class="text-gray-500">Nhập các ràng buộc và hàm mục tiêu, sau đó nhấn "Giải & Vẽ" để xem kết quả.</p>';
-        
+            
+            // Reset slider
+            const sliderContainer = document.getElementById('objective-slider-container');
+            sliderContainer.classList.add('hidden');
+            document.getElementById('objective-slider').disabled = true;
+            document.getElementById('objective-value-display').textContent = 'F = ?';
+
             originX = width / 2;
             originY = height / 2;
             scale = 20;
@@ -833,6 +849,12 @@
             state.showShadedArea = event.target.checked;
             drawScene();
         });
+        document.getElementById('objective-slider').addEventListener('input', (event) => {
+            const value = parseFloat(event.target.value);
+            state.currentFValue = value;
+            document.getElementById('objective-value-display').textContent = `F = ${value.toFixed(2)}`;
+            drawScene();
+        });
 
 
         canvas.addEventListener('wheel', handleZoom);
@@ -863,5 +885,4 @@
     </script>
 </body>
 </html>
-
 
