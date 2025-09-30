@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trực quan Hệ Bất Phương Trình Bậc Nhất Hai Ẩn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        /* Style cho scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4">
+        <!-- Header -->
+        <header class="text-center mb-4 p-4 bg-white rounded-lg shadow">
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-600">Ứng dụng Trực quan Hệ Bất Phương Trình Bậc Nhất Hai Ẩn</h1>
+            <p class="text-sm text-gray-600 mt-1">Tác giả: Vũ Tiến Lực - Trường THPT Nguyễn Hữu Cảnh</p>
+        </header>
+
+        <!-- Main Content Layout -->
+        <main class="flex flex-col lg:flex-row gap-4">
+            
+            <!-- Cột Trái: Trực quan hóa -->
+            <div id="canvas-container" class="w-full lg:w-3/5 aspect-square bg-white rounded-lg shadow p-4 flex justify-center items-center">
+                <canvas id="myCanvas"></canvas>
+            </div>
+
+            <!-- Cột Phải: Điều khiển và Dữ liệu -->
+            <div class="w-full lg:w-2/5 bg-white rounded-lg shadow p-6 flex flex-col">
+                <!-- Vùng nhập liệu -->
+                <div class="flex-grow">
+                    <!-- Ràng buộc -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-2 text-blue-600">1. Các Ràng Buộc</h3>
+                        <div id="constraints-container" class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleVisibility(this)" class="visibility-btn p-2 text-gray-600 hover:bg-gray-200 rounded-full" data-visible="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                                <input type="text" class="constraint-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ví dụ: x + y <= 10">
+                                <button onclick="removeConstraint(this)" class="remove-constraint-btn p-2 text-red-500 hover:bg-red-100 rounded-full">&times;</button>
+                            </div>
+                             <div class="flex items-center gap-2">
+                                <button onclick="toggleVisibility(this)" class="visibility-btn p-2 text-gray-600 hover:bg-gray-200 rounded-full" data-visible="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                                <input type="text" class="constraint-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ví dụ: 2x - y >= 0">
+                                <button onclick="removeConstraint(this)" class="remove-constraint-btn p-2 text-red-500 hover:bg-red-100 rounded-full">&times;</button>
+                            </div>
+                        </div>
+                        <button id="add-constraint-btn" class="mt-2 text-sm text-blue-500 hover:text-blue-700 font-medium">+ Thêm ràng buộc</button>
+                    </div>
+
+                    <!-- Hàm mục tiêu -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-bold mb-2 text-blue-600">2. Hàm Mục Tiêu</h3>
+                        <div class="flex items-center gap-4">
+                            <input type="text" id="objective-input" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ví dụ: F = 3x + 5y">
+                            <select id="objective-type" class="px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="max">Max</option>
+                                <option value="min">Min</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Các nút điều khiển -->
+                    <div class="flex flex-wrap gap-2 mt-6">
+                        <button id="solve-btn" class="flex-1 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">Giải & Vẽ</button>
+                        <button id="reset-btn" class="flex-1 bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200">Làm Mới</button>
+                        <button id="save-btn" class="flex-1 bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition duration-200">Lưu Ảnh</button>
+                        <button id="fullscreen-btn" class="flex-1 bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200">Phóng to Đồ thị</button>
+                    </div>
+
+                    <!-- Tùy chọn hiển thị -->
+                    <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="shade-toggle" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="shade-toggle" class="ml-2 block text-sm text-gray-900">Gạch bỏ phần ngoài miền nghiệm</label>
+                    </div>
+                </div>
+
+                <!-- Vùng kết quả -->
+                <div id="results-container" class="mt-6 pt-4 border-t border-gray-200">
+                    <h3 class="text-lg font-bold text-blue-600">Kết Quả</h3>
+                    <div id="results-content" class="mt-2 text-sm space-y-2">
+                        <p class="text-gray-500">Nhập các ràng buộc và hàm mục tiêu, sau đó nhấn "Giải & Vẽ" để xem kết quả.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        const eyeOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+        // --- SETUP CANVAS VÀ HỆ TỌA ĐỘ ---
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let scale = 20; // Số pixel cho 1 đơn vị
+        let originX, originY;
+
+        let isPanning = false;
+        let lastPanX, lastPanY;
+
+        // Global state to hold calculation results
+        let state = {
+            constraints: [],
+            objective: { p: 0, q: 0 },
+            objectiveType: 'max',
+            feasibleVertices: [],
+            regionPoints: [],
+            optimalValue: null,
+            optimalPoints: [],
+            isUnbounded: false,
+            hasSolution: false,
+            showShadedArea: false
+        };
+
+        const colors = ['#3b82f6', '#ef4444', '#10b981', '#f97316', '#8b5cf6', '#ec4899'];
+
+        function setupCanvas() {
+            const container = document.getElementById('canvas-container');
+            // Respect aspect ratio unless in fullscreen
+            if (document.fullscreenElement === container) {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            } else {
+                 const size = Math.min(container.clientWidth, container.clientHeight);
+                 canvas.width = size;
+                 canvas.height = size;
+            }
+           
+            width = canvas.width;
+            height = canvas.height;
+
+            // Don't reset view if it's just a resize, let the pan/zoom state persist
+            if (originX === undefined) { 
+                originX = width / 2;
+                originY = height / 2;
+            }
+            canvas.style.cursor = 'grab';
+            drawScene(); // Redraw after setup
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 1;
+
+            // Lưới dọc
+            for (let i = originX + scale; i < width; i += scale) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, height);
+                ctx.stroke();
+            }
+            for (let i = originX - scale; i > 0; i -= scale) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, height);
+                ctx.stroke();
+            }
+            // Lưới ngang
+            for (let i = originY + scale; i < height; i += scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(width, i);
+                ctx.stroke();
+            }
+            for (let i = originY - scale; i > 0; i -= scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(width, i);
+                ctx.stroke();
+            }
+
+            // Trục tọa độ
+            ctx.strokeStyle = '#4b5563';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, originY);
+            ctx.lineTo(width, originY);
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, height);
+            ctx.stroke();
+
+            // Mũi tên cho trục tọa độ
+            ctx.beginPath();
+            // Mũi tên trục X
+            ctx.moveTo(width - 10, originY - 5);
+            ctx.lineTo(width, originY);
+            ctx.lineTo(width - 10, originY + 5);
+            // Mũi tên trục Y
+            ctx.moveTo(originX - 5, 10);
+            ctx.lineTo(originX, 0);
+            ctx.lineTo(originX + 5, 10);
+            ctx.stroke();
+
+
+            // Tên trục
+            ctx.fillStyle = '#1f2937';
+            ctx.font = '14px "Be Vietnam Pro"';
+            ctx.fillText('O', originX - 15, originY + 15);
+            ctx.fillText('x', width - 15, originY - 10);
+            ctx.fillText('y', originX + 10, 15);
+        }
+
+        // --- CÁC HÀM TIỆN ÍCH TOÁN HỌC ---
+        const toCanvasX = (x) => originX + x * scale;
+        const toCanvasY = (y) => originY - y * scale;
+        const fromCanvasX = (cx) => (cx - originX) / scale;
+        const fromCanvasY = (cy) => (originY - cy) / scale;
+
+        // --- LOGIC PARSE INPUT ---
+        function parseConstraint(str) {
+            if (!str) return null;
+            str = str.replace(/\s+/g, '').toLowerCase();
+
+            const match = str.match(/([-+]?\d*\.?\d*)x?([-+]?\d*\.?\d*)y?([><]=?|=)([-+]?\d+\.?\d*)/);
+            if (!match) return null;
+
+            let [, a, b, sign, c] = match;
+
+            if (a === '' && str.includes('x')) a = '1';
+            if (a === '-' && str.includes('x')) a = '-1';
+            if (b === '' && str.includes('y')) b = '1';
+            if (b === '+' && str.includes('y')) b = '1';
+            if (b === '-' && str.includes('y')) b = '-1';
+            
+            return {
+                a: parseFloat(a) || 0,
+                b: parseFloat(b) || 0,
+                sign: sign,
+                c: parseFloat(c) || 0,
+                original: str
+            };
+        }
+
+        function parseObjective(str) {
+            if (!str) return { p: 0, q: 0 };
+            str = str.replace(/\s+/g, '').toLowerCase().split('=')[1] || '';
+            
+            const xMatch = str.match(/([-+]?\d*\.?\d*)x/);
+            let p = 0;
+            if (xMatch) {
+                if (xMatch[1] === '' || xMatch[1] === '+') p = 1;
+                else if (xMatch[1] === '-') p = -1;
+                else p = parseFloat(xMatch[1]);
+            }
+
+            const yMatch = str.match(/([-+]?\d*\.?\d*)y/);
+            let q = 0;
+            if (yMatch) {
+                if (yMatch[1] === '' || yMatch[1] === '+') q = 1;
+                else if (yMatch[1] === '-') q = -1;
+                else q = parseFloat(yMatch[1]);
+            }
+
+            return { p, q };
+        }
+
+        // --- LOGIC VẼ VÀ GIẢI BÀI TOÁN ---
+        
+        // Vẽ một đường thẳng ax + by = c
+        function drawLine(constraint, color, dashed = false, index = -1) {
+            const { a, b, c } = constraint;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash(dashed ? [5, 5] : []);
+            ctx.beginPath();
+            
+            if (Math.abs(b) > 1e-9) { // Không phải đường thẳng đứng
+                let y1 = (c - a * fromCanvasX(0)) / b;
+                let y2 = (c - a * fromCanvasX(width)) / b;
+                ctx.moveTo(toCanvasX(fromCanvasX(0)), toCanvasY(y1));
+                ctx.lineTo(toCanvasX(fromCanvasX(width)), toCanvasY(y2));
+            } else if (Math.abs(a) > 1e-9) { // Đường thẳng đứng
+                let x = c / a;
+                ctx.moveTo(toCanvasX(x), 0);
+                ctx.lineTo(toCanvasX(x), height);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Hiển thị giao điểm với trục và tên đường thẳng
+            ctx.fillStyle = color;
+            ctx.font = '12px "Be Vietnam Pro"';
+
+            // Giao điểm với trục Oy (x=0)
+            if (Math.abs(b) > 1e-9) {
+                const y = c / b;
+                const cy = toCanvasY(y);
+                if (cy > 0 && cy < height && Math.abs(y) > 1e-9) {
+                    ctx.fillText(y.toFixed(1), originX + 5, cy - 5);
+                }
+            }
+
+            // Giao điểm với trục Ox (y=0)
+            if (Math.abs(a) > 1e-9) {
+                const x = c / a;
+                const cx = toCanvasX(x);
+                if (cx > 0 && cx < width && Math.abs(x) > 1e-9) {
+                    ctx.fillText(x.toFixed(1), cx + 5, originY - 5);
+                }
+            }
+
+            // Tên đường thẳng (d1, d2, ...)
+            if (index !== -1) {
+                const label = `d${index + 1}`;
+                let lx, ly;
+                // Ưu tiên đặt tên ở góc trên bên phải để tránh che khuất
+                if (Math.abs(a) < 1e-9) { // Đường ngang
+                     lx = width - 40;
+                     ly = toCanvasY(c/b) - 5;
+                } else if (Math.abs(b) < 1e-9) { // Đường đứng
+                     lx = toCanvasX(c/a) + 5;
+                     ly = 20;
+                } else if (Math.abs(a/b) < 1) { // Dốc nhiều (gần đứng)
+                    ly = 20; // Đặt gần phía trên
+                    lx = toCanvasX((c - b * fromCanvasY(ly)) / a);
+                } else { // Dốc ít (gần ngang)
+                    lx = width - 50; // Đặt gần bên phải
+                    ly = toCanvasY((c - a * fromCanvasX(lx)) / b);
+                }
+                
+                // Điều chỉnh vị trí để không bị ra ngoài màn hình
+                lx = Math.max(10, Math.min(width - 30, lx));
+                ly = Math.max(20, Math.min(height - 10, ly));
+
+                ctx.save();
+                ctx.font = 'bold 13px "Be Vietnam Pro"';
+                ctx.fillStyle = color;
+                ctx.fillText(label, lx, ly);
+                ctx.restore();
+            }
+        }
+
+        // Tìm giao điểm của 2 đường thẳng
+        function findIntersection(c1, c2) {
+            const det = c1.a * c2.b - c2.a * c1.b;
+            if (Math.abs(det) < 1e-9) return null; // Song song hoặc trùng nhau
+            const x = (c1.c * c2.b - c2.c * c1.b) / det;
+            const y = (c1.a * c2.c - c2.a * c1.c) / det;
+            return { x, y };
+        }
+
+        // Kiểm tra 1 điểm có thỏa mãn 1 ràng buộc
+        function checkPoint(point, constraint) {
+            const { a, b, sign, c } = constraint;
+            const val = a * point.x + b * point.y;
+            switch (sign) {
+                case '<=': return val <= c + 1e-9;
+                case '>=': return val >= c - 1e-9;
+                case '<': return val < c - 1e-9;
+                case '>': return val > c + 1e-9;
+                case '=': return Math.abs(val - c) < 1e-9;
+            }
+            return false;
+        }
+
+        function hatchInvalidSide(constraint, color) {
+            const { a, b, c, sign } = constraint;
+            if (Math.abs(a) < 1e-9 && Math.abs(b) < 1e-9) return;
+
+            ctx.save();
+
+            // 1. Xác định đa giác clipping (phần mặt phẳng không hợp lệ trong khung vẽ)
+            const canvasCorners = [
+                { x: fromCanvasX(0), y: fromCanvasY(0) },         // Góc trên-trái
+                { x: fromCanvasX(width), y: fromCanvasY(0) },    // Góc trên-phải
+                { x: fromCanvasX(width), y: fromCanvasY(height) },// Góc dưới-phải
+                { x: fromCanvasX(0), y: fromCanvasY(height) },   // Góc dưới-trái
+            ];
+
+            const canvasEdges = [
+                [canvasCorners[0], canvasCorners[1]], [canvasCorners[1], canvasCorners[2]],
+                [canvasCorners[2], canvasCorners[3]], [canvasCorners[3], canvasCorners[0]],
+            ];
+
+            const intersectionPoints = [];
+            canvasEdges.forEach(edge => {
+                const p1 = edge[0], p2 = edge[1];
+                const a2 = p2.y - p1.y, b2 = p1.x - p2.x;
+                const c2 = a2 * p1.x + b2 * p1.y;
+                const intersection = findIntersection({a, b, c}, {a: a2, b: b2, c: c2});
+                
+                if (intersection) {
+                    const onSegment = 
+                        (Math.min(p1.x, p2.x) - 1e-9 <= intersection.x && intersection.x <= Math.max(p1.x, p2.x) + 1e-9) &&
+                        (Math.min(p1.y, p2.y) - 1e-9 <= intersection.y && intersection.y <= Math.max(p1.y, p2.y) + 1e-9);
+                    if (onSegment) {
+                        intersectionPoints.push(intersection);
+                    }
+                }
+            });
+
+            const invalidCorners = canvasCorners.filter(p => !checkPoint(p, constraint));
+            
+            // Nếu không có góc nào không hợp lệ và đường thẳng không cắt khung vẽ, thì không cần gạch bỏ gì cả
+            if (invalidCorners.length === 0 && intersectionPoints.length < 2) {
+                ctx.restore();
+                return;
+            }
+            
+            const clipPolygon = [...intersectionPoints, ...invalidCorners];
+
+            // Sắp xếp các đỉnh của đa giác clipping theo chiều kim đồng hồ
+            const centerX = clipPolygon.reduce((sum, p) => sum + p.x, 0) / clipPolygon.length;
+            const centerY = clipPolygon.reduce((sum, p) => sum + p.y, 0) / clipPolygon.length;
+            clipPolygon.sort((p1, p2) => Math.atan2(p1.y - centerY, p1.x - centerX) - Math.atan2(p2.y - centerY, p2.x - centerX));
+
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(clipPolygon[0].x), toCanvasY(clipPolygon[0].y));
+            for (let i = 1; i < clipPolygon.length; i++) {
+                ctx.lineTo(toCanvasX(clipPolygon[i].x), toCanvasY(clipPolygon[i].y));
+            }
+            ctx.closePath();
+            ctx.clip();
+
+            // 2. Vẽ các đường gạch chéo vuông góc với đường biên
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.5;
+
+            ctx.save();
+            const cx = width / 2, cy = height / 2;
+            ctx.translate(cx, cy);
+            const hatchAngle = Math.atan2(b, a); // Góc của vector pháp tuyến (a,b)
+            ctx.rotate(hatchAngle);
+            ctx.translate(-cx, -cy);
+
+            ctx.beginPath();
+            const span = Math.max(width, height) * 1.5;
+            const step = 15; // Khoảng cách giữa các đường gạch
+            for (let i = -span; i < span; i += step) {
+                ctx.moveTo(cx - span, cy + i);
+                ctx.lineTo(cx + span, cy + i);
+            }
+            ctx.stroke();
+
+            ctx.restore(); // Hoàn tác xoay
+            ctx.restore(); // Hoàn tác clipping
+        }
+
+
+        function drawScene() {
+            drawGrid();
+            
+            if (!state.hasSolution) return;
+
+            // Vẽ miền nghiệm hoặc phần gạch bỏ
+            if (state.showShadedArea) {
+                // Gạch chéo phần không hợp lệ của TỪNG bất phương trình
+                state.constraints.forEach((c, i) => {
+                    if (c.isVisible) {
+                        hatchInvalidSide(c, colors[i % colors.length]);
+                    }
+                });
+            } else {
+                // Tô màu vùng nghiệm cuối cùng
+                if (state.regionPoints.length >= 3) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(toCanvasX(state.regionPoints[0].x), toCanvasY(state.regionPoints[0].y));
+                    for (let i = 1; i < state.regionPoints.length; i++) {
+                        ctx.lineTo(toCanvasX(state.regionPoints[i].x), toCanvasY(state.regionPoints[i].y));
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // Vẽ các đường biên
+            state.constraints.forEach((c, i) => {
+                if (c.isVisible) {
+                    drawLine(c, colors[i % colors.length], c.sign === '<' || c.sign === '>', i);
+                }
+            });
+            
+            // Vẽ đường đồng mức tối ưu
+            if (state.optimalValue !== null && (state.objective.p !== 0 || state.objective.q !== 0)) {
+                drawLine({a: state.objective.p, b: state.objective.q, c: state.optimalValue}, '#8b5cf6', true);
+            }
+
+            // Vẽ các đỉnh khả thi
+            state.feasibleVertices.forEach((p, i) => {
+                const label = String.fromCharCode(65 + i); // A, B, C...
+                const cx = toCanvasX(p.x);
+                const cy = toCanvasY(p.y);
+                
+                ctx.beginPath();
+                ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#dc2626';
+                ctx.fill();
+
+                ctx.fillStyle = '#1f2937';
+                ctx.font = 'bold 14px "Be Vietnam Pro"';
+                ctx.fillText(label, cx + 8, cy + 5);
+            });
+        }
+        
+        function solveProblem() {
+            const resultsContent = document.getElementById('results-content');
+            
+            // 1. Parse input
+            const constraintDivs = document.querySelectorAll('#constraints-container > div');
+            const allParsedConstraints = Array.from(constraintDivs).map(div => {
+                const input = div.querySelector('.constraint-input');
+                const visibilityBtn = div.querySelector('.visibility-btn');
+                const isVisible = visibilityBtn.getAttribute('data-visible') === 'true';
+                
+                const parsed = parseConstraint(input.value);
+                if (parsed) {
+                    parsed.isVisible = isVisible;
+                    return parsed;
+                }
+                return null;
+            }).filter(c => c !== null);
+
+            // Lưu tất cả các ràng buộc (kể cả ẩn) vào state để phục vụ việc vẽ
+            state.constraints = allParsedConstraints;
+
+            // Nhưng chỉ sử dụng các ràng buộc đang hiển thị để tính toán
+            const constraints = allParsedConstraints.filter(c => c.isVisible);
+
+
+            if (constraints.length < 2) {
+                state.hasSolution = false;
+                resultsContent.innerHTML = `<p class="text-red-500">Vui lòng có ít nhất 2 ràng buộc hợp lệ đang được hiển thị để giải.</p>`;
+                // Xóa kết quả cũ trên đồ thị
+                state.regionPoints = [];
+                state.feasibleVertices = [];
+                state.optimalValue = null;
+                return;
+            }
+
+            // state.constraints = constraints; // Dòng này không cần nữa
+            state.objective = parseObjective(document.getElementById('objective-input').value);
+            state.objectiveType = document.getElementById('objective-type').value;
+
+            // 3. Tìm các giao điểm
+            const intersectionPoints = [];
+            for (let i = 0; i < constraints.length; i++) {
+                for (let j = i + 1; j < constraints.length; j++) {
+                    const intersection = findIntersection(constraints[i], constraints[j]);
+                    if (intersection) intersectionPoints.push(intersection);
+                }
+            }
+
+            // 4. Lọc các đỉnh khả thi (thỏa mãn tất cả ràng buộc)
+            const feasibleVerticesRaw = intersectionPoints.filter(p => {
+                return constraints.every(c => checkPoint(p, c));
+            });
+            
+            // Thêm các điểm giả ở vô cực để xử lý miền không bị chặn
+            const largeNumber = 1e4;
+            const bboxConstraints = [
+                {a: 1, b: 0, c: largeNumber, sign: '<='},
+                {a: 1, b: 0, c: -largeNumber, sign: '>='},
+                {a: 0, b: 1, c: largeNumber, sign: '<='},
+                {a: 0, b: 1, c: -largeNumber, sign: '>='},
+            ];
+
+            const allConstraints = [...constraints, ...bboxConstraints];
+            const allIntersections = [];
+            for (let i = 0; i < allConstraints.length; i++) {
+                for (let j = i + 1; j < allConstraints.length; j++) {
+                    const p = findIntersection(allConstraints[i], allConstraints[j]);
+                    if (p) allIntersections.push(p);
+                }
+            }
+            
+            const regionPointsRaw = allIntersections.filter(p => constraints.every(c => checkPoint(p,c)));
+
+            // 5. Vẽ miền nghiệm
+            if (regionPointsRaw.length >= 3) {
+                state.hasSolution = true;
+                // Sắp xếp các điểm để vẽ đa giác
+                const centerX = regionPointsRaw.reduce((sum, p) => sum + p.x, 0) / regionPointsRaw.length;
+                const centerY = regionPointsRaw.reduce((sum, p) => sum + p.y, 0) / regionPointsRaw.length;
+                regionPointsRaw.sort((a, b) => {
+                    return Math.atan2(a.y - centerY, a.x - centerX) - Math.atan2(b.y - centerY, b.x - centerX);
+                });
+                state.regionPoints = regionPointsRaw;
+
+                // Kiểm tra không bị chặn
+                state.isUnbounded = regionPointsRaw.some(p => Math.abs(p.x) > largeNumber-1 || Math.abs(p.y) > largeNumber-1);
+
+                // 6. Vẽ các đỉnh khả thi
+                 const uniqueVertices = [];
+                 feasibleVerticesRaw.forEach(p => {
+                     if (!uniqueVertices.some(up => Math.abs(up.x - p.x) < 1e-6 && Math.abs(up.y - p.y) < 1e-6)) {
+                         uniqueVertices.push(p);
+                     }
+                 });
+                 state.feasibleVertices = uniqueVertices;
+
+                // 7. Tối ưu hàm mục tiêu và hiển thị kết quả
+                if(uniqueVertices.length > 0) {
+                    uniqueVertices.forEach(p => {
+                        p.value = state.objective.p * p.x + state.objective.q * p.y;
+                    });
+
+                    let optimalValue;
+                    if (state.objectiveType === 'max') {
+                        optimalValue = Math.max(...uniqueVertices.map(p => p.value));
+                    } else {
+                        optimalValue = Math.min(...uniqueVertices.map(p => p.value));
+                    }
+                    state.optimalValue = optimalValue;
+
+                    state.optimalPoints = uniqueVertices.filter(p => Math.abs(p.value - optimalValue) < 1e-9);
+
+                    // Hiển thị kết quả
+                    let html = `
+                        <h4 class="font-bold">Các đỉnh khả thi:</h4>
+                        <table class="w-full text-left border-collapse">
+                            <thead><tr><th class="p-1 border-b">Đỉnh</th><th class="p-1 border-b">Tọa độ (x, y)</th><th class="p-1 border-b">Giá trị F</th></tr></thead>
+                            <tbody>`;
+                    uniqueVertices.forEach((p, i) => {
+                        const label = String.fromCharCode(65 + i);
+                        html += `<tr>
+                            <td class="p-1 border-b font-bold">${label}</td>
+                            <td class="p-1 border-b">(${p.x.toFixed(2)}, ${p.y.toFixed(2)})</td>
+                            <td class="p-1 border-b">${p.value.toFixed(2)}</td>
+                        </tr>`;
+                    });
+                    html += `</tbody></table>`;
+                    
+                    if (state.isUnbounded) {
+                        html += `<p class="mt-4 p-2 bg-yellow-100 text-yellow-800 rounded-md"><strong>Cảnh báo:</strong> Miền nghiệm không bị chặn. Giá trị tối ưu có thể không tồn tại.</p>`;
+                    } else {
+                         html += `<div class="mt-4 p-2 bg-green-100 text-green-800 rounded-md">`;
+                         html += `<strong>Kết luận:</strong> Giá trị ${state.objectiveType === 'max' ? 'lớn nhất' : 'nhỏ nhất'} của F là <strong>${optimalValue.toFixed(2)}</strong>, đạt được tại điểm `;
+                         state.optimalPoints.forEach((p, i) => {
+                             const pointLabel = String.fromCharCode(65 + uniqueVertices.findIndex(v => v === p));
+                             html += `${pointLabel}(${p.x.toFixed(2)}, ${p.y.toFixed(2)})${i < state.optimalPoints.length-1 ? ' và ' : ''}`;
+                         });
+                         if (state.optimalPoints.length > 1) {
+                            html += ` (và trên đoạn thẳng nối các điểm này).`
+                         }
+                         html += `</div>`;
+                    }
+                    resultsContent.innerHTML = html;
+
+                } else {
+                    state.feasibleVertices = []; state.optimalValue = null; state.optimalPoints = [];
+                    if (regionPointsRaw.length < 3) {
+                         resultsContent.innerHTML = `<p class="mt-4 p-2 bg-red-100 text-red-800 rounded-md"><strong>Vô nghiệm:</strong> Không tìm thấy miền nghiệm thỏa mãn tất cả các ràng buộc (miền nghiệm là tập rỗng).</p>`;
+                    } else {
+                        resultsContent.innerHTML = `<p class="mt-4 p-2 bg-yellow-100 text-yellow-800 rounded-md"><strong>Cảnh báo:</strong> Miền nghiệm không bị chặn và không có đỉnh nào. Không thể xác định giá trị tối ưu.</p>`;
+                    }
+                }
+
+            } else {
+                 state.hasSolution = false;
+                 resultsContent.innerHTML = `<p class="mt-4 p-2 bg-red-100 text-red-800 rounded-md"><strong>Vô nghiệm:</strong> Không tìm thấy miền nghiệm thỏa mãn tất cả các ràng buộc (miền nghiệm là tập rỗng).</p>`;
+            }
+        }
+
+        // --- QUẢN LÝ EVENT LISTENER ---
+        function addConstraint() {
+            const container = document.getElementById('constraints-container');
+            const newConstraint = document.createElement('div');
+            newConstraint.className = 'flex items-center gap-2';
+            newConstraint.innerHTML = `
+                <button onclick="toggleVisibility(this)" class="visibility-btn p-2 text-gray-600 hover:bg-gray-200 rounded-full" data-visible="true">${eyeIcon}</button>
+                <input type="text" class="constraint-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Thêm ràng buộc mới">
+                <button onclick="removeConstraint(this)" class="remove-constraint-btn p-2 text-red-500 hover:bg-red-100 rounded-full">&times;</button>
+            `;
+            container.appendChild(newConstraint);
+        }
+
+        function removeConstraint(button) {
+            const container = document.getElementById('constraints-container');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+            } else {
+                // Clear the last one instead of removing
+                button.parentElement.querySelector('input').value = '';
+            }
+            // Giải lại bài toán sau khi xóa
+            solveProblem();
+            drawScene();
+        }
+
+        function toggleVisibility(button) {
+            const isVisible = button.getAttribute('data-visible') === 'true';
+            const newVisibility = !isVisible;
+            button.setAttribute('data-visible', newVisibility);
+            button.innerHTML = newVisibility ? eyeIcon : eyeOffIcon;
+            button.classList.toggle('text-gray-400', !newVisibility);
+            button.classList.toggle('text-gray-600', newVisibility);
+            
+            // Khi ẩn/hiện một ràng buộc, toàn bộ bài toán cần được giải lại
+            // vì miền nghiệm và các đỉnh đã thay đổi.
+            solveProblem();
+            drawScene();
+        }
+        
+        function resetApp() {
+            document.getElementById('shade-toggle').checked = false;
+            state = { constraints: [], objective: { p: 0, q: 0 }, objectiveType: 'max', feasibleVertices: [], regionPoints: [], optimalValue: null, optimalPoints: [], isUnbounded: false, hasSolution: false, showShadedArea: false };
+
+            const container = document.getElementById('constraints-container');
+            while(container.children.length > 2) {
+                container.removeChild(container.lastChild);
+            }
+
+            const inputs = document.querySelectorAll('.constraint-input');
+            inputs.forEach((input) => { input.value = ''; });
+            
+            const visibilityBtns = document.querySelectorAll('.visibility-btn');
+            visibilityBtns.forEach(btn => {
+                btn.setAttribute('data-visible', 'true');
+                btn.innerHTML = eyeIcon;
+                btn.classList.add('text-gray-600');
+                btn.classList.remove('text-gray-400');
+            });
+
+            document.getElementById('objective-input').value = '';
+            document.getElementById('results-content').innerHTML = '<p class="text-gray-500">Nhập các ràng buộc và hàm mục tiêu, sau đó nhấn "Giải & Vẽ" để xem kết quả.</p>';
+        
+            originX = width / 2;
+            originY = height / 2;
+            scale = 20;
+            drawScene();
+        }
+
+        function saveImage() {
+            const link = document.createElement('a');
+            link.download = 'mien-nghiem.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function toggleFullScreen() {
+            const canvasContainer = document.getElementById('canvas-container');
+            if (!document.fullscreenElement) {
+                canvasContainer.requestFullscreen().catch(err => {
+                    alert(`Lỗi khi bật chế độ toàn màn hình: ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function handleZoom(event) {
+            event.preventDefault();
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const mouseGraphX = fromCanvasX(mouseX);
+            const mouseGraphY = fromCanvasY(mouseY);
+            
+            const zoomFactor = 1.1;
+            if (event.deltaY < 0) { // Zoom in
+                scale *= zoomFactor;
+            } else { // Zoom out
+                scale /= zoomFactor;
+            }
+            scale = Math.max(5, Math.min(200, scale));
+
+            originX = mouseX - mouseGraphX * scale;
+            originY = mouseY + mouseGraphY * scale;
+
+            drawScene();
+        }
+
+        function handlePanStart(event) {
+            isPanning = true;
+            lastPanX = event.clientX;
+            lastPanY = event.clientY;
+            canvas.style.cursor = 'grabbing';
+        }
+
+        function handlePanMove(event) {
+            if (!isPanning) return;
+            const dx = event.clientX - lastPanX;
+            const dy = event.clientY - lastPanY;
+
+            originX += dx;
+            originY += dy;
+
+            lastPanX = event.clientX;
+            lastPanY = event.clientY;
+
+            drawScene();
+        }
+
+        function handlePanEnd() {
+            isPanning = false;
+            canvas.style.cursor = 'grab';
+        }
+
+
+        document.getElementById('add-constraint-btn').addEventListener('click', addConstraint);
+        document.getElementById('solve-btn').addEventListener('click', () => {
+            solveProblem();
+            drawScene();
+        });
+        document.getElementById('reset-btn').addEventListener('click', resetApp);
+        document.getElementById('save-btn').addEventListener('click', saveImage);
+        document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
+        document.getElementById('shade-toggle').addEventListener('change', (event) => {
+            state.showShadedArea = event.target.checked;
+            drawScene();
+        });
+
+
+        canvas.addEventListener('wheel', handleZoom);
+        canvas.addEventListener('mousedown', handlePanStart);
+        canvas.addEventListener('mousemove', handlePanMove);
+        canvas.addEventListener('mouseup', handlePanEnd);
+        canvas.addEventListener('mouseleave', handlePanEnd);
+        document.addEventListener('fullscreenchange', setupCanvas);
+
+
+        // --- KHỞI TẠO ---
+        window.addEventListener('resize', setupCanvas);
+        window.addEventListener('load', () => {
+             setupCanvas();
+             // Thêm các ràng buộc mặc định cho ví dụ
+            const defaultInputs = document.querySelectorAll('.constraint-input');
+            defaultInputs[0].value = 'x >= 0';
+            defaultInputs[1].value = 'y >= 0';
+            addConstraint();
+            document.querySelectorAll('.constraint-input')[2].value = 'x + 2y <= 10';
+            addConstraint();
+            document.querySelectorAll('.constraint-input')[3].value = '3x + y <= 15';
+            document.getElementById('objective-input').value = 'F = 2x + 3y';
+            solveProblem();
+            drawScene();
+        });
+
+    </script>
+</body>
+</html>
+
+
