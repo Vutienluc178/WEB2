@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form Prompt – Kế hoạch dạy học Toán (vai trò + kỹ thuật)</title>
+  <style>
+    :root{--bg:#0a0f1f;--card:#121735;--muted:#9aa4c9;--text:#eaf0ff;--accent:#5cc8ff;--accent2:#9bffb7}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(1000px 500px at 100% 0,rgba(92,200,255,.12),transparent 40%),radial-gradient(1000px 500px at 0 100%,rgba(155,255,183,.10),transparent 40%),var(--bg);color:var(--text)}
+    .wrap{max-width:980px;margin:48px auto;padding:0 18px}
+    .title{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .badge{font-size:12px;color:var(--bg);background:linear-gradient(90deg,var(--accent),var(--accent2));padding:4px 10px;border-radius:999px;font-weight:700;letter-spacing:.4px}
+    h1{margin:0 0 6px;font-size:26px}
+    p.lead{margin:0 0 20px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:880px){.grid{grid-template-columns:1.05fr .95fr}}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px;backdrop-filter:blur(6px)}
+    .card h2{margin:0 0 10px;font-size:18px}
+    label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+    input[type=text],select,textarea{width:100%;padding:12px;font-size:15px;color:var(--text);background:#0f1532;border:1px solid rgba(255,255,255,.12);border-radius:12px;outline:none}
+    textarea{min-height:320px;resize:vertical}
+    .row{display:flex;gap:10px}
+    .row>*{flex:1}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    button{appearance:none;border:none;cursor:pointer;font-weight:700;color:var(--bg);background:linear-gradient(90deg,var(--accent),var(--accent2));padding:10px 14px;border-radius:12px;box-shadow:0 10px 24px rgba(92,200,255,.22)}
+    button.secondary{color:var(--text);background:transparent;border:1px solid rgba(255,255,255,.14);box-shadow:none}
+    .hint{font-size:12px;color:var(--muted);margin-top:6px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.16);cursor:pointer;color:var(--text);font-size:12px}
+    .chip.active{background:rgba(92,200,255,.12);border-color:rgba(92,200,255,.6)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <span class="badge">FORM PROMPT MAKER</span>
+      <h1>Kế hoạch dạy học Toán – Vai trò + Kỹ thuật</h1>
+    </div>
+    <p class="lead">Nhập <strong>Chủ đề – Lớp – Sách CTST – Kỹ thuật</strong> → bấm <em>Tạo PROMPT</em> để sinh câu lệnh tổng quát cho AI tạo giáo án theo 5 vai trò (MC • Storyteller • Coach • Mentor • Inspirer).</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Thông tin đầu vào</h2>
+        <label for="topic">Chủ đề Toán</label>
+        <input id="topic" type="text" placeholder="VD: Hàm số bậc nhất; Đạo hàm; Tích phân; Số phức; Hệ thức lượng…" />
+
+        <div class="row">
+          <div>
+            <label for="grade">Lớp</label>
+            <select id="grade">
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+          </div>
+          <div>
+            <label for="book">Sách CTST (bộ)</label>
+            <select id="book">
+              <option value="Kết nối tri thức với cuộc sống">Kết nối tri thức với cuộc sống</option>
+              <option value="Chân trời sáng tạo">Chân trời sáng tạo</option>
+              <option value="Cánh diều">Cánh diều</option>
+              <option value="Khác/ĐHQG">Khác/ĐHQG</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Kỹ thuật dạy học tích cực (chọn nhanh)</label>
+        <div class="chips" id="chips">
+          <span class="chip" data-val="Động não">Động não</span>
+          <span class="chip" data-val="Gamification">Gamification</span>
+          <span class="chip" data-val="Khăn trải bàn">Khăn trải bàn</span>
+          <span class="chip" data-val="Mảnh ghép (Jigsaw)">Mảnh ghép (Jigsaw)</span>
+          <span class="chip" data-val="Think–Pair–Share">Think–Pair–Share</span>
+          <span class="chip" data-val="KWL">KWL</span>
+          <span class="chip" data-val="Mindmap">Mindmap</span>
+          <span class="chip" data-val="3-2-1">3-2-1</span>
+          <span class="chip" data-val="Dạy học theo trạm">Dạy học theo trạm</span>
+          <span class="chip" data-val="PBL/STEM">PBL/STEM</span>
+        </div>
+        <label for="techs">…hoặc nhập kỹ thuật tùy chỉnh (phân tách bằng dấu phẩy)</label>
+        <input id="techs" type="text" placeholder="VD: động não, khăn trải bàn, think–pair–share" />
+
+        <label for="extra">Yêu cầu bổ sung (tùy chọn)</label>
+        <input id="extra" type="text" placeholder="VD: nhấn mạnh năng lực mô hình hóa; thêm ví dụ kinh tế; có bài tập chuẩn bị thi TN" />
+
+        <div class="actions">
+          <button id="generate">Tạo PROMPT</button>
+          <button id="copy" class="secondary">Sao chép</button>
+          <button id="clear" class="secondary">Xóa</button>
+          <button id="download" class="secondary">Tải .txt</button>
+        </div>
+        <div class="hint">Mẹo: chọn 2–3 kỹ thuật cốt lõi để AI tối ưu hoạt động; ví dụ “động não + khăn trải bàn”.</div>
+      </section>
+
+      <section class="card">
+        <h2>Output PROMPT</h2>
+        <textarea id="output" class="mono" placeholder="Kết quả sẽ hiển thị tại đây…"></textarea>
+        <div class="hint">Dán PROMPT vào AI để sinh <em>kế hoạch dạy học đủ 5 bước</em> (MC → Storyteller → Coach → Mentor → Inspirer) kèm thời lượng, hoạt động GV–HS, mục tiêu năng lực.</div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:16px">
+      <h2>Mẫu cấu trúc mà PROMPT sẽ yêu cầu AI</h2>
+      <pre class="mono" style="white-space:pre-wrap;line-height:1.5;margin:0">1) Khởi động – MC – dùng kỹ thuật: [kỹ thuật 1/2].
+2) Hình thành kiến thức – Storyteller – ví dụ đời thường.
+3) Luyện tập – Coach – nhóm/cặp – 3 mức độ bài.
+4) Củng cố – Mentor – 3-2-1/KWL/Mindmap – lỗi sai & khắc phục.
+5) Vận dụng – Inspirer – PBL/STEM/gamification nâng cao.</pre>
+    </section>
+  </div>
+
+  <script>
+    const elTopic = document.getElementById('topic');
+    const elGrade = document.getElementById('grade');
+    const elBook = document.getElementById('book');
+    const elTechs = document.getElementById('techs');
+    const elExtra = document.getElementById('extra');
+    const elOut = document.getElementById('output');
+
+    // Toggle chips
+    const chips = document.getElementById('chips');
+    chips.addEventListener('click', (e)=>{
+      const chip = e.target.closest('.chip');
+      if(!chip) return;
+      chip.classList.toggle('active');
+      syncTechs();
+    });
+
+    function syncTechs(){
+      const selected = [...document.querySelectorAll('.chip.active')].map(c=>c.dataset.val);
+      const typed = elTechs.value.trim();
+      const parts = [];
+      if(selected.length) parts.push(selected.join(', '));
+      if(typed) parts.push(typed);
+      elTechs.dataset.combined = parts.join(', ');
+    }
+
+    function buildPrompt(topic, grade, book, techniques, extra){
+      const t = (topic||'[chủ đề Toán]').trim();
+      const tech = (techniques||'động não, khăn trải bàn').trim();
+      const extraLine = extra?.trim()? `\n\nYêu cầu bổ sung: ${extra.trim()}.` : '';
+
+      return (
+`Bạn là giáo viên Toán THPT. Hãy thiết kế **kế hoạch dạy học 1 tiết Toán** cho chủ đề **${t}**, lớp **${grade}**, theo sách CTST **${book}**.\n\nCấu trúc 5 bước (gắn vai trò giáo dục + kỹ thuật dạy học tích cực):\n1. **Khởi động (2–3’)** – Vai trò: MC 🎤. Sử dụng ${tech}. Đưa câu hỏi khởi động gắn thực tế để kích hoạt hứng thú.\n2. **Hình thành kiến thức mới (5–7’)** – Vai trò: Storyteller 📖. Dùng ví dụ đời thường/tình huống thực tế để dẫn dắt kiến thức; thêm câu hỏi gợi mở.\n3. **Luyện tập – Khám phá (10–12’)** – Vai trò: Coach 🏋️. Tổ chức hoạt động nhóm/cặp (VD: khăn trải bàn, mảnh ghép, think–pair–share). Thiết kế 3 bài tập tăng dần (dễ – TB – khó) kèm đáp án ngắn gọn.\n4. **Thảo luận – Củng cố (5–7’)** – Vai trò: Mentor 🤝. Dùng 3-2-1/KWL/Mindmap. Nêu 1 lỗi sai HS thường gặp và cách khắc phục.\n5. **Vận dụng – Mở rộng (5’)** – Vai trò: Inspirer 🌐. Giao tình huống ứng dụng (PBL/STEM/gamification nâng cao) hoặc câu hỏi liên hệ thực tế/môn khác.\n\n**Đầu ra mong muốn:** Bảng/kịch bản rõ ràng có thời lượng từng bước, hoạt động của GV – HS, phương tiện – học liệu, tiêu chí đánh giá/mục tiêu năng lực. Ưu tiên ví dụ gần gũi (pizza, Grab, TikTok, thể thao, kinh tế).${extraLine}`
+      );
+    }
+
+    document.getElementById('generate').addEventListener('click', ()=>{
+      syncTechs();
+      const techniques = elTechs.dataset.combined || elTechs.value;
+      elOut.value = buildPrompt(elTopic.value, elGrade.value, elBook.value, techniques, elExtra.value);
+      elOut.focus();
+      elOut.select();
+    });
+
+    document.getElementById('copy').addEventListener('click', async (event)=>{
+      if(!elOut.value) return;
+      try { await navigator.clipboard.writeText(elOut.value); }
+      catch { elOut.select(); document.execCommand('copy'); }
+      const old = event.target.textContent; event.target.textContent = 'Đã sao chép ✓';
+      setTimeout(()=> event.target.textContent = old, 1200);
+    });
+
+    document.getElementById('clear').addEventListener('click', ()=>{
+      elTopic.value=''; elTechs.value=''; elExtra.value='';
+      document.querySelectorAll('.chip.active').forEach(c=>c.classList.remove('active'));
+      elOut.value=''; elTopic.focus();
+    });
+
+    document.getElementById('download').addEventListener('click', ()=>{
+      const blob = new Blob([elOut.value||''], {type:'text/plain;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const namePart = (elTopic.value||'Prompt_KeHoach_Toan').replace(/\s+/g,'_');
+      a.download = `${namePart}.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+  </script>
+</body>
+</html>
