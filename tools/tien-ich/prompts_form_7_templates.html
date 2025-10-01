@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form tạo PROMPT dạy học — 7 Mẫu (kèm đề xuất)</title>
+<style>
+  :root{--bg:#0f172a;--panel:#0b1220;--ink:#e5e7eb;--muted:#94a3b8;--brand:#22c55e;--accent:#38bdf8;--line:#1f2937;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1220,#0f172a 45%,#0b1220);color:var(--ink);font-family:var(--sans);line-height:1.6}
+  .wrap{max-width:980px;margin:auto;padding:20px}
+  h1{margin:0 0 6px;font-size:clamp(22px,3vw,30px)}
+  p.sub{margin:0 0 16px;color:var(--muted)}
+  .card{background:#0b1220;border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+  label{font-weight:700;margin-bottom:6px;display:block}
+  input[type=text], select, textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0a1222;color:var(--ink);outline:none}
+  textarea{min-height:160px;font-family:var(--mono)}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;background:linear-gradient(90deg,#22c55e,#16a34a);color:#082016;box-shadow:0 8px 18px rgba(34,197,94,.25)}
+  .btn.sec{background:#0a1222;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px dashed var(--line)}
+  .hint{font-size:12px;color:var(--muted)}
+  .title{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .kbd{font-family:var(--mono);background:#0b1220;border:1px solid var(--line);padding:2px 6px;border-radius:6px}
+  details{border:1px solid var(--line);border-radius:12px;padding:10px;background:#0b1220}
+  details>summary{cursor:pointer;font-weight:800}
+  .outbox{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:900px){.outbox{grid-template-columns:1fr 1fr}}
+  .out{background:#0a1222;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .out h3{margin:0 0 6px;font-size:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧑‍🏫 Form tạo PROMPT — 7 mẫu dạy học (kèm đề xuất)</h1>
+  <p class="sub">Nhập <b>Chủ đề</b> và <b>Lớp</b> → chọn “Tạo tất cả” hoặc từng mẫu → copy dùng ngay trong ChatGPT/Custom GPT.</p>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Chủ đề/Bài học *</label>
+        <input id="topic" type="text" placeholder="VD: Hàm bậc hai; Hệ phương trình; Nguyên tử; Phong trào Tây Sơn...">
+      </div>
+      <div>
+        <label>Lớp *</label>
+        <select id="grade">
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="THCS">THCS</option>
+          <option value="Tiểu học">Tiểu học</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="generateAll()">⚡ Tạo TẤT CẢ 7 mẫu</button>
+      <button class="btn sec" onclick="clearOut()">🧹 Xóa kết quả</button>
+      <span class="hint">Mẹo: Nhấn <span class="kbd">Copy</span> bên từng ô để sao chép nhanh.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="title"><h2>🔧 Tuỳ chọn nâng cao</h2><button class="btn ghost" onclick="toggleAdv()">👁️ Hiện/Ẩn</button></div>
+    <div id="adv" style="display:none;margin-top:10px">
+      <div class="grid">
+        <div>
+          <label>Giới hạn từ cho Storytelling (mặc định 180–220)</label>
+          <input id="limitStory" type="text" placeholder="VD: 150–200">
+        </div>
+        <div>
+          <label>Số gạch đầu dòng “5 phút hiểu bài” (mặc định 5)</label>
+          <input id="bullets" type="text" placeholder="VD: 5">
+        </div>
+      </div>
+      <p class="hint">Không điền sẽ dùng mặc định theo khuyến nghị.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="title"><h2>📤 Kết quả</h2><button class="btn sec" onclick="copyAll()">📋 Copy tất cả</button></div>
+    <div id="out" class="outbox" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>📚 Danh sách 7 mẫu (giải thích ngắn)</summary>
+      <ul>
+        <li>1) Storytelling: biến kiến thức thành câu chuyện vui nhộn, chính xác, ngắn gọn.</li>
+        <li>2) Sơ đồ tư duy: 3–5 nhánh chính, nhánh phụ ≤ 1 dòng.</li>
+        <li>3) Tóm tắt 5 phút: 5 gạch đầu dòng trọng tâm theo 5W1H.</li>
+        <li>4) Vần điệu: thơ/rap/bài hát 4–8 câu, dễ nhớ.</li>
+        <li>5) Trò chơi hóa: quiz/ghép đôi/đố vui 3–5 phút, có thi đua.</li>
+        <li>6) Ví dụ thực tế: 5 ví dụ gắn đời sống, đúng lứa tuổi.</li>
+        <li>7) Quiz 5 phút: 10 câu trắc nghiệm 2 mức, 70% cơ bản – 30% nâng cao.</li>
+      </ul>
+    </details>
+  </div>
+
+  <p class="hint">© 2025 — Teaching Prompts Toolkit</p>
+</div>
+
+<script>
+const BOX = document.getElementById('out');
+
+function val(id){ return document.getElementById(id).value.trim(); }
+function must(){ if(!val('topic')){ alert('Vui lòng nhập Chủ đề/Bài học.'); return false; } return true; }
+
+function block(title, body){
+  const wrap = document.createElement('div');
+  wrap.className = 'out';
+  wrap.innerHTML = `<h3>${title}</h3>
+  <textarea spellcheck="false">${body}</textarea>
+  <div class="row" style="margin-top:8px">
+    <button class="btn sec" onclick="copyPrev(this)">📋 Copy</button>
+  </div>`;
+  BOX.appendChild(wrap);
+}
+
+function copyPrev(btn){
+  const ta = btn.parentElement.previousElementSibling;
+  ta.select(); ta.setSelectionRange(0, 99999);
+  document.execCommand('copy');
+  toast('Đã copy ✅');
+}
+async function copyAll(){
+  const all = [...document.querySelectorAll('#out textarea')].map(t=>t.value).join('\\n\\n---\\n\\n');
+  if(!all){ toast('Chưa có nội dung để copy'); return; }
+  try{ await navigator.clipboard.writeText(all); toast('Đã copy tất cả ✅'); }
+  catch{ const ta=document.createElement('textarea'); ta.value=all; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Đã copy (fallback) ✅'); }
+}
+function clearOut(){ BOX.innerHTML=''; }
+
+function toggleAdv(){
+  const adv = document.getElementById('adv');
+  adv.style.display = (adv.style.display==='none') ? 'block' : 'none';
+}
+
+function generateAll(){
+  if(!must()) return;
+  clearOut();
+  const topic = val('topic');
+  const grade = val('grade') || 'THPT';
+  const lim = val('limitStory') || '180–220';
+  const bullets = val('bullets') || '5';
+
+  // 1 Storytelling
+  block('1) Biến bài học thành câu chuyện', 
+`Prompt:
+"Hãy biến kiến thức ${topic} thành một câu chuyện ngắn vui nhộn, dễ nhớ, phù hợp với học sinh lớp ${grade}."
+
+Ưu điểm: Storytelling giúp học sinh tiếp thu tự nhiên, không khô khan.
+Đề xuất: Giới hạn ${lim} từ, dùng nhân vật gần gũi; có thể yêu cầu học sinh kể lại theo cách riêng để tăng tương tác.`);
+
+  // 2 Mindmap
+  block('2) Tạo sơ đồ tư duy tự động',
+`Prompt:
+"Hãy tạo sơ đồ tư duy chi tiết cho bài học ${topic}, chia thành nhánh chính – nhánh phụ, kèm giải thích ngắn gọn."
+
+Ưu điểm: Thấy rõ cấu trúc tổng thể → dễ hệ thống.
+Đề xuất: 3–5 nhánh chính; nhánh phụ ≤ 1 dòng; thêm icon/emoji nếu phù hợp.`);
+
+  // 3 5-minute summary
+  block('3) Tóm tắt ‘5 phút hiểu bài’',
+`Prompt:
+"Tóm tắt nội dung ${topic} thành ${bullets} gạch đầu dòng ngắn gọn, dễ nhớ cho học sinh lớp ${grade}."
+
+Ưu điểm: Cô đọng trọng tâm.
+Đề xuất: Dùng khung 5W1H (What, Why, How, Who, When) để bảo đảm “xương sống” kiến thức.`);
+
+  // 4 Rhyme
+  block('4) Biến công thức/định nghĩa thành vần điệu',
+`Prompt:
+"Hãy viết một đoạn thơ/rap/bài hát ngắn giúp học sinh lớp ${grade} dễ nhớ công thức/định nghĩa liên quan đến ${topic}."
+
+Ưu điểm: Học bằng nhạc/vần → nhớ nhanh, lâu, hứng thú.
+Đề xuất: Thơ lục bát hoặc rap 4–8 câu; có thể cho học sinh "chế" thêm để tăng chủ động.`);
+
+  // 5 Game
+  block('5) Biến bài tập thành trò chơi',
+`Prompt:
+"Hãy thiết kế trò chơi nhỏ (quiz/đố vui/ghép đôi) cho nội dung ${topic}, dành cho học sinh lớp ${grade}."
+
+Ưu điểm: Tạo hứng thú, ôn luyện tự nhiên.
+Đề xuất: Thời lượng 3–5 phút, có thi đua nhóm; mini‑reward (sao/sticker) để duy trì động lực.`);
+
+  // 6 Real-life examples
+  block('6) Tạo ví dụ thực tế gần gũi',
+`Prompt:
+"Hãy đưa 5 ví dụ đời sống hàng ngày giúp học sinh lớp ${grade} hiểu rõ hơn về ${topic}."
+
+Ưu điểm: Liên hệ thực tế → dễ hiểu, dễ áp dụng.
+Đề xuất: Chọn ví dụ sát lứa tuổi (mua bán, mạng xã hội, thể thao/Pickleball, môi trường); khuyến khích học sinh tự bổ sung ví dụ.`);
+
+  // 7 Quick quiz
+  block('7) Soạn quiz kiểm tra nhanh 5 phút',
+`Prompt:
+"Tạo 10 câu hỏi trắc nghiệm (kèm đáp án), 2 mức: dễ và nâng cao, để kiểm tra sau bài ${topic}."
+
+Ưu điểm: Phản hồi nhanh cho GV; học sinh ôn tập ngay.
+Đề xuất: 70% cơ bản – 30% nâng cao; thêm 1–2 câu “gài bẫy” để kích hoạt thảo luận/giải thích.`);
+}
+
+function toast(msg){
+  const t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;left:50%;top:20px;transform:translateX(-50%);background:#0b1220;border:1px solid #1f2937;color:#e5e7eb;padding:10px 14px;border-radius:10px;box-shadow:0 10px 20px rgba(0,0,0,.35);z-index:9999';
+  document.body.appendChild(t); setTimeout(()=>t.remove(),1600);
+}
+</script>
+</body>
+</html>
