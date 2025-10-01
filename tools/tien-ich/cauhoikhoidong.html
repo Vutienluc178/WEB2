@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Generator PROMPT – Gợi mở vào bài mới (Toán THPT)</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121833;
+      --muted: #99a3c7;
+      --text: #eaf0ff;
+      --accent: #5cc8ff;
+      --accent-2: #9bffb7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Noto Sans", sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(92,200,255,.12), transparent 40%),
+                  radial-gradient(1000px 500px at -10% 110%, rgba(155,255,183,.10), transparent 40%),
+                  var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 960px; margin: 48px auto; padding: 0 20px; }
+    .title { display:flex; align-items:center; gap:10px; margin-bottom: 18px; }
+    .badge { font-size:12px; color: var(--bg); background: linear-gradient(90deg, var(--accent), var(--accent-2)); padding:4px 10px; border-radius:999px; font-weight:700; letter-spacing:.4px; }
+    h1 { margin: 0 0 6px; font-size: 26px; letter-spacing:.2px; }
+    p.lead { margin: 0 0 22px; color: var(--muted); }
+
+    .grid { display:grid; grid-template-columns:1fr; gap:16px; }
+    @media (min-width: 880px){ .grid { grid-template-columns: 1.1fr .9fr; } }
+
+    .card { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.00));
+            border: 1px solid rgba(255,255,255,.08); border-radius: 18px; padding: 18px; backdrop-filter: blur(6px); }
+    .card h2 { margin: 0 0 10px; font-size: 18px; }
+    label { display:block; font-size:13px; color: var(--muted); margin: 12px 0 6px; }
+    input[type="text"], select, textarea {
+      width: 100%; padding: 12px 12px; font-size: 15px; color: var(--text);
+      background: #0f1530; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; outline: none;
+    }
+    textarea { min-height: 300px; resize: vertical; }
+
+    .row { display:flex; gap:10px; }
+    .row > * { flex:1; }
+
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top: 14px; }
+    button {
+      appearance:none; border:none; cursor:pointer; font-weight:700; color: var(--bg);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      padding: 10px 14px; border-radius: 12px; box-shadow: 0 10px 24px rgba(92,200,255,.22);
+    }
+    button.secondary { color: var(--text); background: transparent; border:1px solid rgba(255,255,255,.14); box-shadow:none; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <span class="badge">PROMPT MAKER</span>
+      <h1>Gợi mở vào bài mới – Toán THPT (7–10 phút)</h1>
+    </div>
+    <p class="lead">Nhập <strong>chủ đề Toán</strong> • <strong>lớp</strong> • <strong>sách CTST</strong> → bấm <em>Tạo PROMPT</em> để sinh câu lệnh theo mẫu “MC + Storyteller + Coach + Mentor”.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Thông tin đầu vào</h2>
+        <label for="topic">Chủ đề Toán</label>
+        <input id="topic" type="text" placeholder="VD: Hàm số bậc nhất; Đạo hàm; Hệ thức lượng trong tam giác" />
+
+        <div class="row">
+          <div>
+            <label for="grade">Lớp</label>
+            <select id="grade">
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+          </div>
+          <div>
+            <label for="book">Sách CTST (bộ)</label>
+            <select id="book">
+              <option value="Kết nối tri thức với cuộc sống">Kết nối tri thức với cuộc sống</option>
+              <option value="Chân trời sáng tạo">Chân trời sáng tạo</option>
+              <option value="Cánh diều">Cánh diều</option>
+              <option value="Khác/ĐHQG">Khác/ĐHQG</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="tone">Yêu cầu thêm (tùy chọn)</label>
+        <input id="tone" type="text" placeholder="VD: nhấn mạnh kỹ năng PISA; thêm hoạt động nhóm 3 người; có ví dụ STEM" />
+
+        <div class="actions">
+          <button id="generate">Tạo PROMPT</button>
+          <button id="copy" class="secondary">Sao chép</button>
+          <button id="clear" class="secondary">Xóa</button>
+          <button id="download" class="secondary">Tải .txt</button>
+        </div>
+        <div class="hint">Mẹo: điền thật gần gũi với đời sống HS (taxi, pizza, TikTok, bóng đá, Grab, điện thoại…).</div>
+      </section>
+
+      <section class="card">
+        <h2>Output PROMPT</h2>
+        <textarea id="output" class="mono" placeholder="Kết quả sẽ hiển thị tại đây…"></textarea>
+        <div class="hint">Sau khi dán vào AI, chỉ cần thay nội dung gợi ý theo lớp/sách, AI sẽ sinh kịch bản 7–10 phút.</div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:16px">
+      <h2>Mẫu PROMPT sẽ sinh</h2>
+      <pre class="mono" style="white-space:pre-wrap; line-height:1.5; margin:0">“Bạn là giáo viên Toán THPT (Lớp [lớp], theo sách [sách CTST]). Hãy thiết kế <b>hoạt động gợi mở vào bài mới</b> cho chủ đề <b>[chủ đề]</b> trong 7–10 phút, gồm:
+1) <b>Khởi động (2’)</b> – Đóng vai MC, đưa 1 câu hỏi vui hoặc tình huống bất ngờ gắn đời sống học sinh để tạo nhu cầu học kiến thức mới.
+2) <b>Ví dụ thực tế (2’)</b> – Đóng vai storyteller, kể 1 tình huống/ câu chuyện đời thường minh họa vấn đề.
+3) <b>Hoạt động khám phá (3’)</b> – Đóng vai coach, giao 1–2 câu hỏi/ thao tác nhỏ để HS tự phát hiện vấn đề mới.
+4) <b>Kết nối (2–3’)</b> – Đóng vai mentor, chốt: “Đây chính là nội dung của bài hôm nay – [tên chủ đề]”.
+- <b>Yêu cầu</b>: gọn, thực tế, ưu tiên ví dụ gần gũi; có 1 lỗi sai thường gặp + cách khắc phục; câu hỏi mở liên hệ thực tế/ môn khác.
+- <b>Đầu ra</b>: văn bản gọn gàng, có gạch đầu dòng dễ đọc.”
+</pre>
+    </section>
+  </div>
+
+  <script>
+    function buildPrompt(topic, grade, book, extra){
+      const topicStr = topic?.trim() || "[chủ đề]";
+      const extraLine = extra?.trim() ? `\n- Yêu cầu bổ sung: ${extra.trim()}.` : "";
+      return (
+`Bạn là giáo viên Toán THPT (Lớp ${grade}, theo sách ${book}). Hãy thiết kế hoạt động gợi mở vào bài mới cho chủ đề "${topicStr}" trong 7–10 phút, gồm:
+1) Khởi động (2’) – Đóng vai MC, đưa 1 câu hỏi vui hoặc tình huống bất ngờ gắn đời sống học sinh để tạo nhu cầu học kiến thức mới.
+2) Ví dụ thực tế (2’) – Đóng vai Storyteller, kể 1 tình huống/câu chuyện đời thường minh họa vấn đề.
+3) Hoạt động khám phá (3’) – Đóng vai Coach, giao 1–2 câu hỏi/thao tác nhỏ để HS tự phát hiện vấn đề mới.
+4) Kết nối (2–3’) – Đóng vai Mentor, chốt: “Đây chính là nội dung của bài hôm nay – ${topicStr}”.
+- Yêu cầu chung: gọn, thực tế, ưu tiên ví dụ gần gũi; nêu 1 lỗi sai thường gặp + cách khắc phục; có 1 câu hỏi mở liên hệ thực tế hoặc môn khác.${extraLine}
+- Đầu ra: trình bày gạch đầu dòng, rõ ràng, có thể dùng ngay trên lớp.`
+      );
+    }
+
+    const elTopic = document.getElementById('topic');
+    const elGrade = document.getElementById('grade');
+    const elBook = document.getElementById('book');
+    const elExtra = document.getElementById('tone');
+    const elOut = document.getElementById('output');
+
+    document.getElementById('generate').addEventListener('click', () => {
+      elOut.value = buildPrompt(elTopic.value, elGrade.value, elBook.value, elExtra.value);
+      elOut.focus();
+      elOut.select();
+    });
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      if(!elOut.value) return;
+      try { await navigator.clipboard.writeText(elOut.value); }
+      catch(err){
+        elOut.select(); document.execCommand('copy');
+      }
+      const old = event.target.textContent;
+      event.target.textContent = 'Đã sao chép ✓';
+      setTimeout(()=> event.target.textContent = old, 1200);
+    });
+
+    document.getElementById('clear').addEventListener('click', () => {
+      elTopic.value = '';
+      elExtra.value = '';
+      elOut.value = '';
+      elTopic.focus();
+    });
+
+    document.getElementById('download').addEventListener('click', () => {
+      const blob = new Blob([elOut.value || ''], {type: 'text/plain;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const namePart = (elTopic.value || 'Prompt_GoiMo_Toan').replace(/\s+/g,'_');
+      a.download = `${namePart}.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+  </script>
+</body>
+</html>
