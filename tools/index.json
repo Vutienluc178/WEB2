@@ -145,6 +145,11 @@
         "title": "TẠO SLIDE",
         "path": "tien-ich/slide_builder.html"
       }
+       ,
+      {
+        "title": "7 mẫu tạo bài học",
+        "path": "tien-ich/prompts_form_7_templates.html"
+      }
     ]
   }
 ]
