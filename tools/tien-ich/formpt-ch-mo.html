@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form tạo Prompt câu hỏi mở Toán</title>
+  <style>
+    :root{
+      --bg:#0f172a; /* slate-900 */
+      --card:#111827ee; /* gray-900 */
+      --text:#e5e7eb; /* gray-200 */
+      --muted:#94a3b8; /* slate-400 */
+      --accent:#22c55e; /* green-500 */
+      --accent-2:#60a5fa; /* blue-400 */
+      --border:#1f2937; /* gray-800 */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 80% -10%, #1e293b 0%, #0b1220 40%, #080c17 100%);
+      color:var(--text);
+    }
+    .wrap{max-width:980px; margin:40px auto; padding:24px}
+    .title{font-size:clamp(22px,4vw,34px); font-weight:800; letter-spacing:.3px; display:flex; gap:10px; align-items:center}
+    .title span.logo{display:inline-grid; place-items:center; width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow:0 10px 30px #22c55e33}
+    .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:18px}
+    @media(min-width:760px){ .grid{grid-template-columns:1.2fr 1.2fr .8fr} }
+    label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px}
+    input, select, textarea{
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:#0b1324; color:var(--text);
+      outline:none; transition:.18s border, .18s box-shadow; font-size:15px;
+    }
+    input:focus, select:focus, textarea:focus{ border-color:#2563eb; box-shadow:0 0 0 4px #1d4ed81f }
+    .card{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 12px 40px #0007}
+    .row{display:flex; gap:12px; flex-wrap:wrap}
+    .row > *{flex:1}
+    .hint{font-size:12px; color:var(--muted)}
+    .controls{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:14px}
+    .btn{padding:12px 16px; border-radius:12px; border:1px solid #1f2937; background:#0b1324; color:var(--text); cursor:pointer; font-weight:600}
+    .btn.primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0b1220; border:none}
+    .btn.ghost{background:transparent}
+    .btn:active{transform:translateY(1px)}
+    .out{margin-top:16px}
+    textarea{min-height:220px; resize:vertical; line-height:1.45}
+    .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 10px; border-radius:999px; background:#0b1324; border:1px solid var(--border); color:var(--muted)}
+    .footer{margin-top:18px; text-align:center; color:var(--muted); font-size:12px}
+    .chk{display:flex; gap:10px; align-items:center; font-size:13px; color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <span class="logo">🧠</span>
+      Form tạo Prompt câu hỏi mở Toán
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="grid">
+        <div>
+          <label for="lop">Lớp</label>
+          <input id="lop" placeholder="VD: 10, 11, 12" />
+        </div>
+        <div>
+          <label for="chude">Chủ đề</label>
+          <input id="chude" placeholder="VD: Hệ bất phương trình bậc nhất hai ẩn / Tích phân / Hàm số bậc hai" />
+        </div>
+        <div>
+          <label for="soluong">Số lượng câu hỏi</label>
+          <input id="soluong" type="number" min="1" max="50" value="6" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <div>
+          <label for="role">Vai trò (persona)</label>
+          <select id="role">
+            <option value="Giáo viên Toán THPT xuất sắc 20 năm kinh nghiệm">Giáo viên Toán THPT xuất sắc 20 năm kinh nghiệm</option>
+            <option value="Chuyên gia sư phạm Toán học theo thang tư duy Bloom">Chuyên gia sư phạm Toán học theo Bloom</option>
+            <option value="Huấn luyện viên tư duy phản biện áp dụng cho môn Toán">Huấn luyện viên tư duy phản biện</option>
+            <option value="Chuyên gia ứng dụng Toán học vào đời sống">Chuyên gia ứng dụng Toán vào đời sống</option>
+            <option value="custom">Tự nhập vai trò…</option>
+          </select>
+          <div class="out" id="customRoleWrap" style="display:none">
+            <input id="customRole" placeholder="Nhập vai trò mong muốn (VD: Chuyên gia thiết kế câu hỏi mở theo PBL)…"/>
+            <div class="hint">Để trống nếu không dùng.</div>
+          </div>
+        </div>
+        <div>
+          <label>Tùy chọn bổ sung</label>
+          <div class="row">
+            <label class="chk"><input type="checkbox" id="bloom" checked> Phân loại theo Bloom (Nhận biết → Sáng tạo)</label>
+            <label class="chk"><input type="checkbox" id="explain" checked> Kèm giải thích vì sao mỗi câu hỏi tốt</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn primary" id="generate">Tạo Prompt</button>
+        <button class="btn" id="copy">Sao chép</button>
+        <span class="badge">Mẹo: điền Lớp – Chủ đề – Số lượng → bấm "Tạo Prompt"</span>
+      </div>
+
+      <div class="out">
+        <label for="output">Prompt tạo câu hỏi mở</label>
+        <textarea id="output" spellcheck="false" placeholder="Prompt sẽ hiển thị tại đây để bạn sao chép vào ChatGPT/AI…"></textarea>
+      </div>
+    </div>
+
+    <div class="footer">© 2025 – Thiết kế bởi Giáo viên Toán & AI – dùng tự do trong lớp học</div>
+  </div>
+
+  <script>
+    const roleSel = document.getElementById('role');
+    const customRoleWrap = document.getElementById('customRoleWrap');
+    const customRole = document.getElementById('customRole');
+    const lop = document.getElementById('lop');
+    const chude = document.getElementById('chude');
+    const soluong = document.getElementById('soluong');
+    const bloom = document.getElementById('bloom');
+    const explain = document.getElementById('explain');
+    const out = document.getElementById('output');
+
+    roleSel.addEventListener('change', () => {
+      customRoleWrap.style.display = roleSel.value === 'custom' ? 'block' : 'none';
+    });
+
+    function sanitize(s){
+      return (s||'').toString().trim();
+    }
+
+    function buildPrompt(){
+      const vRole = roleSel.value === 'custom' ? sanitize(customRole.value) : roleSel.value;
+      const vLop = sanitize(lop.value) || '10';
+      const vChude = sanitize(chude.value) || 'Hệ bất phương trình bậc nhất hai ẩn';
+      const vCount = Math.min(Math.max(parseInt(soluong.value||'6',10)||6,1),50);
+
+      let req = [
+        '1. Câu hỏi phải gợi suy luận, không chỉ dừng ở tính kết quả.'
+      ];
+      if (bloom.checked) req.push('2. Phân loại theo 6 bậc Bloom (Nhận biết – Hiểu – Vận dụng – Phân tích – Đánh giá – Sáng tạo).');
+      if (explain.checked) req.push('3. Mỗi câu hỏi kèm 1–2 câu giải thích vì sao giúp phát triển tư duy.');
+
+      const roleLine = vRole ? `Đóng vai ${vRole}.` : 'Đóng vai Giáo viên Toán THPT xuất sắc 20 năm kinh nghiệm.';
+
+      const prompt = `${roleLine}\n\nNhiệm vụ: Hãy tạo ${vCount} câu hỏi mở cho học sinh lớp ${vLop} theo chủ đề "${vChude}".\n\nYêu cầu:\n${req.map((x,i)=>`${i+1}. ${x}`).join('\n')}`;
+
+      out.value = prompt;
+      out.focus();
+      out.select();
+    }
+
+    document.getElementById('generate').addEventListener('click', buildPrompt);
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      if(!out.value.trim()) buildPrompt();
+      try{
+        await navigator.clipboard.writeText(out.value);
+        const btn = document.getElementById('copy');
+        const old = btn.textContent;
+        btn.textContent = 'Đã sao chép ✅';
+        setTimeout(()=>btn.textContent = old, 1400);
+      }catch(err){
+        out.select();
+        alert('Đã chọn nội dung. Nhấn ⌘C / Ctrl+C để sao chép.');
+      }
+    });
+
+    // Auto-generate a first prompt on load
+    window.addEventListener('load', buildPrompt);
+  </script>
+</body>
+</html>
