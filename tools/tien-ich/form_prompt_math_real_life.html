@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form tạo PROMPT — Câu hỏi mở Toán gắn đời sống</title>
+<style>
+  :root{--bg:#0f172a;--panel:#0b1220;--ink:#e5e7eb;--muted:#94a3b8;--brand:#22c55e;--line:#1f2937;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Noto Sans";}
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f172a;color:var(--ink);font-family:var(--sans);line-height:1.6}
+  .wrap{max-width:880px;margin:auto;padding:20px}
+  h1{margin:0 0 4px;font-size:clamp(22px,3vw,28px)}
+  p.sub{margin:0 0 18px;color:var(--muted)}
+  .card{background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+  label{font-weight:700;margin-bottom:6px;display:block}
+  input[type=text], select, textarea{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#0a1222;color:var(--ink);outline:none}
+  textarea{min-height:160px;font-family:var(--mono)}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{border:1px dashed #334155;color:#cbd5e1;padding:6px 10px;border-radius:999px;cursor:pointer;user-select:none}
+  .pill.active{border-color:#38bdf8;color:#e0f2fe;background:rgba(56,189,248,.07)}
+  .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;background:linear-gradient(90deg,#22c55e,#16a34a);color:#082016;box-shadow:0 8px 18px rgba(34,197,94,.25)}
+  .btn.sec{background:#0a1222;color:var(--ink);border:1px solid var(--line)}
+  .hint{font-size:12px;color:var(--muted)}
+  .kbd{font-family:var(--mono);background:#0b1220;border:1px solid var(--line);padding:2px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧮 Form tạo PROMPT — Câu hỏi mở Toán gắn đời sống</h1>
+  <p class="sub">Điền thông tin → bấm <span class="kbd">Tạo PROMPT</span> → copy & dán vào ChatGPT/Custom GPT để sinh câu hỏi mở.</p>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Chủ đề Toán *</label>
+        <input id="topic" type="text" placeholder="Ví dụ: Hàm bậc hai; Hệ phương trình; Xác suất; Vectơ...">
+      </div>
+      <div>
+        <label>Lớp *</label>
+        <select id="grade">
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+      </div>
+      <div>
+        <label>Bộ sách</label>
+        <select id="series">
+          <option value="Chân trời sáng tạo">Chân trời sáng tạo</option>
+          <option value="Kết nối tri thức">Kết nối tri thức</option>
+          <option value="Cánh diều">Cánh diều</option>
+          <option value="Khác / tự chọn">Khác / tự chọn</option>
+        </select>
+      </div>
+      <div>
+        <label>Bối cảnh đời sống (tùy chọn)</label>
+        <input id="context" type="text" placeholder="Ví dụ: mua bán, Pickleball, môi trường, giao thông, âm nhạc...">
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label>Phong cách vai trò (chọn 1–3)</label>
+      <div id="roles" class="row">
+        <div class="pill" data-role="Storyteller (người kể chuyện)">Storyteller</div>
+        <div class="pill" data-role="Coach (huấn luyện viên)">Coach</div>
+        <div class="pill" data-role="Connector (kết nối liên môn)">Connector</div>
+        <div class="pill" data-role="Facilitator (điều phối thảo luận)">Facilitator</div>
+        <div class="pill" data-role="Real-world problem poser (đặt tình huống thực tế)">Real‑world</div>
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label>Tùy chọn đầu ra</label>
+      <div class="row">
+        <div class="pill active" data-opt="count=4">4 câu hỏi</div>
+        <div class="pill" data-opt="count=5">5 câu hỏi</div>
+        <div class="pill" data-opt="count=3">3 câu hỏi</div>
+        <div class="pill" data-opt="level=dễ→khó">Sắp xếp: dễ→khó</div>
+        <div class="pill" data-opt="include_debate=1">Có 1 câu tranh luận</div>
+        <div class="pill" data-opt="tone=gần gũi">Ngôn ngữ gần gũi</div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <button class="btn" onclick="makePrompt()">⚡ Tạo PROMPT</button>
+      <button class="btn sec" onclick="copyOut()">📋 Copy</button>
+      <button class="btn sec" onclick="sample()">🎲 Ví dụ nhanh</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Prompt tạo ra</label>
+    <textarea id="out" placeholder="Prompt sẽ hiện ở đây..." spellcheck="false"></textarea>
+    <div class="hint">Mẹo: Sau khi copy, có thể yêu cầu ChatGPT: “Tạo thêm một phiên bản khác”, “tăng độ mở”, “đổi bối cảnh sang Pickleball/mua bán”…</div>
+  </div>
+
+  <p class="hint">© 2025 — THPT Math × Real-life Questions</p>
+</div>
+
+<script>
+// Toggle pills
+for(const el of document.querySelectorAll('.pill')){
+  el.addEventListener('click', ()=> el.classList.toggle('active'));
+}
+function getActive(selector, attr){
+  return [...document.querySelectorAll(selector + ' .pill.active')].map(p => p.getAttribute(attr));
+}
+function sample(){
+  document.getElementById('topic').value = 'Hàm bậc hai';
+  document.getElementById('grade').value = '10';
+  document.getElementById('series').value = 'Chân trời sáng tạo';
+  document.getElementById('context').value = 'mua bán, Pickleball, rơi tự do';
+  // roles
+  document.querySelectorAll('#roles .pill').forEach(p => p.classList.remove('active'));
+  ['Storyteller (người kể chuyện)','Coach (huấn luyện viên)','Connector (kết nối liên môn)'].forEach(name=>{
+    const el = [...document.querySelectorAll('#roles .pill')].find(x=>x.dataset.role===name);
+    if(el) el.classList.add('active');
+  });
+  // opts
+  document.querySelectorAll('[data-opt]').forEach(p=>p.classList.remove('active'));
+  ['count=4','level=dễ→khó','include_debate=1','tone=gần gũi'].forEach(v=>{
+    const el = [...document.querySelectorAll('[data-opt]')].find(x=>x.dataset.opt===v);
+    if(el) el.classList.add('active');
+  });
+  makePrompt();
+}
+function makePrompt(){
+  const topic = document.getElementById('topic').value.trim();
+  const grade = document.getElementById('grade').value;
+  const series = document.getElementById('series').value;
+  const context = document.getElementById('context').value.trim();
+  if(!topic){ alert('Vui lòng nhập Chủ đề Toán.'); return; }
+
+  const roles = getActive('#roles','data-role');
+  const opts = getActive('body','data-opt');
+  const countOpt  = (opts.find(o=>o.startsWith('count=')) || 'count=4').split('=')[1];
+  const levelOpt  = opts.includes('level=dễ→khó');
+  const debateOpt = opts.includes('include_debate=1');
+  const toneOpt   = opts.includes('tone=gần gũi');
+  const seed = Math.random().toString(36).slice(2,8);
+
+  const roleLine = roles.length ? `Hãy kết hợp phong cách: ${roles.join(', ')}.` : '';
+  const ctxLine = context ? `Ưu tiên bối cảnh: ${context}.` : 'Ưu tiên bối cảnh quen thuộc với học sinh (mua bán, thể thao/Pickleball, công nghệ, môi trường, mạng xã hội).';
+  const constraints = [
+    `Tạo ${countOpt} câu hỏi mở (mỗi câu 1–2 câu ngắn), không lộ đáp án ngay, khuyến khích thảo luận.`,
+    levelOpt ? `Sắp xếp từ dễ đến khó.` : ``,
+    debateOpt ? `Có ít nhất 1 câu gợi tranh luận nhiều hướng trả lời.` : ``,
+    toneOpt ? `Dùng ngôn ngữ gần gũi, thân thiện.` : `Dùng ngôn ngữ rõ ràng, phù hợp học sinh THPT.`,
+    `Không yêu cầu giải chi tiết; chỉ nêu câu hỏi mở gắn thực tế.`
+  ].filter(Boolean).join('\\n- ');
+
+  const prompt = `Bạn là giáo viên Toán THPT xuất sắc với 20 năm kinh nghiệm.\n${roleLine}\nHãy tạo câu hỏi mở gắn với đời sống để khơi gợi suy nghĩ và kết nối kiến thức mới cho học sinh.\n\nChủ đề: ${topic}\nLớp: ${grade}\nSách: ${series}\n${ctxLine}\n\nYêu cầu:\n- ${constraints}\n\nĐầu ra:\n- Danh sách đánh số các câu hỏi.\n- Ngắn gọn, dễ hiểu.\n\n(variation_seed: ${seed})`;
+
+  document.getElementById('out').value = prompt;
+}
+async function copyOut(){
+  const ta = document.getElementById('out');
+  if(!ta.value.trim()){ makePrompt(); }
+  ta.select(); ta.setSelectionRange(0, 99999);
+  try{
+    await navigator.clipboard.writeText(ta.value);
+    toast('Đã copy PROMPT ✅');
+  }catch(e){
+    document.execCommand('copy');
+    toast('Đã cố gắng copy. Nếu chưa được, hãy Ctrl/Cmd+C.');
+  }
+}
+function toast(msg){
+  const t=document.createElement('div'); t.textContent=msg;
+  t.style.cssText='position:fixed;left:50%;top:20px;transform:translateX(-50%);background:#0b1220;border:1px solid #1f2937;color:#e5e7eb;padding:10px 14px;border-radius:10px;box-shadow:0 10px 20px rgba(0,0,0,.35);z-index:9999';
+  document.body.appendChild(t); setTimeout(()=>t.remove(),1600);
+}
+</script>
+</body>
+</html>
