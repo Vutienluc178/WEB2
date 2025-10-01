@@ -135,6 +135,11 @@
         "title": "KẾ HOẠCH BD",
         "path": "tien-ich/KHBD.html"
       }
+      ,
+      {
+        "title": "CÂU HỎI MỞ-THỰC TẾ",
+        "path": "tien-ich/form_prompt_math_real_life.html"
+      }
     ]
   }
 ]
