@@ -130,6 +130,11 @@
         "title": "CÂU HỎI KHỞI ĐỘNG",
         "path": "tien-ich/cauhoikhoidong.html"
       }
+      ,
+      {
+        "title": "KẾ HOẠCH BD",
+        "path": "tien-ich/KHBD.html"
+      }
     ]
   }
 ]
