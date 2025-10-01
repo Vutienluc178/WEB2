@@ -140,6 +140,11 @@
         "title": "CÂU HỎI MỞ-THỰC TẾ",
         "path": "tien-ich/form_prompt_math_real_life.html"
       }
+       ,
+      {
+        "title": "TẠO SLIDE",
+        "path": "tien-ich/slide_builder.html"
+      }
     ]
   }
 ]
