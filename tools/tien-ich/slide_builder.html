@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trình tạo Slide HTML – Nhập văn bản → Xuất file</title>
+  <style>
+    :root{ --bg:#0f172a; --panel:#0b1220; --text:#e2e8f0; --muted:#94a3b8; --accent:#60a5fa; --ok:#22c55e; --bad:#ef4444 }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#0b1220,#0f172a);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .wrap{max-width:1200px;margin:0 auto;padding:24px;display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    h1{margin:0 0 8px;font-size:24px}
+    .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+    label{display:block;font-size:13px;color:var(--muted);margin:6px 0}
+    input,textarea{width:100%;background:#0b1220;color:#e2e8f0;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;font:inherit}
+    textarea{height:56vh;resize:vertical;line-height:1.4}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    button{border:1px solid rgba(255,255,255,.2);background:#111827;color:#e5e7eb;border-radius:999px;padding:10px 14px;font-weight:700;cursor:pointer}
+    button.primary{background:var(--accent);border-color:transparent;color:#0b1220}
+    .hint{font-size:13px;color:var(--muted);margin-top:6px}
+    pre{white-space:pre-wrap;background:#0b1220;border:1px solid rgba(255,255,255,.1);padding:10px;border-radius:10px;color:#cbd5e1}
+    .preview{height:56vh;background:#0b1220;border:1px dashed rgba(255,255,255,.15);border-radius:12px;display:grid;place-items:center;color:#64748b;padding:10px}
+    .ok{color:var(--ok)} .bad{color:var(--bad)}
+    .small{font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Trình tạo Slide HTML</h1>
+      <div class="row">
+        <div>
+          <label>Tên giáo viên</label>
+          <input id="teacher" placeholder="VD: Vũ Tiến Lực - NHC" value="Vũ Tiến Lực - NHC"/>
+        </div>
+        <div>
+          <label>Tên file (không .html)</label>
+          <input id="fname" placeholder="VD: bai-giang-toan-tc" value="bai-giang-moi"/>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Tiêu đề bìa</label>
+          <input id="title" placeholder="VD: CHỦ ĐỀ / TÊN BÀI"/>
+        </div>
+        <div>
+          <label>Phụ đề bìa</label>
+          <input id="subtitle" placeholder="VD: Bài giảng tương tác, có luyện tập & trắc nghiệm"/>
+        </div>
+      </div>
+      <label>Nội dung slide (văn bản)</label>
+      <textarea id="src" placeholder="# [Bìa]
+tag: Toán 12 · CTST
+h1: ĐƯỜNG TIỆM CẬN CỦA ĐỒ THỊ HÀM SỐ
+lead: Bài giảng tương tác · Có luyện tập & trắc nghiệm
+
+# [Khởi động]
+- K: Em đã biết gì về “tiệm cận”?
+- W: Em muốn biết điều gì?
+- L: Cuối giờ em học được gì?
+lead: Ví dụ: \(y=\frac{1}{x}\) khi \(x\to 0\)
+
+# [Kiến thức mới]
+$$ \lim_{x\to a} f(x)=\pm\infty \Rightarrow x=a $$
+$$ \lim_{x\to \pm\infty} f(x)=b \Rightarrow y=b $$
+
+# [Ví dụ]
+lead: Hàm \(f(x)=\dfrac{2x+1}{x-1}\)
+- TC đứng: x=1
+- TC ngang: y=2
+
+# [Luyện tập]
+- Rút gọn hàm số \(y=\dfrac{x^2-1}{x-1}\)
+- Xét giới hạn khi \(x\to 1\) và \(x\to \pm\infty\)
+hint: Nhớ rằng \(x^2-1=(x-1)(x+1)\)
+answer:
+  Rút gọn: \(y=x+1\), với \(x\ne 1\). TC xiên: \(y=x+1\).
+
+# [Trắc nghiệm nhanh]
+- Tiệm cận đứng là gì?
+- Tiệm cận ngang là gì?
+answer:
+  Đứng: \(x=-2\). Ngang: \(y=3\).
+
+# [Trực quan]
+url: https://www.geogebra.org/m/p9w2fp6j
+
+# [Tổng kết]
+- Nhận dạng ba loại tiệm cận
+- Dùng giới hạn / so bậc
+- Ứng dụng phác thảo đồ thị nhanh
+"></textarea>
+      <div class="hint">Cú pháp nhanh:
+        <ul class="small">
+          <li>Mỗi slide bắt đầu bằng <code># [Tên slide]</code> (ví dụ: Bìa, Khởi động, Kiến thức mới, Ví dụ, Luyện tập, Trắc nghiệm nhanh, Trực quan, Tổng kết).</li>
+          <li><code>tag:</code>, <code>h1:</code>, <code>lead:</code>, <code>url:</code> là các trường đặc biệt (tuỳ slide). Công thức dùng LaTeX như <code>\( ... \)</code> hoặc <code>$$ ... $$</code>.</li>
+          <li>Dòng bắt đầu bằng <code>- </code> sẽ tạo danh sách lớn (big).</li>
+          <li><code>hint:</code> tạo gợi ý; <code>answer:</code> mở một khối đáp án (kết thúc khi gặp slide mới).</li>
+        </ul>
+      </div>
+      <div class="actions">
+        <button class="primary" id="buildBtn">⚙️ Tạo file HTML</button>
+        <button id="sampleBtn">📋 Dán ví dụ</button>
+        <a id="download" style="display:none" download="">Tải file</a>
+      </div>
+      <div id="msg" class="hint"></div>
+    </div>
+    <div class="card">
+      <div class="preview" id="preview">Xem nhanh: sau khi bấm “Tạo file HTML”, mã sẽ xuất hiện ở đây.</div>
+    </div>
+  </div>
+
+<script>
+const template = (teacher, htmlSlides, title, subtitle) => `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Slide 16:9 – ${escapeHtml(title||'Bài giảng')}</title>
+  <meta name="description" content="Slide HTML sinh tự động"/>
+  <script>
+    window.MathJax = { tex: {inlineMath: [["$","$"],["\\\\(","\\\\)"]], displayMath: [["$$","$$"],["\\\\[","\\\\]"]]}, svg:{fontCache:'global'} };
+  <\/script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
+  <style>
+    :root{ --bg:#f2f3f5; --panel:#fff; --text:#0d0f14; --muted:#3a4052; --accent:#0b57d0; --math:#0b57d0; --tint:#f7f9ff }
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif}
+    .deck{position:fixed;inset:0;display:grid;place-items:center}
+    .slide{width:calc(min(100vw, 1280px));aspect-ratio:16/9;background:linear-gradient(140deg,var(--tint) 0%, #f2f3f5 60%);border:1px solid rgba(13,15,20,.08);border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,.08);padding:48px;display:none}
+    .slide.active{display:block}
+    h1,h2{margin:0 0 16px} h1{font-size:56px;line-height:1.1} h2{font-size:40px}
+    p{font-size:26px;line-height:1.5;color:var(--muted)} .lead{font-size:28px;color:var(--text)}
+    .grid{display:grid;gap:16px} .grid.cols-2{grid-template-columns:1fr 1fr}
+    .card{background:var(--panel);border:1px solid rgba(13,15,20,.1);border-radius:20px;padding:24px}
+    .tag{display:inline-block;padding:6px 12px;border-radius:999px;background:transparent;border:1.5px solid var(--math);color:var(--math);font-weight:800;font-size:14px;letter-spacing:.4px}
+    .big{font-size:32px} .formula{font-size:34px;margin:8px 0;padding:12px 16px;border-left:5px solid var(--math);border-radius:14px;background:rgba(255,255,255,.92)}
+    .frag{opacity:0;transform:translateY(8px);transition:opacity .28s ease, transform .28s ease} .frag.shown{opacity:1;transform:none}
+    h2,h3{color:var(--math)} ul.big li::marker,ol.big li::marker{color:var(--math);font-weight:800}
+    .bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:calc(min(100vw, 1280px));display:flex;align-items:center;gap:16px}
+    .progress{flex:1;height:8px;background:rgba(0,0,0,.08);border-radius:999px;overflow:hidden}
+    .progress>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#3b77e3);width:0%}
+    .crumb{font-size:14px;color:var(--muted)} .timer{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+    .blackout{position:fixed;inset:0;background:#000;display:none;z-index:30} .blackout.show{display:block}
+    .controls{position:fixed;top:14px;right:14px;display:flex;align-items:center;gap:10px;z-index:41}
+    .fs-btn,.pal-btn{height:36px;min-width:36px;border-radius:999px;border:1px solid rgba(13,15,20,.2);background:#fff;color:#0d0f14;font-weight:700;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06);display:inline-flex;align-items:center;justify-content:center;padding:0 10px}
+    .fs-btn[aria-pressed="true"]{background:var(--accent);color:#fff}
+    .pal-btn{width:36px;padding:0;border:2px solid #fff;outline:1px solid rgba(13,15,20,.25)}
+    .jumper{position:fixed;top:64px;right:14px;display:flex;flex-wrap:wrap;gap:8px;max-width:min(40vw,520px);z-index:40}
+    .jump-btn{min-width:36px;min-height:36px;padding:6px 10px;border-radius:999px;border:1px solid rgba(13,15,20,.2);background:#fff;color:#0d0f14;font-weight:700;cursor:pointer}
+    .jump-btn[aria-current="true"]{background:var(--accent);color:#fff;border-color:transparent}
+    .teacher-badge{position:fixed;top:14px;left:14px;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid rgba(13,15,20,.12);box-shadow:0 1px 2px rgba(0,0,0,.06);font-weight:700}
+    :root.hc{ --bg:#fff; --panel:#fff; --text:#000; --muted:#111; --accent:#000; --math:#000; --tint:#fff } :root.hc .slide{background:#fff}
+    :root.ui-off .controls,:root.ui-off .jumper{display:none !important}
+    .webpanel{position:fixed;right:16px;bottom:76px;width:min(90vw,720px);height:min(70vh,480px);background:#fff;border:1px solid rgba(13,15,20,.15);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.16);overflow:hidden;display:none;z-index:45;resize:both}
+    .webpanel.show{display:block} .webpanel header{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;background:linear-gradient(180deg,#fff,#f6f7fb);border-bottom:1px solid rgba(13,15,20,.1)}
+    .webpanel header .title{font-weight:700;font-size:14px;color:#0d0f14;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%} .webpanel header .actions{display:flex;gap:8px}
+    .webpanel header button{height:28px;min-width:28px;padding:0 8px;border-radius:999px;border:1px solid rgba(13,15,20,.2);background:#fff;cursor:pointer}
+    .webpanel iframe{width:100%;height:calc(100% - 40px);border:0}
+    .ui-restore{position:fixed;left:18px;bottom:22px;width:42px;height:42px;border-radius:999px;border:1px solid rgba(13,15,20,.2);background:#fff;color:#0d0f14;display:none;align-items:center;justify-content:center;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.12);cursor:pointer;font-size:20px}
+    :root.ui-off .ui-restore{display:flex}
+  </style>
+</head>
+<body>
+  <div class="teacher-badge">${escapeHtml(teacher)}</div>
+  <div class="controls" aria-label="Điều khiển nhanh">
+    <button class="fs-btn" id="fsBtn" type="button" title="Toàn màn hình (F)">⛶</button>
+    <button class="fs-btn" id="hcBtn" type="button" title="Chế độ High-Contrast (H)">HC</button>
+    <button class="fs-btn" id="uiToggleBtn" type="button" title="Ẩn/hiện điều khiển (G)">☰</button>
+    <button class="fs-btn" id="webBtn" type="button" title="Trực quan Web (V)">🌐</button>
+    <div style="display:flex;gap:8px" aria-label="Bảng màu công thức">
+      <button class="pal-btn" id="pal-red" type="button" title="Đỏ (1)" style="background:#c62828"></button>
+      <button class="pal-btn" id="pal-green" type="button" title="Xanh (2)" style="background:#137333"></button>
+      <button class="pal-btn" id="pal-purple" type="button" title="Tím (3)" style="background:#6a1b9a"></button>
+    </div>
+  </div>
+  <div class="jumper" id="jumper" aria-label="Điều hướng nhanh các slide"></div>
+
+  <div class="deck" id="deck">
+    ${htmlSlides}
+  </div>
+
+  <div class="bar" aria-hidden="true">
+    <div class="crumb" id="crumb">1 / ? · Bìa</div>
+    <div class="progress"><span id="prog"></span></div>
+    <div class="timer" id="timer">00:00</div>
+  </div>
+
+  <div class="blackout" id="blackout"></div>
+  <button class="ui-restore" id="uiRestore" title="Hiện điều khiển (G)">⚙️</button>
+
+  <div class="webpanel" id="webpanel" role="dialog" aria-label="Khung trực quan">
+    <header>
+      <span class="title" id="webTitle">Trực quan Web</span>
+      <div class="actions">
+        <button id="webOpen" title="Mở tab mới">↗</button>
+        <button id="webClose" title="Đóng">✕</button>
+      </div>
+    </header>
+    <iframe id="webframe" src="" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+
+  <!-- Engine JS tối giản (giống bản đã dùng) -->
+  <script>
+  const slides=[...document.querySelectorAll('.slide')]; let idx=0;
+  const prog=document.getElementById('prog'), crumb=document.getElementById('crumb'), blackout=document.getElementById('blackout');
+  const jumper=document.getElementById('jumper');
+  function buildJumper(){ jumper.innerHTML=''; slides.forEach((s,i)=>{ const b=document.createElement('button'); b.className='jump-btn'; b.type='button'; b.textContent=String(i+1); b.title=(s.dataset.title||'Slide')+` (#${i+1})`; b.addEventListener('click',()=>setActive(i)); jumper.appendChild(b); }); updateJumperActive(); }
+  function updateJumperActive(){ jumper.querySelectorAll('.jump-btn').forEach((b,i)=> b.setAttribute('aria-current', i===idx?'true':'false')); }
+  function prepareFragments(slide){ slide.querySelectorAll('.frag').forEach(el=>el.classList.remove('shown')); if(slide.hasAttribute('data-frag-auto')){ slide.querySelectorAll('li, .formula, p.lead, details, .answer li').forEach(el=>el.classList.add('frag')); } }
+  function nextFrag(){ const s=slides[idx]; const f=s.querySelector('.frag:not(.shown)'); if(f){ f.classList.add('shown'); return true;} return false; }
+  function setActive(i){ slides[idx].classList.remove('active'); idx=Math.max(0,Math.min(slides.length-1,i)); slides[idx].classList.add('active'); const title=slides[idx].dataset.title||'Slide'; crumb.textContent=`${idx+1} / ${slides.length} · ${title}`; prog.style.width=((idx+1)/slides.length*100)+'%'; prepareFragments(slides[idx]); updateJumperActive(); }
+  function next(){ const s=slides[idx]; if(nextFrag()) return; if(s.hasAttribute('data-reveal')){ const ans=s.querySelector('.answer'); if(ans && ans.hasAttribute('hidden')){ ans.hidden=false; return; } } setActive(idx+1); }
+  function prev(){ setActive(idx-1); }
+  document.addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); if(k==='h'){e.preventDefault();document.documentElement.classList.toggle('hc');} if(k==='g'){e.preventDefault();document.documentElement.classList.toggle('ui-off');} if(k==='f'){e.preventDefault(); toggleFs();} if(k==='v'){e.preventDefault(); toggleWebPanel();} if(e.key==='1'){e.preventDefault();setMathColor('#c62828');} if(e.key==='2'){e.preventDefault();setMathColor('#137333');} if(e.key==='3'){e.preventDefault();setMathColor('#6a1b9a');} if(['arrowright','pagedown',' '].includes(k)){e.preventDefault();next();} if(['arrowleft','pageup'].includes(k)){e.preventDefault();prev();} if(k==='b'){blackout.classList.toggle('show');} if(k==='/'||(e.shiftKey&&e.key==='?')){e.preventDefault(); alert('Phím: ←/→ | Space | B | F | H | G | V | 1/2/3'); } });
+  document.addEventListener('click',(e)=>{ const tag=(e.target.tagName||'').toLowerCase(); if(tag==='a'||tag==='summary'||e.target.closest('details')) return; next(); });
+  const timerEl=document.getElementById('timer'); let tOn=false,t0=0,rafId=null; function fmt(ms){const s=Math.floor(ms/1000); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${m}:${ss}`} function tick(){timerEl.textContent=fmt(performance.now()-t0); rafId=requestAnimationFrame(tick)} function toggleTimer(){tOn=!tOn; if(tOn){t0=performance.now(); tick();} else {cancelAnimationFrame(rafId);} } function resetTimer(){cancelAnimationFrame(rafId); tOn=false; timerEl.textContent='00:00';}
+  function setMathColor(hex){ document.documentElement.style.setProperty('--math',hex); document.documentElement.style.setProperty('--accent',hex); }
+  function isFs(){ return document.fullscreenElement!=null; } async function toggleFs(){ try{ if(!isFs()) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(e){ console.warn('FS',e); } }
+  const webBtn=document.getElementById('webBtn'), webpanel=document.getElementById('webpanel'), webframe=document.getElementById('webframe'), webTitle=document.getElementById('webTitle'), webOpen=document.getElementById('webOpen'), webClose=document.getElementById('webClose');
+  function toggleWebPanel(force){ const on=(typeof force==='boolean')?force:!webpanel.classList.contains('show'); webpanel.classList.toggle('show',on); if(on){ if(!webframe.src) { const df=document.querySelector('iframe[data-default-web]'); webframe.src=df?df.src:''; webTitle.textContent=webframe.src||'Trực quan Web'; } } }
+  webClose.addEventListener('click',()=>toggleWebPanel(false)); webOpen.addEventListener('click',()=>{ if(webframe.src) window.open(webframe.src,'_blank'); });
+  function buildJumperAndInit(){ buildJumper(); setActive(0); }
+  window.addEventListener('hashchange',()=>{ const m=String(location.hash).match(/^#(\\d{1,3})$/); if(m){ const n=parseInt(m[1],10)-1; if(n>=0 && n<slides.length) setActive(n); } });
+  buildJumperAndInit();
+  <\/script>
+</body>
+</html>`;
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>\"']/g, m=>({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[m]));
+}
+
+function parseBlocks(src){
+  const lines = src.replace(/\r/g,'').split('\n');
+  const slides = [];
+  let cur = null;
+  let inAnswer = false;
+  for (let i=0;i<lines.length;i++){
+    const line = lines[i];
+    const m = line.match(/^#\s*\[(.+?)\]\s*$/);
+    if (m){
+      if (cur) { slides.push(cur); }
+      cur = { title: m[1].trim(), items: [], formulas: [], lead:null, tag:null, hint:null, answer:null, url:null };
+      inAnswer = false;
+      continue;
+    }
+    if (!cur) continue;
+    if (/^\s*$/.test(line)) { continue; }
+    let kv;
+    if (kv = line.match(/^tag:\s*(.+)$/i)) { cur.tag = kv[1].trim(); continue; }
+    if (kv = line.match(/^h1:\s*(.+)$/i)) { cur.h1 = kv[1].trim(); continue; }
+    if (kv = line.match(/^lead:\s*(.+)$/i)) { cur.lead = kv[1].trim(); continue; }
+    if (kv = line.match(/^url:\s*(.+)$/i)) { cur.url = kv[1].trim(); continue; }
+    if (kv = line.match(/^hint:\s*(.+)$/i)) { cur.hint = kv[1].trim(); continue; }
+    if (/^answer:\s*$/i.test(line)) { inAnswer = true; cur.answer=''; continue; }
+    if (inAnswer){
+      cur.answer += (cur.answer?'\n':'') + line.replace(/^\s{0,2}/,'');
+      continue;
+    }
+    if (line.startsWith('- ')){
+      cur.items.push(line.substring(2).trim());
+      continue;
+    }
+    if (line.startsWith('$$') || line.startsWith('\\[')){
+      cur.formulas.push(line.trim());
+      continue;
+    }
+    // fallback: append to lead if nothing matched
+    cur.lead = (cur.lead? cur.lead + ' ' : '') + line.trim();
+  }
+  if (cur) slides.push(cur);
+  return slides;
+}
+
+function toHtmlSlides(blocks, title, subtitle){
+  const parts = [];
+  blocks.forEach((b, idx)=>{
+    const t = b.title || 'Slide';
+    const dt = t;
+    const isCover = /bìa/i.test(t);
+    const isIntro = /khởi.*động/i.test(t);
+    const isNew = /kiến.*thức/i.test(t);
+    const isExample = /ví.*dụ/i.test(t);
+    const isPractice = /luyện.*tập/i.test(t);
+    const isQuiz = /trắc.*nghiệm/i.test(t);
+    const isVisual = /trực.*quan/i.test(t);
+    const isSummary = /tổng.*kết/i.test(t);
+
+    let tag = b.tag || (isIntro?'Khởi động 📌': isNew?'Kiến thức mới 📘': isExample?'Ví dụ 🧩': isPractice?'Luyện tập 🧪': isQuiz?'Trắc nghiệm 📝': isVisual?'Khung trực quan 🌐': isSummary?'Tổng kết ✅':'Slide');
+
+    if (isCover){
+      parts.push(`
+<section class="slide ${idx===0?'active':''}" data-title="${escapeHtml(dt)}">
+  <span class="tag">${escapeHtml(b.tag||'Môn/Khối · Tên chương')}</span>
+  <h1>${escapeHtml(b.h1 || title || 'TIÊU ĐỀ BÀI GIẢNG')}</h1>
+  <p class="lead">${escapeHtml(b.lead || subtitle || 'Mô tả ngắn')}</p>
+</section>`);
+      return;
+    }
+
+    if (isVisual){
+      parts.push(`
+<section class="slide" data-title="${escapeHtml(dt)}" data-frag-auto>
+  <span class="tag">${escapeHtml(tag)}</span>
+  <h2>Khung nhúng Web</h2>
+  <div class="card">
+    <p class="lead">Nhúng GeoGebra/Desmos/YouTube…</p>
+    <iframe data-default-web id="demoFrame" src="${escapeHtml(b.url||'https://www.geogebra.org/m/p9w2fp6j')}" width="100%" height="400" style="border:1px solid var(--math);border-radius:12px"></iframe>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="fs-btn" type="button" onclick="toggleWebPanel(true)">🔎 Mở khung trực quan</button>
+    </div>
+  </div>
+</section>`);
+      return;
+    }
+
+    const itemsHtml = b.items.length? `<ul class="big">\n${b.items.map(it=>`  <li>${escapeHtml(it)}</li>`).join('\n')}\n</ul>`:'';
+    const formulasHtml = b.formulas.length? b.formulas.map(f=>`<p class="formula">${f}</p>`).join('\n'):'';
+    const hintHtml = b.hint? `<details class="big" style="margin-top:12px"><summary>👀 Gợi ý</summary>${escapeHtml(b.hint)}</details>`:'';
+    const answerHtml = (b.answer!=null)? `<div class="answer" hidden>\n${escapeHtml(b.answer)}\n</div>`:'';
+    const revealAttr = (b.answer!=null)? ' data-reveal':'';
+
+    parts.push(`
+<section class="slide" data-title="${escapeHtml(dt)}" data-frag-auto${revealAttr}>
+  <span class="tag">${escapeHtml(tag)}</span>
+  <h2>${escapeHtml(dt)}</h2>
+  ${b.lead?`<p class="lead">${b.lead}</p>`:''}
+  ${formulasHtml}
+  ${itemsHtml}
+  ${hintHtml}
+  ${answerHtml}
+</section>`);
+  });
+
+  return parts.join('\n');
+}
+
+function build(){
+  const teacher = document.getElementById('teacher').value.trim() || 'Giáo viên';
+  const fname = (document.getElementById('fname').value.trim() || 'bai-giang').replace(/[^a-z0-9-_]+/gi,'-').toLowerCase();
+  const title = document.getElementById('title').value.trim();
+  const subtitle = document.getElementById('subtitle').value.trim();
+  const src = document.getElementById('src').value;
+
+  const blocks = parseBlocks(src);
+  if (!blocks.length){ msg('Không tìm thấy slide nào. Hãy bắt đầu mỗi slide bằng dòng: # [Tên slide]', true); return; }
+
+  const htmlSlides = toHtmlSlides(blocks, title, subtitle);
+  const finalHtml = template(teacher, htmlSlides, title, subtitle);
+
+  // preview
+  const pv = document.getElementById('preview');
+  pv.textContent = finalHtml;
+
+  // download
+  const blob = new Blob([finalHtml], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.getElementById('download');
+  a.href = url; a.download = fname + '.html'; a.style.display = 'inline-block'; a.textContent = '⬇️ Tải ' + a.download;
+  msg('Đã tạo file HTML. Bấm nút tải về.', false);
+}
+
+function msg(text, bad=false){
+  const el = document.getElementById('msg');
+  el.innerHTML = bad ? '<span class="bad">⚠️ '+escapeHtml(text)+'</span>' : '<span class="ok">✅ '+escapeHtml(text)+'</span>';
+}
+
+document.getElementById('buildBtn').addEventListener('click', build);
+document.getElementById('sampleBtn').addEventListener('click', ()=>{
+  document.getElementById('src').value = document.getElementById('src').placeholder;
+  msg('Đã dán ví dụ. Giờ bấm “Tạo file HTML”.', false);
+});
+</script>
+</body>
+</html>
