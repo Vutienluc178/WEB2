@@ -125,6 +125,10 @@
             {
         "title": "Formpt Sinh câu hỏi mở",
         "path": "tien-ich/formpt-ch-mo.html"
+      },
+      {
+        "title": "CÂU HỎI KHỞI ĐỘNG",
+        "path": "tien-ich/cauhoikhoidong.html"
       }
     ]
   }
