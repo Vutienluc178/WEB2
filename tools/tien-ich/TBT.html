@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form Prompt Toán THPT – Sinh nội dung đa vai trò</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121833; --ink:#eaf2ff; --muted:#a8b3d1; --brand:#6aa6ff; --accent:#79f2c0; --danger:#ff7a7a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#0e1430 60%,#0a0f22);color:var(--ink);font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    header{position:sticky;top:0;background:#0b1020cc;backdrop-filter:saturate(120%) blur(6px);border-bottom:1px solid #243055;z-index:5}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    h1{font-size:clamp(20px,2.4vw,28px);margin:0 0 2px}
+    .subtitle{color:var(--muted);font-size:14px}
+
+    .grid{display:grid;gap:16px;grid-template-columns:1fr;}
+    @media(min-width:900px){.grid{grid-template-columns:360px 1fr}}
+
+    .card{background:linear-gradient(180deg,var(--card),#0f1640);border:1px solid #26366e;border-radius:18px;box-shadow:0 10px 30px #0004}
+    .card .inner{padding:18px}
+
+    label{display:block;font-weight:600;margin:8px 0 6px;color:#d9e4ff}
+    input[type="text"], textarea, select{
+      width:100%;padding:12px 12px;border-radius:12px;border:1px solid #314780;background:#0d1538;color:var(--ink);
+      outline:none;box-shadow:inset 0 0 0 999px #0d1538;transition:border .15s ease, box-shadow .15s ease
+    }
+    textarea{min-height:180px;resize:vertical}
+    input[type="text"]:focus, textarea:focus{border-color:#3f66ff;box-shadow:0 0 0 3px #3f66ff33}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row > *{flex:1 1 140px}
+
+    .btn{appearance:none;border:1px solid #3653aa;background:linear-gradient(180deg,#2b47a4,#223a8e);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
+    .btn:hover{filter:brightness(1.08)}
+    .btn:active{transform:translateY(1px)}
+    .btn.ghost{background:none;border-color:#375095}
+    .btn.warn{background:linear-gradient(180deg,#da5164,#b33b51);border-color:#b33b51}
+    .btn.good{background:linear-gradient(180deg,#39b778,#2fa167);border-color:#2fa167}
+
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    .muted{color:var(--muted);font-size:13px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .small{font-size:13px}
+    .preview{white-space:pre-wrap;background:#0b1330;border:1px dashed #2c3f84;border-radius:12px;padding:14px;min-height:160px}
+    .footer{color:#a9b6daaf;font-size:13px;padding:16px 0 26px}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #3852a8;background:#15225a;color:#dbe5ff}
+    .pill{display:inline-flex;align-items:center;gap:8px}
+    .kbd{font-weight:700;border:1px solid #3a4f9a;border-bottom-width:2px;border-radius:6px;padding:1px 6px;background:#0c1842}
+
+    details{border:1px solid #2a3d7d;border-radius:12px}
+    summary{cursor:pointer;list-style:none;padding:10px 12px}
+    summary::-webkit-details-marker{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Trình tạo Form Prompt Toán THPT (1 file HTML)</h1>
+      <div class="subtitle">Nhập <strong>Chủ đề</strong> – <strong>Lớp</strong> – <strong>Yêu cầu thêm</strong> → Ấn <span class="badge">Sinh Prompt</span> để tạo câu lệnh đa vai trò.
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <!-- LEFT: INPUTS -->
+      <section class="card">
+        <div class="inner">
+          <h2 style="margin:0 0 8px">🧩 Nhập thông tin</h2>
+          <p class="muted small">Gợi ý: “Đường tiệm cận của đồ thị hàm số”, Lớp 12, thêm yêu cầu: “có ẩn/hiện đáp án, xuất PDF”.</p>
+
+          <label for="topic">Chủ đề</label>
+          <input type="text" id="topic" placeholder="VD: Đường tiệm cận của đồ thị hàm số" />
+
+          <div class="row">
+            <div>
+              <label for="grade">Lớp</label>
+              <input type="text" id="grade" placeholder="VD: 10, 11, 12" />
+            </div>
+            <div>
+              <label for="book">Bộ sách</label>
+              <input type="text" id="book" placeholder="Mặc định: CTST (Chân trời sáng tạo)" />
+            </div>
+          </div>
+
+          <label for="extras">Yêu cầu thêm (tuỳ chọn)</label>
+          <textarea id="extras" placeholder="VD: Có 3 mức độ bài tập; ẩn/hiện đáp án; thêm 1 tình huống thực tế; có gợi ý code GeoGebra/HTML; ngôn ngữ dễ hiểu"></textarea>
+
+          <details style="margin-top:10px">
+            <summary>⚙️ Tuỳ chọn nâng cao</summary>
+            <div class="inner" style="padding:10px 0 0">
+              <label for="tone">Giọng văn/Lưu ý</label>
+              <input type="text" id="tone" placeholder="VD: thân thiện, ngắn gọn, thêm sai lầm thường gặp, mẹo nhớ" />
+              <div class="row" style="margin-top:10px">
+                <button class="btn ghost" type="button" id="fill-sample">Điền ví dụ mẫu</button>
+                <button class="btn ghost" type="button" id="clear">Xoá nhanh</button>
+              </div>
+              <p class="muted small" style="margin-top:10px">Mẹo: Dùng <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> để sinh prompt nhanh.</p>
+            </div>
+          </details>
+
+          <div class="toolbar" style="margin-top:14px">
+            <button class="btn" id="gen">✨ Sinh Prompt</button>
+            <button class="btn good" id="copy" title="Copy vào clipboard">📋 Copy</button>
+            <button class="btn" id="download" title="Tải file .txt">⬇️ Tải .txt</button>
+            <button class="btn warn" id="reset">🔄 Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: OUTPUT -->
+      <section class="card">
+        <div class="inner">
+          <h2 style="margin:0 0 8px">🧪 Kết quả</h2>
+          <p class="muted small">Vùng dưới là prompt hoàn chỉnh. Thầy có thể copy để dán vào ChatGPT/Gemini.</p>
+          <label for="output" class="pill" style="justify-content:space-between"><span>Form Prompt sinh ra</span><span class="muted small">(có 5 vai trò)</span></label>
+          <textarea id="output" class="mono" spellcheck="false" placeholder="Nội dung sẽ hiện ở đây sau khi bấm ‘Sinh Prompt’." ></textarea>
+
+          <label style="margin-top:14px">Xem nhanh</label>
+          <div class="preview mono small" id="preview"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:16px">
+      <div class="inner">
+        <h3 style="margin:0 0 8px">📎 Gợi ý sử dụng</h3>
+        <ul class="small">
+          <li>Điền <b>Chủ đề</b> (ví dụ: Hàm số bậc hai; Đường tiệm cận; Giải tam giác…).</li>
+          <li>Điền <b>Lớp</b> (10/11/12) và <b>Bộ sách</b> (mặc định CTST).</li>
+          <li>Tuỳ chọn <b>Yêu cầu thêm</b>: 3 mức độ, ẩn/hiện đáp án, file HTML/Slides, tình huống thực tế, mẹo & sai lầm thường gặp…</li>
+          <li>Nhấn <b>Sinh Prompt</b> → Copy → Dán vào ChatGPT/Gemini để nhận trọn bộ: mục tiêu, bài tập mẫu + lời giải, luyện tập 3 mức, tình huống thực tế, gợi ý phiên bản tương tác, lời khích lệ.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="footer">Tác giả: <b>Thầy Vũ Tiến Lực</b> · Trình tạo Form Prompt Toán THPT · Hỗ trợ CTGDPT 2018 – <span class="badge">CTST</span></div>
+  </main>
+
+<script>
+(function(){
+  const $ = sel => document.querySelector(sel);
+  const topic = $('#topic');
+  const grade = $('#grade');
+  const book  = $('#book');
+  const extras= $('#extras');
+  const tone  = $('#tone');
+  const out   = $('#output');
+  const prev  = $('#preview');
+
+  function tmpl({topic, grade, book, extras, tone}){
+    const _topic = topic?.trim() || '…';
+    const _grade = grade?.trim() || '12';
+    const _book  = (book?.trim()) || 'CTST (Chân trời sáng tạo)';
+    const _extras= extras?.trim() ? ('\n\nYêu cầu thêm: ' + extras.trim()) : '';
+    const _tone  = tone?.trim() ? ('\n- Giọng văn/Lưu ý: ' + tone.trim()) : '';
+
+    return `Bạn hãy đóng vai:\n1. 👨‍🏫 Giáo viên Toán THPT (20 năm kinh nghiệm, nắm chắc CTGDPT 2018 – sách Chân trời sáng tạo).\n2. 🧑‍🏫 Gia sư thân thiện (giải thích từng bước, dễ hiểu, có mẹo nhớ và lưu ý sai lầm thường gặp).\n3. 🎨 Nhà thiết kế bài tập (bối cảnh thực tế, tạo 3 mức: cơ bản – nâng cao – mở rộng).\n4. 💻 Nhà phát triển EdTech (sinh bài tập dạng văn bản + HTML/Slides/Quizizz/GeoGebra có ẩn/hiện đáp án, có thể xuất PDF, phù hợp trình chiếu và học online).\n5. ❤️ Người truyền cảm hứng (thêm lời động viên, giúp HS tự tin và yêu Toán).\n\n🎯 Nhiệm vụ: Tạo bộ bài tập cho [Chủ đề: ${_topic}] – Lớp [${_grade}] – Theo sách ${_book}.${_extras}\n\nCấu trúc đầu ra:\n1) **Mục tiêu học tập** (2–3 ý).\n2) **Bài tập mẫu (có lời giải chi tiết)** – trình bày từng bước rõ ràng.\n3) **Bài tập luyện tập** – 3 mức: cơ bản – nâng cao – mở rộng (kèm đáp án).\n4) **Tình huống thực tế** (1 bài toán gắn đời sống).\n5) **Phiên bản tương tác** (gợi ý code HTML/Quizizz/GeoGebra/Slides).\n6) **Lời khích lệ** cuối bài cho học sinh.\n\n📌 Yêu cầu hiển thị:\n- Công thức Toán dùng LaTeX/MathJax.\n- Ngôn ngữ dễ hiểu, phù hợp HS THPT.\n- Có gợi ý nhanh cho HS yếu, thử thách cho HS khá giỏi.\n- Có thể copy/paste ra Word/PDF hoặc đưa vào lớp học trực tuyến.${_tone}`;
+  }
+
+  function generate(){
+    const text = tmpl({topic: topic.value, grade: grade.value, book: book.value, extras: extras.value, tone: tone.value});
+    out.value = text;
+    prev.textContent = text;
+    save();
+  }
+
+  function save(){
+    const payload = {topic:topic.value, grade:grade.value, book:book.value, extras:extras.value, tone:tone.value};
+    localStorage.setItem('formpt_math_payload', JSON.stringify(payload));
+  }
+  function load(){
+    try{const s = localStorage.getItem('formpt_math_payload'); if(!s) return; const p = JSON.parse(s);
+      topic.value=p.topic||''; grade.value=p.grade||''; book.value=p.book||''; extras.value=p.extras||''; tone.value=p.tone||'';
+    }catch(e){}
+  }
+  function clearAll(){ topic.value=''; grade.value=''; book.value=''; extras.value=''; tone.value=''; out.value=''; prev.textContent=''; save(); }
+
+  function downloadTxt(){
+    const blob = new Blob([out.value||''], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'FormPrompt_ToanTHPT.txt';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  $('#gen').addEventListener('click', e=>{e.preventDefault(); generate();});
+  $('#copy').addEventListener('click', async e=>{
+    e.preventDefault(); if(!out.value) generate();
+    try{ await navigator.clipboard.writeText(out.value); e.target.textContent='✅ Đã copy'; setTimeout(()=>e.target.textContent='📋 Copy',1200);}catch(err){ alert('Không copy được, vui lòng tự bôi đen và Ctrl+C.'); }
+  });
+  $('#download').addEventListener('click', e=>{e.preventDefault(); if(!out.value) generate(); downloadTxt();});
+  $('#reset').addEventListener('click', e=>{e.preventDefault(); clearAll();});
+  $('#clear').addEventListener('click', e=>{e.preventDefault(); extras.value=''; tone.value=''; save();});
+  $('#fill-sample').addEventListener('click', e=>{
+    e.preventDefault();
+    topic.value = 'Đường tiệm cận của đồ thị hàm số';
+    grade.value = '12';
+    book.value = 'CTST (Chân trời sáng tạo)';
+    extras.value = 'Có 3 mức độ bài tập; ẩn/hiện đáp án; thêm 1 tình huống thực tế; gợi ý code HTML/GeoGebra; có thể xuất PDF; ngắn gọn, dễ hiểu';
+    tone.value = 'thân thiện, từng bước rõ ràng, nêu sai lầm thường gặp và mẹo nhớ';
+    generate();
+  });
+  document.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey)&& e.key==='Enter'){ generate(); }});
+
+  load();
+})();
+</script>
+</body>
+</html>
