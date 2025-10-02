@@ -150,6 +150,11 @@
         "title": "7 mẫu tạo bài học",
         "path": "tien-ich/prompts_form_7_templates.html"
       }
+      ,
+      {
+        "title": "Tạo Bài Tập",
+        "path": "tien-ich/TBT.html"
+      }
     ]
   }
 ]
