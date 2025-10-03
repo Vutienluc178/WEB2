@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Form sinh Prompt: Công cụ học tập trực quan Toán</title>
+<style>
+  :root{
+    --bg:#0b1020; --card:#111a33; --muted:#98a2b3; --txt:#eef2ff; --accent:#66e3ff; --border:#23305a;
+    --ok:#22c55e; --warn:#f59e0b;
+  }
+  html,body{height:100%}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b1020 0%,#0a0f1f 60%,#0a0e1b 100%);
+    color:var(--txt); font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+  }
+  .app{display:grid; grid-template-rows:auto 1fr auto; height:100%}
+  header{
+    padding:14px 18px; border-bottom:1px solid var(--border); background:#0b1226aa; backdrop-filter: blur(6px);
+    display:flex; align-items:center; gap:12px;
+  }
+  header h1{font-size:18px; margin:0}
+  header .badge{font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; color:var(--muted)}
+  main{display:grid; grid-template-columns: 420px 1fr; gap:16px; padding:16px}
+  @media(max-width:980px){ main{grid-template-columns: 1fr; } }
+  .panel{
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  .panel h2{margin:0 0 10px 0; font-size:16px}
+  .row{display:grid; gap:8px; margin:12px 0}
+  label{font-size:13px; color:var(--muted)}
+  input[type="text"], textarea, select{
+    width:100%; background:#0c1530; color:var(--txt); border:1px solid var(--border);
+    border-radius:12px; padding:10px 12px; outline:none;
+  }
+  textarea{min-height:86px; resize:vertical; line-height:1.4}
+  .hint{font-size:12px; color:var(--muted)}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+  .btn{
+    background:#0e1a3a; border:1px solid var(--border); color:var(--txt);
+    padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600;
+  }
+  .btn:hover{border-color:#2f3f7a}
+  .btn-accent{background:linear-gradient(90deg,#00e5ff,#38bdf8); color:#051225; border:none}
+  .btn-ghost{background:transparent; border:1px dashed var(--border); color:var(--muted)}
+  .stat{font-size:12px; color:var(--muted)}
+  .preview{
+    background:#0b142e; border:1px solid var(--border); border-radius:16px; padding:16px;
+    display:grid; grid-template-rows: auto 1fr auto; min-height:420px;
+  }
+  .preview h3{margin:0 0 8px 0; font-size:16px}
+  .codebox{
+    background:#070d1e; border:1px solid #1b264a; border-radius:12px; padding:14px; overflow:auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; white-space:pre-wrap;
+  }
+  .preview .bar{display:flex; gap:8px; justify-content:flex-end; margin-top:12px}
+  .pill{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:#0d1a3a; border:1px solid var(--border); color:var(--muted)}
+  footer{
+    padding:12px 16px; border-top:1px solid var(--border); color:var(--muted); font-size:13px; text-align:center;
+  }
+  .ok{color:var(--ok)} .warn{color:var(--warn)}
+  .kbd{font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#0c1634; border:1px solid var(--border); border-radius:6px; padding:2px 6px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>🧩 Form sinh Prompt — Công cụ học tập trực quan Toán</h1>
+    <span class="badge">Tương tác · Live Preview · Auto-Save</span>
+  </header>
+
+  <main>
+    <!-- LEFT: FORM -->
+    <section class="panel" id="formPanel" aria-label="Form nhập nội dung">
+      <h2>📝 Thông tin đầu vào</h2>
+
+      <div class="row">
+        <label>Chủ đề toán học cụ thể</label>
+        <input type="text" id="topic" placeholder="VD: Khảo sát sự biến thiên và vẽ đồ thị hàm số bậc ba">
+        <div class="hint">Mô tả ngắn, rõ khái niệm trọng tâm.</div>
+      </div>
+
+      <div class="row">
+        <label>Đối tượng người học</label>
+        <select id="audience">
+          <option>Học sinh THPT</option>
+          <option>Học sinh lớp 10</option>
+          <option>Học sinh lớp 11</option>
+          <option>Học sinh lớp 12</option>
+          <option>Khác (tự ghi ở mục Ghi chú)</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label>Mục tiêu học tập cốt lõi</label>
+        <textarea id="goal" placeholder="VD: hiểu mối liên hệ trực quan giữa dấu của y' với đồng biến/nghịch biến và hình dạng đồ thị."></textarea>
+        <div class="hint">Chỉ 1–2 mục tiêu “xuyên suốt” giúp AI tập trung.</div>
+      </div>
+
+      <div class="row">
+        <label>Khó khăn cốt lõi của học sinh</label>
+        <textarea id="pain" placeholder="VD: khó hình dung vì sao đồ thị đi lên/đi xuống và cong ở những điểm cụ thể."></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="row">
+          <label>Tương tác chính #1</label>
+          <textarea id="ix1" placeholder="VD: dùng thanh trượt thay đổi hệ số a,b,c,d của y = ax³ + bx² + cx + d."></textarea>
+        </div>
+        <div class="row">
+          <label>Tương tác chính #2</label>
+          <textarea id="ix2" placeholder="VD: kéo điểm trên đồ thị để xem tiếp tuyến và giá trị đạo hàm tại điểm đó."></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Yêu cầu trực quan hóa (tùy chỉnh, nếu cần)</label>
+        <textarea id="viz" placeholder="Mặc định: hiển thị đồ thị C, đồ thị y', bảng biến thiên, tô màu đồng/nghịch biến, đánh dấu cực trị."></textarea>
+        <div class="hint">Để trống nếu dùng mặc định như mô tả trong đề.</div>
+      </div>
+
+      <div class="row">
+        <label>Đặt tên gọi công cụ (gợi nhớ & thú vị)</label>
+        <input type="text" id="toolName" placeholder="VD: Cubic Explorer · Derivative Lens · GraphSensei">
+      </div>
+
+      <div class="row">
+        <label>Ý tưởng sư phạm (vì sao cách này hiệu quả?)</label>
+        <textarea id="pedagogy" placeholder="VD: liên kết thao tác tay–mắt với khái niệm đạo hàm; phản hồi tức thì củng cố mô hình tinh thần..."></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="row">
+          <label>Mô tả UI (bố cục thành phần)</label>
+          <textarea id="ui" placeholder="VD: trái: panel tham số; phải: canvas đa lớp; trên: thanh công cụ; dưới: bảng biến thiên."></textarea>
+        </div>
+        <div class="row">
+          <label>Luồng UX (từng bước HS khám phá)</label>
+          <textarea id="ux" placeholder="VD: B1 kéo slider a; B2 quan sát đổi màu khoảng đồng/nghịch; B3 thả điểm xem y' và tiếp tuyến..."></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Ghi chú thêm (tùy chọn)</label>
+        <textarea id="note" placeholder="VD: yêu cầu chạy tốt trên máy chiếu, có chế độ nền tối, hỗ trợ mobile..."></textarea>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-accent" id="btnExample">Điền nhanh ví dụ</button>
+        <button class="btn" id="btnClear">Xóa form</button>
+        <span class="stat" id="statMsg">Đang lưu tự động…</span>
+      </div>
+    </section>
+
+    <!-- RIGHT: PREVIEW -->
+    <section class="preview" aria-label="Xem trước Prompt">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+        <h3>🔮 Prompt đã ghép</h3>
+        <div>
+          <span class="pill" id="pillWords">0 từ</span>
+          <span class="pill" id="pillQuality">Chờ nội dung…</span>
+        </div>
+      </div>
+
+      <div id="output" class="codebox" aria-live="polite"></div>
+
+      <div class="bar">
+        <button class="btn" id="btnCopy">Copy</button>
+        <button class="btn" id="btnDownload">Tải .txt</button>
+        <button class="btn btn-ghost" id="btnCompact">Chế độ gọn <span id="cmpState">OFF</span></button>
+      </div>
+      <div class="hint" style="margin-top:8px">
+        Mẹo: Sau khi copy, có thể dán thẳng vào ChatGPT/Gemini. Giữ <span class="kbd">Shift</span> khi nhấn <b>Enter</b> để xuống dòng trong hộp thoại AI.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Tác giả: <b>Thầy Vũ Tiến Lực</b> — Trường THPT Nguyễn Hữu Cảnh · © 2025 · Made with ❤️ for Toán học
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $ = sel => document.querySelector(sel);
+  const els = {
+    topic:   $('#topic'),
+    audience:$('#audience'),
+    goal:    $('#goal'),
+    pain:    $('#pain'),
+    ix1:     $('#ix1'),
+    ix2:     $('#ix2'),
+    viz:     $('#viz'),
+    toolName:$('#toolName'),
+    pedagogy:$('#pedagogy'),
+    ui:      $('#ui'),
+    ux:      $('#ux'),
+    note:    $('#note'),
+    output:  $('#output'),
+    statMsg: $('#statMsg'),
+    pillWords: $('#pillWords'),
+    pillQuality: $('#pillQuality'),
+    btnExample: $('#btnExample'),
+    btnClear: $('#btnClear'),
+    btnCopy: $('#btnCopy'),
+    btnDownload: $('#btnDownload'),
+    btnCompact: $('#btnCompact'),
+    cmpState: $('#cmpState'),
+  };
+  const LS_KEY = 'prompt_lab_tool_v1';
+  let compact = false;
+  function save(){
+    const data = {};
+    Object.keys(els).forEach(k=>{
+      if(els[k] instanceof HTMLInputElement || els[k] instanceof HTMLTextAreaElement || els[k] instanceof HTMLSelectElement){
+        data[k] = els[k].value;
+      }
+    });
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    els.statMsg.textContent = 'Đã lưu ✔';
+  }
+  function load(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    try{
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(k=>{
+        if(els[k] && (els[k] instanceof HTMLInputElement || els[k] instanceof HTMLTextAreaElement || els[k] instanceof HTMLSelectElement)){
+          els[k].value = data[k];
+        }
+      });
+    }catch(e){}
+  }
+  function wordsCount(text){
+    return (text.trim().match(/[\p{L}\p{N}’']+/gu)||[]).length;
+  }
+  function qualityBadge(len){
+    if(len<40) return '🔧 Thêm chi tiết';
+    if(len<120) return '✨ Khá ổn';
+    return '🚀 Rất đầy đủ';
+  }
+  function buildPrompt(){
+    const topic = els.topic.value.trim();
+    const audience = els.audience.value.trim() || 'Học sinh THPT';
+    const goal = els.goal.value.trim();
+    const pain = els.pain.value.trim();
+    const ix1 = els.ix1.value.trim();
+    const ix2 = els.ix2.value.trim();
+    const viz = els.viz.value.trim();
+    const toolName = els.toolName.value.trim();
+    const pedagogy = els.pedagogy.value.trim();
+    const ui = els.ui.value.trim();
+    const ux = els.ux.value.trim();
+    const note = els.note.value.trim();
+
+    const vizBlock = viz ? viz :
+`Màn hình chính: Hiển thị đồng thời Đồ thị hàm số (C), đồ thị của đạo hàm y', và bảng biến thiên cập nhật theo thời gian thực.
+Đánh dấu màu sắc: Tô xanh các khoảng đồng biến, tô đỏ các khoảng nghịch biến; đánh dấu rõ các điểm cực trị.`;
+
+    const longForm =
+`Hãy đóng vai một Nhà thiết kế trải nghiệm học tập tương tác, chuyên gia về sư phạm Toán học.
+
+Nhiệm vụ của bạn là phác thảo một công cụ học tập trực quan cho chủ đề: [${topic||'Điền chủ đề toán học cụ thể'}].
+
+Công cụ này phải đáp ứng các yêu cầu sau:
+
+Đối tượng: ${audience}, giúp các em học bài dễ hiểu và hứng thú hơn.
+
+Mục tiêu học tập cốt lõi: Sau khi sử dụng công cụ, học sinh phải [${goal||'Điền mục tiêu quan trọng nhất'}].
+
+Giải quyết khó khăn: Tập trung giải quyết vấn đề lớn nhất mà học sinh thường gặp với chủ đề này, đó là [${pain||'Điền khó khăn cốt lõi'}].
+
+Tương tác chính:
+• Cho phép học sinh [${ix1||'Mô tả tương tác 1'}].
+• Cho phép học sinh [${ix2||'Mô tả tương tác 2'}].
+
+Trực quan hóa:
+${vizBlock}
+
+Kết quả đầu ra: Trình bày ý tưởng dưới dạng một bản thiết kế chi tiết, bao gồm:
+• Tên gọi công cụ: ${toolName||'Đặt một cái tên gợi nhớ và thú vị'}.
+• Ý tưởng sư phạm: ${pedagogy||'Giải thích vì sao cách trực quan hóa và tương tác này hiệu quả cho việc học'}.
+• Mô tả giao diện người dùng (UI): ${ui||'Phác thảo bố cục các thành phần trên màn hình'}.
+• Luồng trải nghiệm người dùng (UX): ${ux||'Mô tả từng bước HS tương tác để khám phá kiến thức'}.
+${note?('\nGhi chú thêm: '+note):''}`;
+
+    const compactForm =
+`ĐÓNG VAI: Nhà thiết kế trải nghiệm học tập tương tác + Chuyên gia sư phạm Toán.
+
+CHỦ ĐỀ: ${topic||'...'}
+ĐỐI TƯỢNG: ${audience}
+
+MỤC TIÊU CỐT LÕI: ${goal||'...'}
+KHÓ KHĂN CỐT LÕI: ${pain||'...'}
+
+TƯƠNG TÁC:
+- ${ix1||'...'}
+- ${ix2||'...'}
+
+TRỰC QUAN:
+${vizBlock}
+
+XUẤT BẢN THIẾT KẾ (bắt buộc):
+- Tên công cụ: ${toolName||'...'}
+- Ý tưởng sư phạm: ${pedagogy||'...'}
+- UI: ${ui||'...'}
+- UX: ${ux||'...'}${note?('\n- Ghi chú: '+note):''}`;
+
+    const out = compact ? compactForm : longForm;
+    els.output.textContent = out;
+    const wc = wordsCount(out);
+    els.pillWords.textContent = wc + ' từ';
+    els.pillQuality.textContent = qualityBadge(wc);
+    return out;
+  }
+
+  function fillExample(){
+    els.topic.value = 'Khảo sát sự biến thiên và vẽ đồ thị hàm số bậc ba';
+    els.goal.value  = "Hiểu mối liên hệ trực quan giữa dấu của y' với đồng/nghịch biến và hình dạng đồ thị; nhận biết vai trò của tham số a trong độ cong.";
+    els.pain.value  = "Không hình dung được vì sao đồ thị 'đi lên/đi xuống' và cong tại những vùng cụ thể; nhầm giữa cực trị và điểm uốn.";
+    els.ix1.value   = "Dùng thanh trượt thay đổi a, b, c, d của y = ax³ + bx² + cx + d; tự động cập nhật đồ thị C, y', bảng biến thiên.";
+    els.ix2.value   = "Kéo một điểm trên C để hiện tiếp tuyến, hệ số góc = y'(x), đánh dấu màu khoảng đồng/nghịch biến.";
+    els.viz.value   = "";
+    els.toolName.value = "Cubic Explorer";
+    els.pedagogy.value = "Khai thác phản hồi tức thì (immediate feedback) + liên kết thao tác/quan sát giúp xây dựng mô hình tinh thần về đạo hàm. Đồng bộ đồ thị–bảng biến thiên giảm tải nhận thức.";
+    els.ui.value    = "Trái: Panel hệ số (slider + input). Phải: Canvas đồ thị đa lớp. Trên: thanh công cụ (Grid, Zoom, Reset). Dưới: Bảng biến thiên.";
+    els.ux.value    = "B1 thay a→ quan sát đổi màu đồng/nghịch; B2 kéo điểm xem tiếp tuyến; B3 so sánh vùng y'>0/<0; B4 xác định cực trị; B5 tổng kết vào bảng biến thiên.";
+    els.note.value  = "Có chế độ Projector (nền tối), responsive trên điện thoại, nút xuất ảnh minh họa.";
+  }
+
+  // Attach listeners
+  ['topic','audience','goal','pain','ix1','ix2','viz','toolName','pedagogy','ui','ux','note']
+    .forEach(id=>{
+      const el = els[id];
+      el.addEventListener('input', ()=>{ buildPrompt(); save(); });
+    });
+
+  els.btnExample.addEventListener('click', ()=>{
+    fillExample(); buildPrompt(); save();
+  });
+
+  els.btnClear.addEventListener('click', ()=>{
+    if(confirm('Xóa toàn bộ nội dung form?')) {
+      ['topic','goal','pain','ix1','ix2','viz','toolName','pedagogy','ui','ux','note'].forEach(id=>els[id].value='');
+      els.audience.value='Học sinh THPT';
+      buildPrompt(); save();
+    }
+  });
+
+  els.btnCopy.addEventListener('click', async ()=>{
+    const txt = buildPrompt();
+    try{
+      await navigator.clipboard.writeText(txt);
+      els.statMsg.textContent = 'Đã copy vào clipboard ✅';
+    }catch(e){
+      els.statMsg.textContent = 'Không copy được, hãy Ctrl/Cmd+C thủ công.';
+    }
+  });
+
+  els.btnDownload.addEventListener('click', ()=>{
+    const blob = new Blob([buildPrompt()], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    const name = (els.toolName.value.trim()||'prompt-cong-cu-truc-quan').replace(/\s+/g,'-').toLowerCase();
+    a.href = URL.createObjectURL(blob);
+    a.download = name + '.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    els.statMsg.textContent = 'Đã tải file .txt ⬇️';
+  });
+
+  els.btnCompact.addEventListener('click', ()=>{
+    compact = !compact;
+    els.cmpState.textContent = compact ? 'ON' : 'OFF';
+    buildPrompt();
+  });
+
+  // Init
+  load(); buildPrompt();
+})();
+</script>
+</body>
+</html>
