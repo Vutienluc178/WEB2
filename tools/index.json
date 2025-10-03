@@ -155,6 +155,11 @@
         "title": "Tạo Bài Tập",
         "path": "tien-ich/TBT.html"
       }
+            ,
+      {
+        "title": "Tạo công cụ trực quan V1-gemini",
+        "path": "tien-ich/321.html"
+      }
     ]
   }
 ]
