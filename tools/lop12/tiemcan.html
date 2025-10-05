@@ -1,78 +1,467 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Mô phỏng Đường Tiệm Cận – Toán 12</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mô phỏng Đường Tiệm Cận – Toán 12 (Canvas)</title>
 <style>
-  body {margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f8f9fa;color:#111;height:100vh;display:flex;flex-direction:column}
-  header,footer {background:#0a5bc2;color:#fff;text-align:center;padding:8px 12px}
-  main {display:flex;flex:1;min-height:0}
-  #panel {width:300px;background:#e9ecef;padding:12px;overflow:auto;box-shadow:inset -1px 0 4px rgba(0,0,0,.1)}
-  #panel label {display:block;margin:6px 0;font-weight:600}
-  #panel input {width:100px;padding:4px}
-  #panel select,button {padding:6px;border-radius:6px;border:1px solid #bbb;margin-top:6px}
-  #canvas-wrap {flex:1;position:relative;background:#fff}
-  canvas {width:100%;height:100%;display:block}
+  :root{
+    --bg:#0f1116; --fg:#e6edf3; --muted:#9aa4b2; --accent:#4cc2ff; --grid:#222631; --axis:#c9d1d9; --graph:#36d399; --asym:#ff6b6b;
+    --dot:#ffd166; --panel:#151a23; --btn:#232a36; --btn-fg:#e6edf3;
+  }
+  body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--fg);}  
+  header{display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid #202532; background:#0c0f16; position:sticky; top:0; z-index:3}
+  header h1{font-size:18px; margin:0; letter-spacing:.3px}
+  .wrap{display:grid; grid-template-columns: 320px 1fr; height: calc(100dvh - 56px);} 
+  aside{background:var(--panel); border-right:1px solid #202532; padding:14px; overflow:auto}
+  main{position:relative;}
+  canvas{display:block; width:100%; height:100%; background:#0b0e14}
+  fieldset{border:1px solid #2a3242; border-radius:12px; padding:12px; margin:0 0 12px 0}
+  legend{padding:0 6px; color:var(--muted)}
+  label{display:block; font-size:13px; margin:8px 0 4px 0; color:var(--muted)}
+  input[type="number"], select{width:100%; background:#101420; color:var(--fg); border:1px solid #2a3242; border-radius:8px; padding:8px}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+  button{background:var(--btn); color:var(--btn-fg); border:1px solid #2b3343; padding:8px 10px; border-radius:10px; cursor:pointer}
+  button:hover{filter:brightness(1.15)}
+  small.note{color:var(--muted); display:block; margin-top:8px; line-height:1.35}
+  .badge{display:inline-block; background:#1b2230; border:1px solid #2b3343; padding:2px 8px; border-radius:999px; font-size:12px; color:var(--muted)}
+  footer{position:absolute; bottom:8px; right:12px; color:var(--muted); font-size:12px}
 </style>
 </head>
 <body>
-<header><h2>Mô phỏng Đường Tiệm Cận (bậc 1/bậc 1 & bậc 2/bậc 1)</h2></header>
-<main>
-  <div id="panel">
-    <label>Dạng hàm:
-      <select id="mode">
-        <option value="linfrac">(a₁x + a₀) / (d₁x + d₀)</option>
-        <option value="quadfrac">(a₂x² + a₁x + a₀) / (d₁x + d₀)</option>
-      </select>
-    </label>
-    <label>a₂ <input type="number" id="a2" value="1" step="0.1"></label>
-    <label>a₁ <input type="number" id="a1" value="1" step="0.1"></label>
-    <label>a₀ <input type="number" id="a0" value="0" step="0.1"></label>
-    <label>d₁ <input type="number" id="d1" value="1" step="0.1"></label>
-    <label>d₀ <input type="number" id="d0" value="-1" step="0.1"></label>
-    <button id="zoomIn">🔍 Phóng to</button>
-    <button id="zoomOut">🔎 Thu nhỏ</button>
-    <button id="toggleMode">Bật Projector Mode</button>
+  <header>
+    <h1>📈 Mô phỏng Đường Tiệm Cận (đứng • ngang • xiên) – Canvas/Zoom</h1>
+    <div class="btns">
+      <button id="toggleContrast">⚡ Projector Mode</button>
+      <button id="resetView">🔄 Reset khung nhìn</button>
+      <button id="exportPNG">🖼️ Xuất PNG</button>
+      <span class="badge">HiDPI • dày nét • mũi tên Ox, Oy • chấm giao điểm</span>
+    </div>
+  </header>
+  <div class="wrap">
+    <aside>
+      <fieldset>
+        <legend>Chọn dạng hàm</legend>
+        <label for="model">Dạng</label>
+        <select id="model">
+          <option value="r11">(a·x + b) / (c·x + d) — bậc 1 / bậc 1 ➜ TC đứng + TC ngang</option>
+          <option value="r21">(a·x² + b·x + c) / (d·x + e) — bậc 2 / bậc 1 ➜ TC đứng + TC xiên</option>
+          <option value="line">y = m·x + n (tham chiếu) — đường thẳng</option>
+        </select>
+      </fieldset>
+
+      <fieldset>
+        <legend>Hệ số</legend>
+        <div id="coeff-r11">
+          <div class="row">
+            <div><label>a</label><input type="number" step="0.1" id="a" value="1"></div>
+            <div><label>b</label><input type="number" step="0.1" id="b" value="0"></div>
+          </div>
+          <div class="row">
+            <div><label>c</label><input type="number" step="0.1" id="c" value="1"></div>
+            <div><label>d</label><input type="number" step="0.1" id="d" value="0"></div>
+          </div>
+        </div>
+        <div id="coeff-r21" style="display:none">
+          <div class="row">
+            <div><label>a</label><input type="number" step="0.1" id="a2" value="1"></div>
+            <div><label>b</label><input type="number" step="0.1" id="b2" value="0"></div>
+          </div>
+          <div class="row">
+            <div><label>c</label><input type="number" step="0.1" id="c2" value="-1"></div>
+            <div><label>d</label><input type="number" step="0.1" id="d2" value="1"></div>
+          </div>
+          <div class="row">
+            <div><label>e</label><input type="number" step="0.1" id="e2" value="0"></div>
+            <div></div>
+          </div>
+        </div>
+        <div id="coeff-line" style="display:none">
+          <div class="row">
+            <div><label>m</label><input type="number" step="0.1" id="m" value="1"></div>
+            <div><label>n</label><input type="number" step="0.1" id="n" value="0"></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Hiển thị</legend>
+        <label>Độ dày nét</label>
+        <div class="row">
+          <div><input type="number" id="lwGraph" value="3" step="0.5"><small class="note">Đồ thị</small></div>
+          <div><input type="number" id="lwAsym" value="3.5" step="0.5"><small class="note">Tiệm cận</small></div>
+        </div>
+        <label for="unit">Tỉ lệ đơn vị (px/u)</label>
+        <input type="number" id="unit" value="60" step="5">
+        <small class="note">Hiển thị <b>đơn vị</b> tại tick; các <b>điểm cắt</b> chỉ đánh dấu • (không ghi tọa độ).</small>
+      </fieldset>
+
+      <div class="btns">
+        <button id="apply">Áp dụng hệ số</button>
+        <button id="fit">Auto Fit đồ thị</button>
+      </div>
+      <small class="note">Mẹo: Kéo để <b>pan</b>, cuộn để <b>zoom</b>, giữ <b>Shift</b> khi cuộn để zoom chậm.</small>
+    </aside>
+
+    <main>
+      <canvas id="view"></canvas>
+      <footer> Tác giả: Thầy Vũ Tiến Lực – THPT Nguyễn Hữu Cảnh</footer>
+    </main>
   </div>
-  <div id="canvas-wrap"><canvas id="graph"></canvas></div>
-</main>
-<footer>Tác giả: Thầy Vũ Tiến Lực – Trường THPT Nguyễn Hữu Cảnh</footer>
+
 <script>
-const canvas = document.getElementById('graph');
-const ctx = canvas.getContext('2d');
-const DPR = window.devicePixelRatio || 1;
-let scale = 50, ox=0, oy=0;
-function resize(){canvas.width=canvas.clientWidth*DPR;canvas.height=canvas.clientHeight*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);ox=canvas.clientWidth/2;oy=canvas.clientHeight/2;draw();}
-window.addEventListener('resize',resize);
-function denom(x){return parseFloat(d1.value)*x+parseFloat(d0.value)}
-function num(x){let a2=parseFloat(a2El.value),a1=parseFloat(a1El.value),a0=parseFloat(a0El.value);return (mode.value==='quadfrac'?a2*x*x:0)+a1*x+a0}
-function f(x){return num(x)/denom(x)}
-function toPx(x,y){return [ox+x*scale,oy-y*scale]}
-function drawPoint(x,y,color,label){if(!isFinite(x)||!isFinite(y))return;let[X,Y]=toPx(x,y);ctx.fillStyle=color;ctx.beginPath();ctx.arc(X,Y,5,0,Math.PI*2);ctx.fill();if(label){ctx.font='32px Segoe UI';ctx.fillText(label,X+8,Y-8);}}
-function drawLabel(text,x,y,color){ctx.font='32px Segoe UI';ctx.fillStyle=color;ctx.fillText(text,x,y);}
-function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;a2El.style.display=(mode.value==='quadfrac')?'block':'none';ctx.clearRect(0,0,w,h);
-// Grid
-ctx.lineWidth=1;ctx.strokeStyle='#ccc';ctx.beginPath();for(let x=ox%scale;x<w;x+=scale){ctx.moveTo(x,0);ctx.lineTo(x,h);}for(let y=oy%scale;y<h;y+=scale){ctx.moveTo(0,y);ctx.lineTo(w,y);}ctx.stroke();
-// Axes
-ctx.lineWidth=3;ctx.strokeStyle='#000';ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(w,oy);ctx.moveTo(ox,0);ctx.lineTo(ox,h);ctx.stroke();
-// Arrowheads and labels O, x, y
-ctx.fillStyle='#000';ctx.font='32px Segoe UI';ctx.beginPath();ctx.moveTo(w-20,oy-10);ctx.lineTo(w,oy);ctx.lineTo(w-20,oy+10);ctx.fill();ctx.beginPath();ctx.moveTo(ox-10,20);ctx.lineTo(ox,0);ctx.lineTo(ox+10,20);ctx.fill();ctx.fillText('O',ox-25,oy+30);ctx.fillText('x',w-30,oy-15);ctx.fillText('y',ox+15,40);
-// Function graph
-ctx.lineWidth=3;ctx.strokeStyle='#0077cc';ctx.beginPath();let first=true;for(let px=0;px<w;px++){let x=(px-ox)/scale;if(Math.abs(denom(x))<1e-6){first=true;continue;}let y=f(x);let Y=oy-y*scale;if(first){ctx.moveTo(px,Y);first=false;}else ctx.lineTo(px,Y);}ctx.stroke();
-// Vertical asymptote
-let d1v=parseFloat(d1.value),d0v=parseFloat(d0.value),a2v=parseFloat(a2El.value),a1v=parseFloat(a1El.value),a0v=parseFloat(a0El.value);
-if(Math.abs(d1v)>1e-9){let xVA=-d0v/d1v;ctx.setLineDash([6,6]);ctx.strokeStyle='red';ctx.beginPath();let xpx=ox+xVA*scale;ctx.moveTo(xpx,0);ctx.lineTo(xpx,h);ctx.stroke();ctx.setLineDash([]);drawPoint(xVA,0,'red',`x=${xVA.toFixed(1)}`);drawLabel('Tiệm cận đứng',xpx+10,40,'red');}
-// Horizontal/Slant asymptote
-if(mode.value==='linfrac'){let yH=a1v/d1v;ctx.setLineDash([6,6]);ctx.strokeStyle='orange';ctx.beginPath();let yHpx=oy-yH*scale;ctx.moveTo(0,yHpx);ctx.lineTo(w,yHpx);ctx.stroke();ctx.setLineDash([]);drawPoint(0,yH,'orange',`y=${yH.toFixed(1)}`);drawLabel('Tiệm cận ngang',30,yHpx-10,'orange');}
-else{let A=a2v/d1v,B=(a1v*d1v-a2v*d0v)/(d1v*d1v);ctx.setLineDash([6,6]);ctx.strokeStyle='orange';ctx.beginPath();let y1=A*((0-ox)/scale)+B,y2=A*((w-ox)/scale)+B;ctx.moveTo(0,oy-y1*scale);ctx.lineTo(w,oy-y2*scale);ctx.stroke();ctx.setLineDash([]);drawPoint(0,B,'orange',`y=${B.toFixed(1)}`);let x0=-B/A;if(isFinite(x0))drawPoint(x0,0,'orange',`x=${x0.toFixed(1)}`);drawLabel('Tiệm cận xiên',w-300,40,'orange');}
-// Graph intersections
-if(Math.abs(denom(0))>1e-9){let y0=f(0);drawPoint(0,y0,'#0077cc',`y=${y0.toFixed(1)}`);}if(Math.abs(a1v)>1e-9){let xr=-a0v/a1v;if(Math.abs(denom(xr))>1e-9)drawPoint(xr,0,'#0077cc',`x=${xr.toFixed(1)}`);} }
-const mode=document.getElementById('mode');const a2El=document.getElementById('a2');const a1El=document.getElementById('a1');const a0El=document.getElementById('a0');const d1=document.getElementById('d1');const d0=document.getElementById('d0');
-[a2El,a1El,a0El,d1,d0,mode].forEach(e=>e.addEventListener('input',draw));
-document.getElementById('zoomIn').addEventListener('click',()=>{scale*=1.2;draw();});
-document.getElementById('zoomOut').addEventListener('click',()=>{scale/=1.2;draw();});
-resize();
+(function(){
+  const DPR = Math.max(1, window.devicePixelRatio || 1);
+  const canvas = document.getElementById('view');
+  const ctx = canvas.getContext('2d');
+
+  // View state
+  let state = {
+    model: 'r11',
+    // world transform
+    unit: 60, // px per unit
+    ox: 0, oy: 0, // origin in px (screen)
+    scale: 1,
+    lineWidthGraph: 3,
+    lineWidthAsym: 3.5,
+    projector:false,
+    // coefficients
+    r11: {a:1,b:0,c:1,d:0},
+    r21: {a:1,b:0,c:-1,d:1,e:0},
+    line:{m:1,n:0}
+  };
+
+  // UI elements
+  const selModel = document.getElementById('model');
+  const panels = {
+    r11: document.getElementById('coeff-r11'),
+    r21: document.getElementById('coeff-r21'),
+    line: document.getElementById('coeff-line')
+  };
+
+  function syncPanels(){
+    for(const k of Object.keys(panels)) panels[k].style.display='none';
+    panels[state.model].style.display='block';
+  }
+
+  selModel.addEventListener('change',()=>{ state.model = selModel.value; syncPanels(); draw(); });
+
+  // coefficient getters
+  function readCoeffs(){
+    state.unit = +document.getElementById('unit').value || 60;
+    state.lineWidthGraph = +document.getElementById('lwGraph').value || 3;
+    state.lineWidthAsym = +document.getElementById('lwAsym').value || 3.5;
+
+    if(state.model==='r11'){
+      state.r11.a = +document.getElementById('a').value;
+      state.r11.b = +document.getElementById('b').value;
+      state.r11.c = +document.getElementById('c').value;
+      state.r11.d = +document.getElementById('d').value;
+    }else if(state.model==='r21'){
+      state.r21.a = +document.getElementById('a2').value;
+      state.r21.b = +document.getElementById('b2').value;
+      state.r21.c = +document.getElementById('c2').value;
+      state.r21.d = +document.getElementById('d2').value;
+      state.r21.e = +document.getElementById('e2').value;
+    }else{
+      state.line.m = +document.getElementById('m').value;
+      state.line.n = +document.getElementById('n').value;
+    }
+  }
+
+  document.getElementById('apply').onclick = ()=>{ readCoeffs(); draw(); };
+
+  // Canvas resizing with HiDPI
+  function resize(){
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(300, rect.width);
+    const h = Math.max(300, rect.height);
+    canvas.width = Math.floor(w * DPR);
+    canvas.height = Math.floor(h * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0); // present in CSS pixels
+    if(state.ox===0 && state.oy===0){
+      state.ox = w/2; state.oy = h/2; // center by default
+    }
+    draw();
+  }
+  new ResizeObserver(resize).observe(canvas);
+
+  // World<->Screen helpers
+  function sx(x){ return state.ox + x*state.unit*state.scale; }
+  function sy(y){ return state.oy - y*state.unit*state.scale; }
+  function wx(X){ return (X - state.ox)/(state.unit*state.scale); }
+  function wy(Y){ return (state.oy - Y)/(state.unit*state.scale); }
+
+  // Interaction: pan, zoom
+  let dragging=false, lastX=0,lastY=0;
+  canvas.addEventListener('mousedown',e=>{dragging=true; lastX=e.clientX; lastY=e.clientY;});
+  window.addEventListener('mouseup',()=>dragging=false);
+  window.addEventListener('mousemove',e=>{
+    if(!dragging) return; 
+    const dx = e.clientX-lastX; const dy=e.clientY-lastY; 
+    state.ox += dx; state.oy += dy; lastX=e.clientX; lastY=e.clientY; draw();
+  });
+  canvas.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const ptX = e.clientX - canvas.getBoundingClientRect().left;
+    const ptY = e.clientY - canvas.getBoundingClientRect().top;
+    const wx0 = wx(ptX), wy0 = wy(ptY);
+    const factor = Math.exp(-(e.deltaY/160) * (e.shiftKey?0.1:0.25));
+    state.scale *= factor;
+    // zoom to cursor
+    state.ox = ptX - wx0*state.unit*state.scale;
+    state.oy = ptY + wy0*state.unit*state.scale;
+    draw();
+  }, {passive:false});
+
+  // Draw grid, axes, ticks with unit labels only
+  function drawGrid(){
+    const {width:w, height:h} = canvas.getBoundingClientRect();
+    ctx.clearRect(0,0,w,h);
+
+    // grid
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid');
+    const step = state.unit*state.scale; if(step<8) return; // too dense
+
+    const x0 = -Math.ceil(state.ox/step)*step;
+    const y0 = -Math.ceil((h-state.oy)/step)*step;
+
+    ctx.beginPath();
+    for(let x=x0; x<=w; x+=step){ ctx.moveTo(x,0); ctx.lineTo(x,h); }
+    for(let y=y0; y<=h; y+=step){ ctx.moveTo(0,y); ctx.lineTo(w,y); }
+    ctx.stroke();
+
+    // axes with arrows
+    ctx.lineWidth = 2.4;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--axis');
+    ctx.beginPath();
+    ctx.moveTo(0, sy(0)); ctx.lineTo(w, sy(0)); // Ox
+    ctx.moveTo(sx(0), 0); ctx.lineTo(sx(0), h); // Oy
+    ctx.stroke();
+
+    // arrowheads
+    const ah=10;
+    // Ox arrow
+    ctx.beginPath(); ctx.moveTo(w-ah, sy(0)-6); ctx.lineTo(w, sy(0)); ctx.lineTo(w-ah, sy(0)+6); ctx.stroke();
+    // Oy arrow
+    ctx.beginPath(); ctx.moveTo(sx(0)-6, 0+ah); ctx.lineTo(sx(0), 0); ctx.lineTo(sx(0)+6, 0+ah); ctx.stroke();
+
+    // ticks + unit labels (show only units, not coordinates)
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted');
+    ctx.font = '12px system-ui';
+    const maxTicksX = Math.ceil(w/step)+2, maxTicksY = Math.ceil(h/step)+2;
+    for(let i=-maxTicksX; i<=maxTicksX; i++){
+      const X = sx(i); ctx.fillRect(X, sy(0)-2, 1.5, 4); // tick
+      if(i!==0) ctx.fillText('1u', X-8, sy(0)+14); // just unit mark
+    }
+    for(let j=-maxTicksY; j<=maxTicksY; j++){
+      const Y = sy(j); ctx.fillRect(sx(0)-2, Y, 4, 1.5);
+      if(j!==0) ctx.fillText('1u', sx(0)+6, Y-4);
+    }
+
+    // O label
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--fg');
+    ctx.font = '14px system-ui';
+    ctx.fillText('O', sx(0)+6, sy(0)-6);
+  }
+
+  // Evaluate functions and compute asymptotes
+  function evalModel(x){
+    if(state.model==='r11'){
+      const {a,b,c,d} = state.r11; return (a*x+b)/(c*x+d);
+    } else if(state.model==='r21'){
+      const {a,b,c,d,e} = state.r21; return (a*x*x + b*x + c)/(d*x + e);
+    } else {
+      const {m,n} = state.line; return m*x + n;
+    }
+  }
+
+  function asymptotes(){
+    const as = [];
+    if(state.model==='r11'){
+      const {a,b,c,d} = state.r11;
+      if(c!==0) as.push({type:'vertical', x: -d/c});
+      if(c!==0) as.push({type:'horizontal', y: a/c});
+    } else if(state.model==='r21'){
+      const {a,b,c,d,e} = state.r21;
+      if(d!==0) as.push({type:'vertical', x: -e/d});
+      // oblique via polynomial division: (ax^2+bx+c)/(dx+e) = px + q + r/(dx+e)
+      if(d!==0){
+        const p = a/d;
+        const q = (b*d - a*e)/(d*d);
+        as.push({type:'oblique', m:p, n:q});
+      }
+    }
+    return as;
+  }
+
+  function drawAsym(as){
+    ctx.save();
+    ctx.lineWidth = state.lineWidthAsym;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--asym');
+    ctx.setLineDash([10,8]);
+
+    const {width:w, height:h} = canvas.getBoundingClientRect();
+
+    as.forEach(a=>{
+      ctx.beginPath();
+      if(a.type==='vertical'){
+        const X = sx(a.x); ctx.moveTo(X,0); ctx.lineTo(X,h); ctx.stroke();
+        labelLine(`TC đứng: x = ${fmt(a.x)}`, X+6, 18);
+      } else if(a.type==='horizontal'){
+        const Y = sy(a.y); ctx.moveTo(0,Y); ctx.lineTo(w,Y); ctx.stroke();
+        labelLine(`TC ngang: y = ${fmt(a.y)}`, 10, Y-8);
+      } else if(a.type==='oblique'){
+        const y1 = a.m*wx(0)+a.n, y2 = a.m*wx(w)+a.n;
+        ctx.moveTo(0, sy(y1)); ctx.lineTo(w, sy(y2)); ctx.stroke();
+        labelLine(`TC xiên: y = ${fmt(a.m)}·x + ${fmt(a.n)}`, 12, 24);
+      }
+    });
+
+    ctx.restore();
+  }
+
+  function fmt(v){ return Math.abs(v)<1e-6? '0' : (Math.round(v*1000)/1000).toString(); }
+
+  // Draw function curve with thick line, break near vertical asymptotes
+  function drawGraph(){
+    const as = asymptotes();
+    const {width:w, height:h} = canvas.getBoundingClientRect();
+    ctx.save();
+    ctx.lineWidth = state.lineWidthGraph;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--graph');
+    ctx.beginPath();
+
+    const xMin = wx(0), xMax = wx(w);
+
+    // build segments avoiding vertical asymptotes
+    const vXs = as.filter(a=>a.type==='vertical').map(a=>a.x).filter(x=>isFinite(x));
+    const cuts = [xMin, ...vXs, xMax].sort((p,q)=>p-q);
+
+    for(let s=0; s<cuts.length-1; s++){
+      const L = cuts[s], R = cuts[s+1];
+      const N = 800; // resolution
+      let first=true; ctx.beginPath();
+      for(let i=0;i<=N;i++){
+        const x = L + (R-L)*i/N;
+        const y = evalModel(x);
+        const X = sx(x), Y = sy(y);
+        if(Number.isFinite(Y)){
+          if(first){ ctx.moveTo(X,Y); first=false; }
+          else ctx.lineTo(X,Y);
+        } else {
+          first=true; ctx.stroke(); ctx.beginPath();
+        }
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // mark intercepts (with axes + asymptotes vs axes) — dots only, no coordinates
+    markIntercepts(as);
+  }
+
+  function markIntercepts(as){
+    const {width:w, height:h} = canvas.getBoundingClientRect();
+    const rad = 5; 
+    ctx.save();
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--dot');
+
+    // Graph with Ox (y=0): solve numerator=0 depending on model
+    if(state.model==='r11'){
+      const {a,b,c,d} = state.r11; if(a!==0){ const x = -b/a; dot(sx(x), sy(0)); }
+      // with Oy (x=0): if denom != 0
+      if((state.r11.c*0 + state.r11.d)!==0){ const y = (a*0+b)/(c*0+d); if(Number.isFinite(y)) dot(sx(0), sy(y)); }
+    } else if(state.model==='r21'){
+      const {a,b,c,d,e} = state.r21; // quadratic roots for numerator
+      const disc = b*b - 4*a*c; if(disc>=0 && a!==0){
+        const x1 = (-b - Math.sqrt(disc))/(2*a); const x2 = (-b + Math.sqrt(disc))/(2*a);
+        [x1,x2].forEach(x=>{ if(isFinite(x)) dot(sx(x), sy(0)); });
+      }
+      // Oy intersection
+      if((d*0+e)!==0){ const y = (a*0*0 + b*0 + c)/(d*0 + e); if(Number.isFinite(y)) dot(sx(0), sy(y)); }
+    } else {
+      const {m,n} = state.line; if(m!==0){ const x=-n/m; dot(sx(x), sy(0)); } dot(sx(0), sy(n));
+    }
+
+    // Asymptotes with axes — dots only
+    as.forEach(a=>{
+      if(a.type==='vertical'){ dot(sx(a.x), sy(0)); }
+      if(a.type==='horizontal'){ dot(sx(0), sy(a.y)); }
+      if(a.type==='oblique'){
+        // intercepts of y = m x + n
+        dot(sx(-a.n/a.m), sy(0));
+        dot(sx(0), sy(a.n));
+      }
+    });
+
+    ctx.restore();
+
+    function dot(X,Y){ if(Number.isFinite(X)&&Number.isFinite(Y)) { ctx.beginPath(); ctx.arc(X,Y,rad,0,Math.PI*2); ctx.fill(); } }
+  }
+
+  function labelLine(text,x,y){
+    ctx.save();
+    ctx.font = '14px system-ui';
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    ctx.strokeStyle = 'rgba(0,0,0,.35)';
+    ctx.lineWidth = 4;
+    ctx.strokeText(text, x, y);
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function draw(){
+    drawGrid();
+    const as = asymptotes();
+    drawAsym(as);
+    drawGraph();
+  }
+
+  // Fit view roughly around features
+  function autoFit(){
+    const {width:w, height:h} = canvas.getBoundingClientRect();
+    state.scale = 1; state.unit = +document.getElementById('unit').value || 60;
+    state.ox = w/2; state.oy = h/2; draw();
+  }
+
+  document.getElementById('fit').onclick = autoFit;
+  document.getElementById('resetView').onclick = ()=>{ autoFit(); };
+
+  // Export PNG
+  document.getElementById('exportPNG').onclick = ()=>{
+    // temporarily render at 2x for crisp export
+    const rect = canvas.getBoundingClientRect();
+    const tmp = document.createElement('canvas');
+    tmp.width = rect.width*2; tmp.height = rect.height*2;
+    const tctx = tmp.getContext('2d');
+    // copy CSS pixels to 2x image
+    tctx.scale(2,2);
+    tctx.drawImage(canvas,0,0);
+    const url = tmp.toDataURL('image/png');
+    const a = document.createElement('a'); a.href=url; a.download = 'tiem-can-canvas.png'; a.click();
+  };
+
+  // High-contrast / projector mode (toggle root vars)
+  document.getElementById('toggleContrast').onclick = ()=>{
+    state.projector = !state.projector;
+    const r = document.documentElement.style;
+    if(state.projector){
+      r.setProperty('--bg', '#000'); r.setProperty('--panel','#050505'); r.setProperty('--grid','#111'); r.setProperty('--axis','#f8fafc'); r.setProperty('--fg','#f8fafc'); r.setProperty('--graph','#22d3ee'); r.setProperty('--asym','#f87171'); r.setProperty('--dot','#fde047');
+    } else {
+      r.removeProperty('--bg'); r.removeProperty('--panel'); r.removeProperty('--grid'); r.removeProperty('--axis'); r.removeProperty('--fg'); r.removeProperty('--graph'); r.removeProperty('--asym'); r.removeProperty('--dot');
+    }
+    draw();
+  };
+
+  // Init
+  syncPanels();
+  readCoeffs();
+  resize();
+  autoFit();
+})();
 </script>
 </body>
 </html>
