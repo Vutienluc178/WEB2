@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mô phỏng Đường Tiệm Cận – Toán 12</title>
+<style>
+  body {margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f8f9fa;color:#111;height:100vh;display:flex;flex-direction:column}
+  header,footer {background:#0a5bc2;color:#fff;text-align:center;padding:8px 12px}
+  main {display:flex;flex:1;min-height:0}
+  #panel {width:300px;background:#e9ecef;padding:12px;overflow:auto;box-shadow:inset -1px 0 4px rgba(0,0,0,.1)}
+  #panel label {display:block;margin:6px 0;font-weight:600}
+  #panel input {width:100px;padding:4px}
+  #panel select,button {padding:6px;border-radius:6px;border:1px solid #bbb;margin-top:6px}
+  #canvas-wrap {flex:1;position:relative;background:#fff}
+  canvas {width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<header><h2>Mô phỏng Đường Tiệm Cận (bậc 1/bậc 1 & bậc 2/bậc 1)</h2></header>
+<main>
+  <div id="panel">
+    <label>Dạng hàm:
+      <select id="mode">
+        <option value="linfrac">(a₁x + a₀) / (d₁x + d₀)</option>
+        <option value="quadfrac">(a₂x² + a₁x + a₀) / (d₁x + d₀)</option>
+      </select>
+    </label>
+    <label>a₂ <input type="number" id="a2" value="1" step="0.1"></label>
+    <label>a₁ <input type="number" id="a1" value="1" step="0.1"></label>
+    <label>a₀ <input type="number" id="a0" value="0" step="0.1"></label>
+    <label>d₁ <input type="number" id="d1" value="1" step="0.1"></label>
+    <label>d₀ <input type="number" id="d0" value="-1" step="0.1"></label>
+    <button id="zoomIn">🔍 Phóng to</button>
+    <button id="zoomOut">🔎 Thu nhỏ</button>
+    <button id="toggleMode">Bật Projector Mode</button>
+  </div>
+  <div id="canvas-wrap"><canvas id="graph"></canvas></div>
+</main>
+<footer>Tác giả: Thầy Vũ Tiến Lực – Trường THPT Nguyễn Hữu Cảnh</footer>
+<script>
+const canvas = document.getElementById('graph');
+const ctx = canvas.getContext('2d');
+const DPR = window.devicePixelRatio || 1;
+let scale = 50, ox=0, oy=0;
+function resize(){canvas.width=canvas.clientWidth*DPR;canvas.height=canvas.clientHeight*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);ox=canvas.clientWidth/2;oy=canvas.clientHeight/2;draw();}
+window.addEventListener('resize',resize);
+function denom(x){return parseFloat(d1.value)*x+parseFloat(d0.value)}
+function num(x){let a2=parseFloat(a2El.value),a1=parseFloat(a1El.value),a0=parseFloat(a0El.value);return (mode.value==='quadfrac'?a2*x*x:0)+a1*x+a0}
+function f(x){return num(x)/denom(x)}
+function toPx(x,y){return [ox+x*scale,oy-y*scale]}
+function drawPoint(x,y,color,label){if(!isFinite(x)||!isFinite(y))return;let[X,Y]=toPx(x,y);ctx.fillStyle=color;ctx.beginPath();ctx.arc(X,Y,5,0,Math.PI*2);ctx.fill();if(label){ctx.font='32px Segoe UI';ctx.fillText(label,X+8,Y-8);}}
+function drawLabel(text,x,y,color){ctx.font='32px Segoe UI';ctx.fillStyle=color;ctx.fillText(text,x,y);}
+function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;a2El.style.display=(mode.value==='quadfrac')?'block':'none';ctx.clearRect(0,0,w,h);
+// Grid
+ctx.lineWidth=1;ctx.strokeStyle='#ccc';ctx.beginPath();for(let x=ox%scale;x<w;x+=scale){ctx.moveTo(x,0);ctx.lineTo(x,h);}for(let y=oy%scale;y<h;y+=scale){ctx.moveTo(0,y);ctx.lineTo(w,y);}ctx.stroke();
+// Axes
+ctx.lineWidth=3;ctx.strokeStyle='#000';ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(w,oy);ctx.moveTo(ox,0);ctx.lineTo(ox,h);ctx.stroke();
+// Arrowheads and labels O, x, y
+ctx.fillStyle='#000';ctx.font='32px Segoe UI';ctx.beginPath();ctx.moveTo(w-20,oy-10);ctx.lineTo(w,oy);ctx.lineTo(w-20,oy+10);ctx.fill();ctx.beginPath();ctx.moveTo(ox-10,20);ctx.lineTo(ox,0);ctx.lineTo(ox+10,20);ctx.fill();ctx.fillText('O',ox-25,oy+30);ctx.fillText('x',w-30,oy-15);ctx.fillText('y',ox+15,40);
+// Function graph
+ctx.lineWidth=3;ctx.strokeStyle='#0077cc';ctx.beginPath();let first=true;for(let px=0;px<w;px++){let x=(px-ox)/scale;if(Math.abs(denom(x))<1e-6){first=true;continue;}let y=f(x);let Y=oy-y*scale;if(first){ctx.moveTo(px,Y);first=false;}else ctx.lineTo(px,Y);}ctx.stroke();
+// Vertical asymptote
+let d1v=parseFloat(d1.value),d0v=parseFloat(d0.value),a2v=parseFloat(a2El.value),a1v=parseFloat(a1El.value),a0v=parseFloat(a0El.value);
+if(Math.abs(d1v)>1e-9){let xVA=-d0v/d1v;ctx.setLineDash([6,6]);ctx.strokeStyle='red';ctx.beginPath();let xpx=ox+xVA*scale;ctx.moveTo(xpx,0);ctx.lineTo(xpx,h);ctx.stroke();ctx.setLineDash([]);drawPoint(xVA,0,'red',`x=${xVA.toFixed(1)}`);drawLabel('Tiệm cận đứng',xpx+10,40,'red');}
+// Horizontal/Slant asymptote
+if(mode.value==='linfrac'){let yH=a1v/d1v;ctx.setLineDash([6,6]);ctx.strokeStyle='orange';ctx.beginPath();let yHpx=oy-yH*scale;ctx.moveTo(0,yHpx);ctx.lineTo(w,yHpx);ctx.stroke();ctx.setLineDash([]);drawPoint(0,yH,'orange',`y=${yH.toFixed(1)}`);drawLabel('Tiệm cận ngang',30,yHpx-10,'orange');}
+else{let A=a2v/d1v,B=(a1v*d1v-a2v*d0v)/(d1v*d1v);ctx.setLineDash([6,6]);ctx.strokeStyle='orange';ctx.beginPath();let y1=A*((0-ox)/scale)+B,y2=A*((w-ox)/scale)+B;ctx.moveTo(0,oy-y1*scale);ctx.lineTo(w,oy-y2*scale);ctx.stroke();ctx.setLineDash([]);drawPoint(0,B,'orange',`y=${B.toFixed(1)}`);let x0=-B/A;if(isFinite(x0))drawPoint(x0,0,'orange',`x=${x0.toFixed(1)}`);drawLabel('Tiệm cận xiên',w-300,40,'orange');}
+// Graph intersections
+if(Math.abs(denom(0))>1e-9){let y0=f(0);drawPoint(0,y0,'#0077cc',`y=${y0.toFixed(1)}`);}if(Math.abs(a1v)>1e-9){let xr=-a0v/a1v;if(Math.abs(denom(xr))>1e-9)drawPoint(xr,0,'#0077cc',`x=${xr.toFixed(1)}`);} }
+const mode=document.getElementById('mode');const a2El=document.getElementById('a2');const a1El=document.getElementById('a1');const a0El=document.getElementById('a0');const d1=document.getElementById('d1');const d0=document.getElementById('d0');
+[a2El,a1El,a0El,d1,d0,mode].forEach(e=>e.addEventListener('input',draw));
+document.getElementById('zoomIn').addEventListener('click',()=>{scale*=1.2;draw();});
+document.getElementById('zoomOut').addEventListener('click',()=>{scale/=1.2;draw();});
+resize();
+</script>
+</body>
+</html>
