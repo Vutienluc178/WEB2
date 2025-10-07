@@ -44,8 +44,9 @@
   }
    ,
   {
-    "title": "IV-3: Giải tam giác 2",
-    "path": "https://congcutoanhoc.com/congcu/giaitamgiac/giaitamgiac.html"
+<button onclick="window.location.href='https://congcutoanhoc.com/congcu/giaitamgiac/giaitamgiac.html'">
+  IV-3: Giải tam giác 2
+</button>
   }   
   ,
   {
