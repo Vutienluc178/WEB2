@@ -37,7 +37,7 @@
   .btn.small{padding:6px 10px;border-radius:10px}
   .chip{display:inline-flex;gap:6px;align-items:center;background:var(--chip);color:var(--chipText);border:1px solid var(--border);border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer}
   .chip.active{outline:2px solid var(--brand)}
-  main{max-width:1200px;margin:20px auto;padding:0 20px 100px}
+  main{max-width:1200px;margin:20px auto;padding:0 20px 120px}
   .topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
   .preview{border:1px solid var(--border);border-radius:14px;background:var(--panel);box-shadow:var(--shadow);padding:12px}
   canvas{width:100%;aspect-ratio:16/9;display:block;border-radius:12px;background:linear-gradient(180deg, rgba(99,102,241,.06), transparent)}
@@ -60,11 +60,14 @@
   @media(min-width:1024px){.col2{grid-template-columns:2fr 1fr}}
   footer{border-top:1px solid var(--border);color:var(--muted);text-align:center;padding:20px}
   .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  dialog{border:1px solid var(--border);border-radius:12px;padding:14px;max-width:520px;width:calc(100% - 2rem);box-shadow:var(--shadow);background:var(--panel);color:var(--fg)}
+  dialog{border:1px solid var(--border);border-radius:12px;padding:14px;max-width:720px;width:calc(100% - 2rem);box-shadow:var(--shadow);background:var(--panel);color:var(--fg)}
   dialog::backdrop{background:rgba(0,0,0,.35)}
   .row{display:grid;gap:8px;margin:8px 0}
   .row input, .row textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:8px;background:var(--card);color:var(--fg)}
   .danger{color:var(--danger);font-weight:600}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{padding:8px;border-bottom:1px solid var(--border);text-align:left;font-size:14px}
+  .table td.actions{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -99,6 +102,8 @@
       <label class="btn" title="Nhập JSON (kéo thả hoặc chọn file)">
         📥 Import <input id="importFile" type="file" accept="application/json" hidden onchange="importJSON(this.files[0])">
       </label>
+      <button class="btn small" id="btnRestore" onclick="openRestoreHidden()" title="Khôi phục mục đã ẩn">🔄 Khôi phục (0)</button>
+      <button class="btn" id="btnSaveGithub" title="Lưu JSON lên GitHub" onclick="openGithubDialog()">☁️ Save to GitHub</button>
     </div>
   </div>
 </header>
@@ -127,7 +132,7 @@
           </select>
           <button class="btn small" onclick="addQuick()">Lưu</button>
         </div>
-        <small style="color:var(--muted)">Các mục tuỳ chỉnh sẽ lưu trên trình duyệt (localStorage). Có thể Export để backup.</small>
+        <small style="color:var(--muted)">Các mục tuỳ chỉnh sẽ lưu trên trình duyệt (localStorage). Có thể Export hoặc ☁️ Save to GitHub để sao lưu.</small>
       </div>
     </aside>
   </div>
@@ -170,153 +175,72 @@
   </form>
 </dialog>
 
+<dialog id="restoreDlg">
+  <form method="dialog">
+    <h3>🔄 Khôi phục mục đã ẩn</h3>
+    <p class="badge" id="restoreHint">Các mục dưới đây đang bị ẩn khỏi danh sách. Bấm "Bỏ ẩn" để khôi phục.</p>
+    <div class="row" style="max-height:50vh;overflow:auto">
+      <table class="table" id="restoreTable">
+        <thead><tr><th>Tiêu đề</th><th>URL</th><th>Nhóm</th><th class="actions">Hành động</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="row" style="display:flex;gap:8px;justify-content:space-between">
+      <button class="btn" id="btnUnhideAll" type="button">Bỏ ẩn tất cả</button>
+      <button class="btn" value="cancel">Đóng</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- GITHUB SYNC DIALOG -->
+<dialog id="githubDlg">
+  <form method="dialog">
+    <h3>☁️ Save to GitHub</h3>
+    <div class="row"><label>Owner (tên tài khoản / tổ chức)<input id="ghOwner" placeholder="vd: vutil"></label></div>
+    <div class="row"><label>Repo<input id="ghRepo" placeholder="vd: math-links"></label></div>
+    <div class="row"><label>Branch<input id="ghBranch" value="main"></label></div>
+    <div class="row"><label>File path trong repo<input id="ghPath" placeholder="vd: data/math-links.json" value="data/math-links.json"></label></div>
+    <div class="row"><label>Commit message<input id="ghMsg" value="chore: update math links"></label></div>
+    <div class="row"><label>Personal Access Token (PAT)<input id="ghToken" type="password" placeholder="ghp_... (chỉ lưu cục bộ)"></label></div>
+    <small class="badge">PAT sẽ lưu trong LocalStorage của trình duyệt này (chỉ máy của thầy). Không chia sẻ PAT cho người khác.</small>
+    <div class="row" style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" value="cancel">Đóng</button>
+      <button class="btn" id="btnSaveGhCfg" type="button">Lưu cấu hình</button>
+      <button class="btn" id="btnSaveGhNow" type="button">Save Now</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
 /* ================== DỮ LIỆU MẪU (có tags) ================== */
 const baseData = {
-  "toan10": [
-    {
-      "title": "I-1: Khái niệm vectơ",
-      "path": "https://www.congcutoanhoc.com/congcu/vecto/vecto.html",
-      "desc": "Thành phần vectơ; điểm đầu/cuối, phương, chiều, độ dài.",
-      "tags": [
-        "hinh hoc",
-        "vector"
-      ]
-    },
-    {
-      "title": "I-2: Tính toán với vectơ",
-      "path": "https://www.congcutoanhoc.com/congcu/vecto/tinhvecto.html",
-      "desc": "Cộng, trừ, nhân vectơ; ví dụ tương tác.",
-      "tags": [
-        "hinh hoc",
-        "vector",
-        "thuc hanh"
-      ]
-    },
-    {
-      "title": "III-GIẢI TAM GIÁC",
-      "path": "https://congcutoanhoc.com/congcu/giaitamgiac/giaitamgiac.html",
-      "desc": "GIẢI TAM GIÁC",
-      "tags": [
-        "hethucluong",
-        "cosin",
-        "sin"
-      ]
-    }
+  "toan10":[
+    {"title":"I-1: Khái niệm vectơ","path":"https://www.congcutoanhoc.com/congcu/vecto/vecto.html","desc":"Thành phần vectơ; điểm đầu/cuối, phương, chiều, độ dài.","tags":["hinh hoc","vector"]},
+    {"title":"I-2: Tính toán với vectơ","path":"https://www.congcutoanhoc.com/congcu/vecto/tinhvecto.html","desc":"Cộng, trừ, nhân vectơ; ví dụ tương tác.","tags":["hinh hoc","vector","thuc hanh"]}
   ],
-  "toan11": [
-    {
-      "title": "III-1: Hàm số lượng giác",
-      "path": "https://www.congcutoanhoc.com/congcu/hamluonggiac/hamluonggiac.html",
-      "desc": "Đồ thị sin, cos, tan, cot; chu kỳ – biên độ.",
-      "tags": [
-        "luong giac",
-        "do thi"
-      ]
-    },
-    {
-      "title": "III-2: Tổ hợp – Xác suất",
-      "path": "https://www.congcutoanhoc.com/congcu/xacsuat/xacsuat.html",
-      "desc": "Mô phỏng xác suất; luật số lớn.",
-      "tags": [
-        "xac suat",
-        "thong ke"
-      ]
-    }
+  "toan11":[
+    {"title":"III-1: Hàm số lượng giác","path":"https://www.congcutoanhoc.com/congcu/hamluonggiac/hamluonggiac.html","desc":"Đồ thị sin, cos, tan, cot; chu kỳ – biên độ.","tags":["luong giac","do thi"]},
+    {"title":"III-2: Tổ hợp – Xác suất","path":"https://www.congcutoanhoc.com/congcu/xacsuat/xacsuat.html","desc":"Mô phỏng xác suất; luật số lớn.","tags":["xac suat","thong ke"]}
   ],
-  "toan12": [
-    {
-      "title": "IV-3: Giải tam giác 2",
-      "path": "https://www.congcutoanhoc.com/congcu/giaitamgiac/giaitamgiac.html",
-      "desc": "Định lý sin – cos; dựng hình.",
-      "tags": [
-        "hinh hoc",
-        "giai tam giac"
-      ]
-    },
-    {
-      "title": "IV-4: Đường tiệm cận hàm số",
-      "path": "https://www.congcutoanhoc.com/congcu/tiemcan/tiemcan.html",
-      "desc": "Tiệm cận đứng, ngang, xiên.",
-      "tags": [
-        "giai tich",
-        "do thi"
-      ]
-    },
-    {
-      "title": "TỌA ĐỘ HÌNH CHIẾU",
-      "path": "https://congcutoanhoc.com/congcu/toadovt/index.html",
-      "desc": "Xác định  tọa độ hình chiếu điểm trên Oxyz",
-      "tags": [
-        "Oxyz"
-      ]
-    }
+  "toan12":[
+    {"title":"IV-3: Giải tam giác 2","path":"https://www.congcutoanhoc.com/congcu/giaitamgiac/giaitamgiac.html","desc":"Định lý sin – cos; dựng hình.","tags":["hinh hoc","giai tam giac"]},
+    {"title":"IV-4: Đường tiệm cận hàm số","path":"https://www.congcutoanhoc.com/congcu/tiemcan/tiemcan.html","desc":"Tiệm cận đứng, ngang, xiên.","tags":["giai tich","do thi"]}
   ],
-  "tools": [
-    {
-      "title": "GeoGebra",
-      "path": "https://www.geogebra.org/",
-      "desc": "Công cụ hình học/đại số tương tác.",
-      "tags": [
-        "tool",
-        "hinh hoc",
-        "do thi"
-      ]
-    },
-    {
-      "title": "Desmos",
-      "path": "https://www.desmos.com/",
-      "desc": "Đồ thị hàm, hoạt động lớp học.",
-      "tags": [
-        "tool",
-        "do thi"
-      ]
-    },
-    {
-      "title": "Wolfram Alpha",
-      "path": "https://www.wolframalpha.com/",
-      "desc": "Tính toán + tri thức.",
-      "tags": [
-        "tool",
-        "CAS"
-      ]
-    },
-    {
-      "title": "Tmp",
-      "path": "https://example.com/tmp",
-      "desc": "",
-      "tags": []
-    }
+  "tools":[
+    {"title":"GeoGebra","path":"https://www.geogebra.org/","desc":"Công cụ hình học/đại số tương tác.","tags":["tool","hinh hoc","do thi"]},
+    {"title":"Desmos","path":"https://www.desmos.com/","desc":"Đồ thị hàm, hoạt động lớp học.","tags":["tool","do thi"]},
+    {"title":"Wolfram Alpha","path":"https://www.wolframalpha.com/","desc":"Tính toán + tri thức.","tags":["tool","CAS"]},
+    {"title":"Mathigon","path":"https://mathigon.org/","desc":"Bài học và mô hình tương tác hiện đại.","tags":["tool","tuong tac","bai hoc"]},
+    {"title":"Polypad (Amplify)","path":"https://polypad.amplify.com/","desc":"Virtual manipulatives: số, hình, lưới, v.v.","tags":["tool","tuong tac"]},
+    {"title":"Symbolab","path":"https://www.symbolab.com/","desc":"Giải toán từng bước, đại số & giải tích.","tags":["tool","CAS","giai bai"]},
+    {"title":"Photomath","path":"https://photomath.com/","desc":"Quét ảnh bài toán, lời giải chi tiết.","tags":["tool","giai bai","ocr"]},
+    {"title":"Brainingcamp","path":"https://www.brainingcamp.com/","desc":"Công cụ tương tác cho lớp học toán.","tags":["tool","tuong tac"]},
+    {"title":"Ximera","path":"https://ximera.osu.edu/","desc":"Nền tảng bài học toán tương tác (LaTeX + web).","tags":["tool","tuong tac","bai hoc"]}
   ],
-  "news": [
-    {
-      "title": "Toán học & ứng dụng – Tạp chí",
-      "path": "https://toanhocungdung.vn/",
-      "desc": "Tin/bài toán học ứng dụng.",
-      "tags": [
-        "news",
-        "vn"
-      ]
-    },
-    {
-      "title": "VnExpress – Khoa học/Toán",
-      "path": "https://vnexpress.net/khoa-hoc/toan-hoc",
-      "desc": "Mục Toán học của VnExpress.",
-      "tags": [
-        "news",
-        "vn"
-      ]
-    },
-    {
-      "title": "MathVN Blog",
-      "path": "https://mathvn.net/",
-      "desc": "Bài viết, mẹo, thảo luận.",
-      "tags": [
-        "news",
-        "blog",
-        "vn"
-      ]
-    }
+  "news":[
+    {"title":"Toán học & ứng dụng – Tạp chí","path":"https://toanhocungdung.vn/","desc":"Tin/bài toán học ứng dụng.","tags":["news","vn"]},
+    {"title":"VnExpress – Khoa học/Toán","path":"https://vnexpress.net/khoa-hoc/toan-hoc","desc":"Mục Toán học của VnExpress.","tags":["news","vn"]},
+    {"title":"MathVN Blog","path":"https://mathvn.net/","desc":"Bài viết, mẹo, thảo luận.","tags":["news","blog","vn"]}
   ]
 };
 
@@ -455,20 +379,20 @@ function render(draw=true){
     card.setAttribute('role','group');
     const fav = favs.has(it.path);
     const inCustom = (loadCustom()[it._tab||currentTab]||[]).some(c=>c.path===it.path);
-    const tags = (it.tags||[]).map(t=>`<span class="chip" style="pointer-events:none">${t}</span>`).join(' ');
+    const tags = (it.tags||[]).map(t=>`<span class=\"chip\" style=\"pointer-events:none\">${t}</span>`).join(' ');
     card.innerHTML = `
-      <div class="ttl">
-        <span class="icon open" title="Mở (Enter)">🔗</span>
+      <div class=\"ttl\">
+        <span class=\"icon open\" title=\"Mở (Enter)\">🔗</span>
         <span>${it.title}</span>
-        <span class="ext" title="Liên kết ngoài">↗</span>
+        <span class=\"ext\" title=\"Liên kết ngoài\">↗</span>
       </div>
-      <div class="desc">${it.desc||''}</div>
-      <div class="meta">
-        <span class="icon star" title="Đánh dấu yêu thích">${fav?'⭐':'☆'}</span>
-        <span class="icon copy" title="Sao chép liên kết">📋</span>
-        <span class="icon edit ${inCustom?'':'disabled'}" title="${inCustom? 'Sửa mục (tuỳ chỉnh)':'Sao chép & sửa (tạo bản tuỳ chỉnh)'}">✏️</span>
-        <span class="icon del" title="${inCustom? 'Xoá mục tuỳ chỉnh':'Ẩn mục này khỏi danh sách'}">🗑️</span>
-        ${tags?`<div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${tags}</div>`:''}
+      <div class=\"desc\">${it.desc||''}</div>
+      <div class=\"meta\">
+        <span class=\"icon star\" title=\"Đánh dấu yêu thích\">${fav?'⭐':'☆'}</span>
+        <span class=\"icon copy\" title=\"Sao chép liên kết\">📋</span>
+        <span class=\"icon edit ${inCustom?'':'disabled'}\" title=\"${inCustom? 'Sửa mục (tuỳ chỉnh)':'Sao chép & sửa (tạo bản tuỳ chỉnh)'}\">✏️</span>
+        <span class=\"icon del\" title=\"${inCustom? 'Xoá mục tuỳ chỉnh':'Ẩn mục này khỏi danh sách'}\">🗑️</span>
+        ${tags?`<div style=\"margin-left:auto;display:flex;gap:6px;flex-wrap:wrap\">${tags}</div>`:''}
       </div>
     `;
 
@@ -506,12 +430,12 @@ function render(draw=true){
         const ok = await confirmByTyping('Gõ DELETE để xoá mục tuỳ chỉnh này vĩnh viễn.', 'DELETE');
         if(ok){
           custom[tab] = (custom[tab]||[]).filter(c=>c.path!==it.path);
-          saveCustom(custom); render(false);
+          saveCustom(custom); render(false); updateHiddenCount();
         }
       }else{
-        const ok = await confirmByTyping('Gõ DELETE để ẨN mục gốc này khỏi danh sách (có thể khôi phục bằng cách xoá hiddenPaths trong LocalStorage).', 'DELETE');
+        const ok = await confirmByTyping('Gõ DELETE để ẨN mục gốc này khỏi danh sách (có thể khôi phục bằng cách vào Khôi phục).', 'DELETE');
         if(ok){
-          const hid = getHidden(); hid.add(it.path); setHidden(hid); render(false);
+          const hid = getHidden(); hid.add(it.path); setHidden(hid); render(false); updateHiddenCount();
         }
       }
     });
@@ -521,6 +445,7 @@ function render(draw=true){
 
   renderTags();
   if(draw) drawPreviewTitle(currentTab);
+  updateHiddenCount();
 }
 
 /* ================== EDIT DIALOG ================== */
@@ -539,8 +464,12 @@ function openEditDialog(item){
   dlg.showModal();
 }
 
-document.getElementById('btnSaveEdit').addEventListener('click', (e)=>{
+document.getElementById('btnSaveEdit').addEventListener('click', async (e)=>{
   e.preventDefault(); // prevent dialog close by default
+  // Advanced confirm for EDIT: require SAVE
+  const okSave = await confirmByTyping('Gõ SAVE để lưu thay đổi.', 'SAVE');
+  if(!okSave) return;
+
   const title = fTitle.value.trim();
   const path  = fPath.value.trim();
   const desc  = fDesc.value.trim();
@@ -607,6 +536,109 @@ function confirmCloneBase(item){
     });
   });
 }
+
+/* ================== RESTORE HIDDEN ================== */
+const restoreDlg = document.getElementById('restoreDlg');
+const restoreTable = document.getElementById('restoreTable').querySelector('tbody');
+const btnUnhideAll = document.getElementById('btnUnhideAll');
+const btnRestore = document.getElementById('btnRestore');
+
+function listHiddenItems(){
+  const hid = [...getHidden()];
+  const d = loadData();
+  const all = Object.entries(d).flatMap(([tab, arr])=> arr.map(x=>({...x, _tab:tab})));
+  return hid.map(p=>{
+    const found = all.find(i=>i.path===p);
+    return { path:p, title: found?.title || '(Không rõ tiêu đề)', _tab: found?found._tab:'(n/a)'};
+  });
+}
+function updateHiddenCount(){
+  const cnt = getHidden().size;
+  if(btnRestore) btnRestore.textContent = `🔄 Khôi phục (${cnt})`;
+}
+function openRestoreHidden(){
+  buildRestoreTable();
+  restoreDlg.showModal();
+}
+function buildRestoreTable(){
+  restoreTable.innerHTML='';
+  const rows = listHiddenItems();
+  if(!rows.length){
+    restoreTable.innerHTML = `<tr><td colspan=\"4\">Không có mục nào đang bị ẩn.</td></tr>`;
+    return;
+  }
+  rows.forEach(item=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.title}</td>
+      <td><a href=\"${item.path}\" target=\"_blank\" rel=\"noopener\">${item.path}</a></td>
+      <td>${item._tab}</td>
+      <td class=\"actions\"><button class=\"btn small\" data-path=\"${item.path}\">Bỏ ẩn</button></td>
+    `;
+    tr.querySelector('button').addEventListener('click', ()=>{
+      const set = getHidden(); set.delete(item.path); setHidden(set); buildRestoreTable(); render(false); updateHiddenCount();
+    });
+    restoreTable.appendChild(tr);
+  });
+}
+btnUnhideAll.addEventListener('click', ()=>{
+  if(confirm('Bỏ ẩn TẤT CẢ?')){ setHidden(new Set()); buildRestoreTable(); render(false); updateHiddenCount(); }
+});
+
+/* ================== GITHUB SAVE ================== */
+const ghDlg = document.getElementById('githubDlg');
+const ghOwner = document.getElementById('ghOwner');
+const ghRepo = document.getElementById('ghRepo');
+const ghBranch = document.getElementById('ghBranch');
+const ghPath = document.getElementById('ghPath');
+const ghMsg = document.getElementById('ghMsg');
+const ghToken = document.getElementById('ghToken');
+const btnSaveGhCfg = document.getElementById('btnSaveGhCfg');
+const btnSaveGhNow = document.getElementById('btnSaveGhNow');
+
+function openGithubDialog(){
+  const cfg = JSON.parse(localStorage.getItem('ghCfg')||'{}');
+  ghOwner.value = cfg.owner||'';
+  ghRepo.value = cfg.repo||'';
+  ghBranch.value = cfg.branch||'main';
+  ghPath.value = cfg.path||'data/math-links.json';
+  ghMsg.value = cfg.msg||'chore: update math links';
+  ghToken.value = cfg.token||'';
+  ghDlg.showModal();
+}
+function saveGhCfg(){
+  const cfg = {owner:ghOwner.value.trim(), repo:ghRepo.value.trim(), branch:ghBranch.value.trim()||'main', path:ghPath.value.trim(), msg:ghMsg.value.trim(), token:ghToken.value};
+  localStorage.setItem('ghCfg', JSON.stringify(cfg));
+  alert('✅ Đã lưu cấu hình GitHub (cục bộ).');
+}
+async function saveGhNow(){
+  const cfg = {owner:ghOwner.value.trim(), repo:ghRepo.value.trim(), branch:ghBranch.value.trim()||'main', path:ghPath.value.trim(), msg:ghMsg.value.trim(), token:ghToken.value};
+  if(!cfg.owner||!cfg.repo||!cfg.path||!cfg.token){ alert('Vui lòng nhập đủ Owner/Repo/Path/Token.'); return; }
+  try{
+    const contentObj = loadData();
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(contentObj,null,2))));
+    // Lấy SHA hiện tại (nếu file đã tồn tại)
+    const getUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.path)}?ref=${encodeURIComponent(cfg.branch)}`;
+    let sha = undefined;
+    const getRes = await fetch(getUrl, {headers:{'Authorization':`token ${cfg.token}`}});
+    if(getRes.ok){ const js = await getRes.json(); sha = js.sha; }
+    // PUT nội dung
+    const putUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.path)}`;
+    const body = {message: cfg.msg||'update', content, branch: cfg.branch};
+    if(sha) body.sha = sha;
+    const putRes = await fetch(putUrl, {method:'PUT', headers:{'Authorization':`token ${cfg.token}`, 'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    if(!putRes.ok){ const t = await putRes.text(); throw new Error(t); }
+    alert('✅ Đã lưu lên GitHub!');
+    // lưu lại cấu hình
+    saveGhCfg();
+    ghDlg.close();
+  }catch(err){
+    console.error(err);
+    alert('❌ Lỗi lưu GitHub: '+ err.message?.slice(0,400));
+  }
+}
+btnSaveGhCfg.addEventListener('click', saveGhCfg);
+btnSaveGhNow.addEventListener('click', saveGhNow);
 
 /* ================== CANVAS ================== */
 const cv = document.getElementById('cv');
@@ -744,6 +776,7 @@ function drawPreviewTitleGuard(){ try{ drawPreviewTitle('toan10'); } catch(e){} 
     const cnt = dup[tab].filter(i=>i.path===sample.path).length; if(cnt>1) throw new Error('duplicate allowed');
   });
   assert('confirmByTyping is function', ()=>{ if(typeof confirmByTyping !== 'function') throw new Error('missing confirmByTyping'); });
+  assert('github dialog elements exist', ()=>{ if(!document.getElementById('githubDlg')) throw new Error('no github dlg'); });
   console.log('Self-tests:', tests);
 })();
 
