@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đồ thị chứa giá trị tuyệt đối – Lớp 12 (CTST)</title>
+<style>
+  :root{
+    /* Bảng màu an toàn cho người mù màu (CB-safe) */
+    --bg:#f6f7f8; --fg:#111; --muted:#555; --grid:#e5e7eb; --axis:#1f2937;
+    --accent:#1f77b4;   /* xanh lam */
+    --accent2:#2ca02c;  /* xanh lá */
+    --danger:#d62728;   /* đỏ */
+    --card:#ffffff; --panel:#ffffff; --shadow:0 6px 24px rgba(0,0,0,.08);
+  }
+  body.projector{ --bg:#111; --fg:#f7f7f7; --muted:#bbb; --grid:#2a2a2a; --axis:#f5f5f5; --card:#161616; --panel:#141414; --shadow:none; }
+  [data-contrast="high"]{ --grid:#cfd8dc; --axis:#000; --accent:#ff8f00; --accent2:#2e7d32; --danger:#b71c1c; }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+    font-size:18px; line-height:1.45;
+    background:var(--bg); color:var(--fg);
+  }
+  header,footer{padding:10px 16px; background:var(--card); box-shadow:var(--shadow); position:sticky; z-index:3}
+  header{top:0}
+  footer{bottom:0}
+  header h1{margin:0; font-size:22px; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  header small{font-weight:500; color:var(--muted)}
+  .wrap{display:grid; grid-template-columns: 360px 1fr; gap:12px; padding:12px;}
+  aside{background:var(--panel); border-radius:14px; padding:12px; box-shadow:var(--shadow);}
+  main{display:grid; grid-template-rows: 1fr; gap:12px;}
+  .board{background:var(--card); border-radius:14px; box-shadow:var(--shadow); position:relative; min-height:64vh;}
+  canvas{width:100%; height:100%; display:block; border-radius:14px;}
+  .stack{display:grid; gap:10px}
+  .card{background:var(--card); border-radius:12px; padding:10px; box-shadow:var(--shadow)}
+  .row{display:flex; align-items:center; gap:8px; margin:6px 0;}
+  .row label{min-width:64px; font-size:16px; color:var(--muted)}
+  input[type="number"], select{
+    width:100%; padding:8px 10px; border:1px solid #d0d0d7; background:transparent; color:var(--fg); border-radius:10px; font-size:18px;
+  }
+  input[type="range"]{width:100%}
+  button{padding:10px 12px; border:1px solid #d0d0d7; border-radius:12px; background:var(--card); color:var(--fg); cursor:pointer; font-weight:600; font-size:16px}
+  button.primary{border-color:transparent; background:var(--accent); color:white}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .legend{
+    position:absolute; right:10px; top:10px; background:var(--card); color:var(--fg);
+    border-radius:10px; padding:6px 10px; font-size:16px; box-shadow:var(--shadow);
+  }
+  .legend div{display:flex; align-items:center; gap:8px}
+  .chip{width:18px; height:4px; border-radius:2px; display:inline-block}
+  .note{font-size:14px; color:var(--muted)}
+  .kbd{padding:2px 6px; border-radius:6px; border:1px solid #9995; font-size:12px}
+</style>
+</head>
+<body data-contrast="normal">
+<header>
+  <h1>📈 ĐỒ THỊ CHỨA GIÁ TRỊ TUYỆT ĐỐI – Lớp 12 – CTST <small>HiDPI Canvas · Zoom/Pan · Export PNG</small></h1>
+</header>
+
+<div class="wrap">
+  <aside>
+    <div class="stack">
+      <div class="card">
+        <div class="row"><strong>Chế độ hiển thị</strong></div>
+        <div class="grid2">
+          <button id="btnProjector">🖥️ Projector</button>
+          <button id="btnContrast">🌗 High-Contrast</button>
+        </div>
+        <div class="row note">Phím tắt: <span class="kbd">R</span> reset · <span class="kbd">Ctrl/Cmd + Wheel</span> zoom · Kéo chuột để pan.</div>
+      </div>
+
+      <div class="card">
+        <div class="row"><strong>Chọn dạng hàm</strong></div>
+        <select id="mode">
+          <option value="abs_linear">y = |a x + b| + c</option>
+          <option value="abs_quadratic">y = |a x² + b x + c| + d</option>
+          <option value="abs_cubic">y = |a x³ + b x² + c x + d| + e</option>
+          <option value="abs_quartic">y = |a x⁴ + b x³ + c x² + d x + e| + k</option>
+          <option value="abs_fx">y = |f(x)| (f bậc 2)</option>
+          <option value="abs_y">|y| = f(x) (f bậc 2)</option>
+        </select>
+        <div class="note">• <em>y = |f(x)|</em>: phản xạ phần dưới Ox lên trên. • <em>|y| = f(x)</em>: chỉ tồn tại khi <em>f(x) ≥ 0</em>, có 2 nhánh đối xứng qua Ox.</div>
+      </div>
+
+      <!-- Tham số -->
+      <div class="card" id="params">
+        <div class="row"><strong>Tham số</strong></div>
+        <div class="row"><label>a</label><input type="number" id="a" step="0.1" value="1"><input type="range" id="a_s" min="-5" max="5" step="0.1" value="1"></div>
+        <div class="row"><label>b</label><input type="number" id="b" step="0.1" value="0"><input type="range" id="b_s" min="-10" max="10" step="0.1" value="0"></div>
+        <div class="row"><label>c</label><input type="number" id="c" step="0.1" value="0"><input type="range" id="c_s" min="-10" max="10" step="0.1" value="0"></div>
+        <div class="row" id="row_d"><label>d</label><input type="number" id="d" step="0.1" value="0"><input type="range" id="d_s" min="-10" max="10" step="0.1" value="0"></div>
+        <div class="row" id="row_e"><label>e</label><input type="number" id="e" step="0.1" value="0"><input type="range" id="e_s" min="-10" max="10" step="0.1" value="0"></div>
+        <div class="row" id="row_k"><label>k</label><input type="number" id="k" step="0.1" value="0"><input type="range" id="k_s" min="-10" max="10" step="0.1" value="0"></div>
+        <div class="grid2" style="margin-top:6px">
+          <button id="presetV">Preset ▸ V-shape</button>
+          <button id="presetW">Preset ▸ W-shape</button>
+        </div>
+      </div>
+
+      <!-- Đường y = m -->
+      <div class="card">
+        <div class="row"><strong>Đường y = m</strong></div>
+        <div class="row"><label>Hiện</label><input type="checkbox" id="show_m"></div>
+        <div class="row"><label>m</label><input type="number" id="m" step="0.1" value="0"><input type="range" id="m_s" min="-10" max="10" step="0.1" value="0"></div>
+        <div class="note">Hiển thị giao điểm giữa đồ thị và đường y = m, kèm hình chiếu cực trị lên Oy.</div>
+      </div>
+
+      <div class="card">
+        <div class="row"><strong>Xuất ảnh</strong></div>
+        <div class="grid2">
+          <button id="btnReset">↺ Reset (R)</button>
+          <button id="btnExport" class="primary">⬇ Export PNG</button>
+        </div>
+        <div class="note">Ảnh xuất HiDPI, đúng màu trong mọi chế độ.</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="board">
+      <canvas id="plot" aria-label="Canvas đồ thị"></canvas>
+      <div class="legend">
+        <div><span class="chip" style="background:var(--axis)"></span> Trục/tick</div>
+        <div><span class="chip" style="background:var(--accent)"></span> f(x)</div>
+        <div><span class="chip" style="background:var(--accent2)"></span> |f(x)| hoặc |y|=f(x)</div>
+        <div><span class="chip" style="background:var(--danger)"></span> y = m</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>
+  Tác giả: <strong>Thầy Vũ Tiến Lực – THPT Nguyễn Hữu Cảnh</strong> · <span class="note">Bản chạy offline · JS thuần · HiDPI.</span>
+</footer>
+
+<script>
+(function(){
+  // ========= Trạng thái =========
+  const state = {
+    mode: 'abs_linear',
+    a: 1, b: 0, c: 0, d: 0, e: 0, k: 0,
+    m: 0, showM: false,
+    world: { x:-10, y:-6, w:20, h:12 },
+    projector:false, highContrast:false,
+    scale: 1
+  };
+
+  // ========= Phần tử DOM =========
+  const $ = s=>document.querySelector(s);
+  const canvas = $('#plot');
+  const ctx = canvas.getContext('2d');
+  const modeSel = $('#mode');
+  const btnReset = $('#btnReset');
+  const btnExport = $('#btnExport');
+  const btnProjector = $('#btnProjector');
+  const btnContrast  = $('#btnContrast');
+  const presetV = $('#presetV');
+  const presetW = $('#presetW');
+
+  const aI=$('#a'), bI=$('#b'), cI=$('#c'), dI=$('#d'), eI=$('#e'), kI=$('#k'), mI=$('#m');
+  const aS=$('#a_s'), bS=$('#b_s'), cS=$('#c_s'), dS=$('#d_s'), eS=$('#e_s'), kS=$('#k_s'), mS=$('#m_s');
+  const showMI = $('#show_m');
+
+  // ========= Utils hiển thị =========
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  function syncCanvasSize(){
+    const rect = canvas.getBoundingClientRect();
+    const scale = 2 * dpr;          // vẽ offscreen 2x theo HiDPI
+    state.scale = scale;
+    canvas.width  = Math.max(2, Math.round(rect.width  * scale));
+    canvas.height = Math.max(2, Math.round(rect.height * scale));
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(scale, scale);        // từ đây mọi toạ độ theo CSS pixel
+  }
+  const px = (n)=> n / state.scale; // lineWidth “chuẩn” không bị phình khi scale
+
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const lerp=(a,b,t)=>a+(b-a)*t;
+
+  function worldToScreen(x,y){
+    const {x:wx,y:wy,w:ww,h:wh}=state.world;
+    const r = canvas.getBoundingClientRect();
+    const sx = (x-wx)/ww * r.width;
+    const sy = (1 - (y-wy)/wh) * r.height;
+    return [sx, sy];
+  }
+  function screenToWorld(sx,sy){
+    const {x:wx,y:wy,w:ww,h:wh}=state.world;
+    const r = canvas.getBoundingClientRect();
+    const x = wx + (sx/r.width) * ww;
+    const y = wy + (1 - sy/r.height) * wh;
+    return [x,y];
+  }
+
+  // ========= Mô hình toán =========
+  function fLinear(x){ return state.a * x + state.b; }
+  function fQuad(x){ return state.a * x*x + state.b * x + state.c; }
+  function fCubic(x){ return state.a*x*x*x + state.b*x*x + state.c*x + state.d; }
+  function fQuart(x){ return state.a*x*x*x*x + state.b*x*x*x + state.c*x*x + state.d*x + state.e; }
+
+  function baseF(x){
+    if(state.mode==='abs_linear') return fLinear(x);
+    if(state.mode==='abs_quadratic' || state.mode==='abs_fx' || state.mode==='abs_y') return fQuad(x);
+    if(state.mode==='abs_cubic') return fCubic(x);
+    if(state.mode==='abs_quartic') return fQuart(x);
+    return fQuad(x);
+  }
+  function outerOffset(){
+    switch(state.mode){
+      case 'abs_linear': return state.c;
+      case 'abs_quadratic': return state.d;
+      case 'abs_cubic': return state.e;
+      case 'abs_quartic': return state.k;
+      default: return 0;
+    }
+  }
+
+  // ========= Vẽ nền, lưới, trục =========
+  function clear(){
+    const r = canvas.getBoundingClientRect();
+    ctx.clearRect(0,0,r.width,r.height);
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--card');
+    ctx.fillRect(0,0,r.width,r.height);
+  }
+  function drawArrow(x1,y1,x2,y2,color){
+    const a = Math.atan2(y2-y1,x2-x1);
+    const L = 10;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = px(3);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2 - L*Math.cos(a-0.3), y2 - L*Math.sin(a-0.3));
+    ctx.lineTo(x2 - L*Math.cos(a+0.3), y2 - L*Math.sin(a+0.3));
+    ctx.closePath(); ctx.fill();
+  }
+  function niceStep(worldSpan, pxWidth, targetPx){
+    const raw = worldSpan / (pxWidth/targetPx);
+    const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+    const cand = [1,2,2.5,5,10].map(k=>k*pow);
+    let best=cand[0], d=Infinity; for(const c of cand){ const dd=Math.abs(c-raw); if(dd<d){d=dd;best=c;} }
+    return best;
+  }
+  function formatNum(v){
+    const s = Math.abs(v) < 1e-9 ? '0' : (Math.abs(v)>=1000? v.toFixed(0): Math.abs(v)>=10? v.toFixed(1): v.toFixed(2));
+    return s.replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');
+  }
+  function drawGrid(){
+    const styles = getComputedStyle(document.body);
+    const grid = styles.getPropertyValue('--grid');
+    const axis = styles.getPropertyValue('--axis');
+    const r = canvas.getBoundingClientRect();
+    const {x:wx,y:wy,w:ww,h:wh}=state.world;
+
+    const targetPx = 68;
+    const stepX = niceStep(ww, r.width, targetPx);
+    const stepY = niceStep(wh, r.height, targetPx);
+
+    ctx.lineWidth = px(3); ctx.strokeStyle = grid; ctx.beginPath();
+    const xStart = Math.ceil(wx/stepX)*stepX;
+    for(let x=xStart; x<=wx+ww; x+=stepX){ const [sx]=worldToScreen(x,0); ctx.moveTo(sx,0); ctx.lineTo(sx,r.height); }
+    const yStart = Math.ceil(wy/stepY)*stepY;
+    for(let y=yStart; y<=wy+wh; y+=stepY){ const [,sy]=worldToScreen(0,y); ctx.moveTo(0,sy); ctx.lineTo(r.width,sy); }
+    ctx.stroke();
+
+    // axes
+    const [sx0] = worldToScreen(0,0);
+    const [,sy0] = worldToScreen(0,0);
+    ctx.strokeStyle = axis; ctx.lineWidth = px(3);
+    ctx.beginPath(); ctx.moveTo(0,sy0); ctx.lineTo(r.width,sy0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx0,0); ctx.lineTo(sx0,r.height); ctx.stroke();
+
+    // arrows
+    drawArrow(r.width-10, sy0, r.width, sy0, axis);
+    drawArrow(sx0, 10, sx0, 0, axis);
+
+    // ticks + labels
+    ctx.fillStyle = axis; ctx.font = '18px system-ui';
+    for(let x=xStart; x<=wx+ww; x+=stepX){
+      const [sx]=worldToScreen(x,0); const len=6;
+      ctx.beginPath(); ctx.moveTo(sx,sy0-len); ctx.lineTo(sx,sy0+len); ctx.stroke();
+      if(Math.abs(x)>1e-9) ctx.fillText(formatNum(x), sx+4, sy0-6);
+    }
+    for(let y=yStart; y<=wy+wh; y+=stepY){
+      const [,sy]=worldToScreen(0,y); const len=6;
+      ctx.beginPath(); ctx.moveTo(sx0-len,sy); ctx.lineTo(sx0+len,sy); ctx.stroke();
+      if(Math.abs(y)>1e-9) ctx.fillText(formatNum(y), sx0+6, sy-6);
+    }
+    ctx.fillText('Ox →', r.width-64, sy0-8);
+    ctx.fillText('↑ Oy', sx0+8, 18);
+  }
+
+  // ========= Vẽ đồ thị =========
+  function drawFunction(){
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    const styles=getComputedStyle(document.body);
+    const col1=styles.getPropertyValue('--accent');
+    const col2=styles.getPropertyValue('--accent2');
+    const r=canvas.getBoundingClientRect();
+    const samples=Math.ceil(r.width);
+    const [x0]=screenToWorld(0,0), [x1]=screenToWorld(r.width,0);
+
+    // f(x)
+    ctx.lineWidth=px(6); ctx.strokeStyle=col1; ctx.beginPath();
+    for(let i=0;i<=samples;i++){
+      const t=i/samples; const x=lerp(x0,x1,t); const y=baseF(x);
+      const [sx,sy]=worldToScreen(x,y);
+      if(i===0) ctx.moveTo(sx,sy); else ctx.lineTo(sx,sy);
+    }
+    ctx.stroke();
+
+    // |f(x)| hoặc |y|=f(x)
+    ctx.lineWidth=px(8); ctx.strokeStyle=col2; ctx.beginPath();
+    if(state.mode==='abs_y'){
+      // vẽ các đoạn thẳng đứng (hai nhánh y=±f(x)) khi f(x)≥0
+      for(let i=0;i<=samples;i++){
+        const t=i/samples; const x=lerp(x0,x1,t); const fx=fQuad(x);
+        if(fx>=0){
+          const [sxt,syt]=worldToScreen(x, fx);
+          const [sxb,syb]=worldToScreen(x,-fx);
+          ctx.moveTo(sxt,syt); ctx.lineTo(sxt,syb);
+        }
+      }
+      ctx.stroke();
+    } else {
+      for(let i=0;i<=samples;i++){
+        const t=i/samples; const x=lerp(x0,x1,t);
+        const y=Math.abs(baseF(x))+outerOffset();
+        const [sx,sy]=worldToScreen(x,y);
+        if(i===0) ctx.moveTo(sx,sy); else ctx.lineTo(sx,sy);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // ========= Overlays: y=m, giao điểm, hình chiếu cực trị Oy =========
+  function drawHorizontalLineM(){
+    const styles=getComputedStyle(document.body);
+    const col=styles.getPropertyValue('--danger');
+    const r=canvas.getBoundingClientRect();
+    const y=state.m; const sy=worldToScreen(0,y)[1];
+
+    ctx.save();
+    ctx.setLineDash([8,4]);
+    ctx.strokeStyle=col; ctx.lineWidth=px(2.5);
+    ctx.beginPath(); ctx.moveTo(0,sy); ctx.lineTo(r.width,sy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=col; ctx.font='16px system-ui';
+    ctx.fillText('y = '+formatNum(y), r.width-90, sy-6);
+    ctx.restore();
+  }
+
+  function findRootBisection(a,b,fn){
+    let fa=fn(a), fb=fn(b);
+    if(!isFinite(fa)||!isFinite(fb)) return null;
+    for(let i=0;i<40;i++){
+      const m=(a+b)/2, fm=fn(m);
+      if(Math.abs(fm)<1e-9) return m;
+      if(fa*fm<=0){ b=m; fb=fm; } else { a=m; fa=fm; }
+    }
+    return (a+b)/2;
+  }
+  function intersectionsYeqM(){
+    const r=canvas.getBoundingClientRect();
+    const n=Math.ceil(r.width/2);
+    const x0=screenToWorld(0,0)[0], x1=screenToWorld(r.width,0)[0];
+    const fn=(state.mode==='abs_y') ? (x)=> fQuad(x)-Math.abs(state.m)
+                                    : (x)=> Math.abs(baseF(x))+outerOffset()-state.m;
+    const roots=[]; let px0=x0, py0=fn(px0);
+    for(let i=1;i<=n;i++){
+      const x=x0+(x1-x0)*i/n, y=fn(x);
+      if(py0===0||y===0||py0*y<0){ const rt=findRootBisection(px0,x,fn); if(rt!=null) roots.push(rt); }
+      px0=x; py0=y;
+    }
+    roots.sort((a,b)=>a-b);
+    const uniq=[]; for(const v of roots){ if(!uniq.length||Math.abs(v-uniq[uniq.length-1])>1e-4) uniq.push(v); }
+    return uniq.map(rx=>[rx,state.m]);
+  }
+  function drawIntersectionsWithM(){
+    const pts=intersectionsYeqM();
+    const col=getComputedStyle(document.body).getPropertyValue('--danger');
+    ctx.fillStyle=col;
+    for(const [x,y] of pts){
+      const p=worldToScreen(x,y);
+      ctx.beginPath(); ctx.arc(p[0],p[1],4,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  function findExtremum(){
+    // tìm y nhỏ nhất của đồ thị chính trong cửa sổ hiện tại
+    const r=canvas.getBoundingClientRect();
+    const n=Math.ceil(r.width);
+    const x0=screenToWorld(0,0)[0], x1=screenToWorld(r.width,0)[0];
+    let bestY=Infinity, bestX=null;
+    if(state.mode==='abs_y'){
+      for(let i=0;i<=n;i++){
+        const x=x0+(x1-x0)*i/n; const fx=fQuad(x);
+        if(fx>=0 && fx<bestY){ bestY=fx; bestX=x; }
+        if(Math.abs(fx)<1e-9){ bestY=0; bestX=x; break; }
+      }
+    } else {
+      for(let i=0;i<=n;i++){
+        const x=x0+(x1-x0)*i/n; const y=Math.abs(baseF(x))+outerOffset();
+        if(y<bestY){ bestY=y; bestX=x; }
+      }
+    }
+    if(bestX==null||!isFinite(bestY)) return null;
+    return {x:bestX,y:bestY};
+  }
+  function drawExtremumProjection(){
+    const ex=findExtremum(); if(!ex) return;
+    const styles=getComputedStyle(document.body);
+    const col=styles.getPropertyValue('--accent2');
+    const [sx0]=worldToScreen(0,0);
+    const p=worldToScreen(ex.x,ex.y);
+
+    // điểm cực trị
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(p[0],p[1],4.5,0,Math.PI*2); ctx.fill();
+
+    // hình chiếu y* lên Oy (đoạn gạch ngang đến Oy + đánh dấu tick)
+    ctx.save();
+    ctx.setLineDash([6,4]); ctx.strokeStyle=col; ctx.lineWidth=px(2);
+    ctx.beginPath(); ctx.moveTo(Math.min(p[0],sx0),p[1]); ctx.lineTo(Math.max(p[0],sx0),p[1]); ctx.stroke();
+    ctx.restore();
+
+    ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--axis'); ctx.lineWidth=px(2);
+    ctx.beginPath(); ctx.moveTo(sx0-6,p[1]); ctx.lineTo(sx0+6,p[1]); ctx.stroke();
+
+    ctx.fillStyle=col; ctx.font='16px system-ui';
+    ctx.fillText('y* = '+formatNum(ex.y), sx0+8, p[1]-6);
+  }
+
+  // ========= Vòng render =========
+  function render(){
+    syncCanvasSize();
+    clear();
+    drawGrid();
+    drawFunction();
+    if(state.showM){ drawHorizontalLineM(); drawIntersectionsWithM(); }
+    drawExtremumProjection();
+  }
+
+  // ========= Tương tác =========
+  let dragging=false, last={x:0,y:0};
+  canvas.addEventListener('mousedown',e=>{ dragging=true; last={x:e.clientX,y:e.clientY}; });
+  window.addEventListener('mouseup',()=>dragging=false);
+  window.addEventListener('mousemove',e=>{
+    if(!dragging) return;
+    const dx=e.clientX-last.x, dy=e.clientY-last.y; last={x:e.clientX,y:e.clientY};
+    const r=canvas.getBoundingClientRect(); const {w,h}=state.world;
+    state.world.x -= dx/r.width * w;
+    state.world.y += dy/r.height * h;
+    render();
+  });
+  canvas.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const r=canvas.getBoundingClientRect();
+    const mx=e.clientX-r.left, my=e.clientY-r.top;
+    const [wx,wy]=screenToWorld(mx,my);
+    if(e.ctrlKey||e.metaKey){
+      const k=Math.exp(-e.deltaY*0.0015);
+      const nx = wx - (wx - state.world.x) * k;
+      const ny = wy - (wy - state.world.y) * k;
+      state.world.w *= 1/k; state.world.h *= 1/k;
+      state.world.x = nx; state.world.y = ny;
+    } else {
+      state.world.x += e.deltaX/r.width  * state.world.w;
+      state.world.y -= e.deltaY/r.height * state.world.h;
+    }
+    render();
+  }, {passive:false});
+  window.addEventListener('keydown', e=>{ if(e.key==='r'||e.key==='R') resetView(); });
+
+  function resetView(){ state.world={x:-10,y:-6,w:20,h:12}; render(); }
+
+  // ========= Binding điều khiển =========
+  function bindNumber(numSel, rangeSel, key){
+    const num=$(numSel), rng=$(rangeSel);
+    const setBoth=(v)=>{ state[key]=v; num.value=v; rng.value=v; render(); };
+    num.addEventListener('input', ()=> setBoth(parseFloat(num.value)));
+    rng.addEventListener('input', ()=> setBoth(parseFloat(rng.value)));
+  }
+  bindNumber('#a','#a_s','a');
+  bindNumber('#b','#b_s','b');
+  bindNumber('#c','#c_s','c');
+  bindNumber('#d','#d_s','d');
+  bindNumber('#e','#e_s','e');
+  bindNumber('#k','#k_s','k');
+  bindNumber('#m','#m_s','m');
+
+  if(showMI){
+    state.showM = showMI.checked;
+    showMI.addEventListener('change', ()=>{ state.showM=showMI.checked; render(); });
+  }
+
+  function updateParamRows(){
+    const rD=$('#row_d'), rE=$('#row_e'), rK=$('#row_k');
+    rD.style.display='none'; rE.style.display='none'; rK.style.display='none';
+    const m=state.mode;
+    if(m==='abs_linear' || m==='abs_fx' || m==='abs_y'){
+      // a,b,c dùng; các hàng khác ẩn
+    } else if(m==='abs_quadratic'){
+      rD.style.display='flex'; // +d
+    } else if(m==='abs_cubic'){
+      rD.style.display='flex'; rE.style.display='flex'; // +d,+e
+    } else if(m==='abs_quartic'){
+      rD.style.display='flex'; rE.style.display='flex'; rK.style.display='flex'; // +d,+e,+k
+    }
+  }
+  modeSel.addEventListener('change', ()=>{ state.mode=modeSel.value; updateParamRows(); render(); });
+
+  btnReset.addEventListener('click', resetView);
+  btnProjector.addEventListener('click', ()=>{
+    document.body.classList.toggle('projector');
+    state.projector = document.body.classList.contains('projector');
+    render();
+  });
+  btnContrast.addEventListener('click', ()=>{
+    const now = document.body.getAttribute('data-contrast')==='high';
+    document.body.setAttribute('data-contrast', now? 'normal':'high');
+    render();
+  });
+
+  function setParams(p){ for(const k in p){ state[k]=p[k]; const el=$('#'+k); const sl=$('#'+k+'_s'); if(el) el.value=p[k]; if(sl) sl.value=p[k]; } }
+  presetV.addEventListener('click', ()=>{ modeSel.value='abs_linear'; state.mode='abs_linear'; setParams({a:1,b:0,c:0}); updateParamRows(); render(); });
+  presetW.addEventListener('click', ()=>{ modeSel.value='abs_quadratic'; state.mode='abs_quadratic'; setParams({a:1,b:0,c:-3,d:0}); updateParamRows(); render(); });
+
+  // ========= Export PNG (bao gồm overlays) =========
+  btnExport.addEventListener('click', ()=>{
+    const r = canvas.getBoundingClientRect();
+    const scale = 2 * dpr;       // trùng với render
+    const ex = document.createElement('canvas');
+    ex.width = Math.round(r.width * scale);
+    ex.height= Math.round(r.height* scale);
+    const ec = ex.getContext('2d');
+    ec.scale(scale, scale);
+    const px2 = (v)=> v/scale;
+
+    // helpers theo canvas export
+    function w2s(x,y){
+      const {x:wx,y:wy,w:ww,h:wh}=state.world; const sx=(x-wx)/ww*r.width; const sy=(1-(y-wy)/wh)*r.height; return [sx,sy];
+    }
+    function niceStep2(worldSpan, pxWidth, targetPx){
+      const raw = worldSpan / (pxWidth/targetPx);
+      const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+      const cand = [1,2,2.5,5,10].map(k=>k*pow);
+      let best=cand[0], d=Infinity; for(const c of cand){ const dd=Math.abs(c-raw); if(dd<d){d=dd;best=c;} }
+      return best;
+    }
+    function clear2(){ ec.fillStyle=getComputedStyle(document.body).getPropertyValue('--card'); ec.fillRect(0,0,r.width,r.height); }
+    function arrow2(x1,y1,x2,y2,color){
+      const a=Math.atan2(y2-y1,x2-x1), L=10;
+      ec.strokeStyle=color; ec.fillStyle=color; ec.lineWidth=px2(2);
+      ec.beginPath(); ec.moveTo(x1,y1); ec.lineTo(x2,y2); ec.stroke();
+      ec.beginPath(); ec.moveTo(x2,y2);
+      ec.lineTo(x2 - L*Math.cos(a-0.3), y2 - L*Math.sin(a-0.3));
+      ec.lineTo(x2 - L*Math.cos(a+0.3), y2 - L*Math.sin(a+0.3));
+      ec.closePath(); ec.fill();
+    }
+
+    clear2();
+    const gs=getComputedStyle(document.body);
+    const grid=gs.getPropertyValue('--grid'), axis=gs.getPropertyValue('--axis');
+    const {x:wx,y:wy,w:ww,h:wh}=state.world, targetPx=68;
+    const stepX=niceStep2(ww,r.width,targetPx), stepY=niceStep2(wh,r.height,targetPx);
+
+    ec.lineWidth=px2(1); ec.strokeStyle=grid; ec.beginPath();
+    const xStart=Math.ceil(wx/stepX)*stepX; for(let x=xStart;x<=wx+ww;x+=stepX){ const [sx]=w2s(x,0); ec.moveTo(sx,0); ec.lineTo(sx,r.height); }
+    const yStart=Math.ceil(wy/stepY)*stepY; for(let y=yStart;y<=wy+wh;y+=stepY){ const [,sy]=w2s(0,y); ec.moveTo(0,sy); ec.lineTo(r.width,sy); }
+    ec.stroke();
+
+    const [sx0]=w2s(0,0), [,sy0]=w2s(0,0);
+    ec.strokeStyle=axis; ec.lineWidth=px2(2);
+    ec.beginPath(); ec.moveTo(0,sy0); ec.lineTo(r.width,sy0); ec.stroke();
+    ec.beginPath(); ec.moveTo(sx0,0); ec.lineTo(sx0,r.height); ec.stroke();
+    arrow2(r.width-10,sy0,r.width,sy0,axis); arrow2(sx0,10,sx0,0,axis);
+
+    ec.fillStyle=axis; ec.font='18px system-ui';
+    for(let x=xStart;x<=wx+ww;x+=stepX){ const [sx]=w2s(x,0); ec.beginPath(); ec.moveTo(sx,sy0-6); ec.lineTo(sx,sy0+6); ec.stroke(); if(Math.abs(x)>1e-9) ec.fillText(formatNum(x), sx+4, sy0-6); }
+    for(let y=yStart;y<=wy+wh;y+=stepY){ const [,sy]=w2s(0,y); ec.beginPath(); ec.moveTo(sx0-6,sy); ec.lineTo(sx0+6,sy); ec.stroke(); if(Math.abs(y)>1e-9) ec.fillText(formatNum(y), sx0+6, sy-6); }
+
+    const col1=gs.getPropertyValue('--accent'), col2=gs.getPropertyValue('--accent2');
+    const samples=Math.ceil(r.width), [x0]=screenToWorld(0,0), [x1]=screenToWorld(r.width,0);
+
+    ec.lineWidth=px2(3.6); ec.strokeStyle=col1; ec.beginPath();
+    for(let i=0;i<=samples;i++){ const t=i/samples, x=lerp(x0,x1,t), y=baseF(x); const [sx,sy]=w2s(x,y); if(i===0) ec.moveTo(sx,sy); else ec.lineTo(sx,sy); } ec.stroke();
+
+    ec.lineWidth=px2(4.4); ec.strokeStyle=col2; ec.beginPath();
+    if(state.mode==='abs_y'){
+      for(let i=0;i<=samples;i++){ const t=i/samples, x=lerp(x0,x1,t), fx=fQuad(x); if(fx>=0){ const [sxt,syt]=w2s(x,fx), [sxb,syb]=w2s(x,-fx); ec.moveTo(sxt,syt); ec.lineTo(sxt,syb);} } ec.stroke();
+    } else {
+      for(let i=0;i<=samples;i++){ const t=i/samples, x=lerp(x0,x1,t), y=Math.abs(baseF(x))+outerOffset(); const [sx,sy]=w2s(x,y); if(i===0) ec.moveTo(sx,sy); else ec.lineTo(sx,sy);} ec.stroke();
+    }
+
+    // overlays export
+    if(state.showM){
+      const col=gs.getPropertyValue('--danger'); const sy=w2s(0,state.m)[1];
+      ec.save(); ec.setLineDash([8,4]); ec.strokeStyle=col; ec.lineWidth=px2(2.5);
+      ec.beginPath(); ec.moveTo(0,sy); ec.lineTo(r.width,sy); ec.stroke(); ec.restore();
+
+      const fn=(state.mode==='abs_y')?(x)=>fQuad(x)-Math.abs(state.m):(x)=>Math.abs(baseF(x))+outerOffset()-state.m;
+      const n=Math.ceil(r.width/2), x0w=screenToWorld(0,0)[0], x1w=screenToWorld(r.width,0)[0];
+      let px0=x0w, py0=fn(px0); const roots=[];
+      function bis(a,b){ let fa=fn(a), fb=fn(b); if(!isFinite(fa)||!isFinite(fb)) return null; for(let i=0;i<40;i++){ const m=(a+b)/2, fm=fn(m); if(Math.abs(fm)<1e-9) return m; if(fa*fm<=0){ b=m; fb=fm;} else { a=m; fa=fm;} } return (a+b)/2; }
+      for(let i=1;i<=n;i++){ const x=x0w+(x1w-x0w)*i/n, y=fn(x); if(py0===0||y===0||py0*y<0){ const rt=bis(px0,x); if(rt!=null) roots.push(rt);} px0=x; py0=y; }
+      roots.sort((a,b)=>a-b); const uniq=[]; for(const v of roots){ if(!uniq.length||Math.abs(v-uniq[uniq.length-1])>1e-4) uniq.push(v); }
+      ec.fillStyle=col; for(const rx of uniq){ const pt=w2s(rx,state.m); ec.beginPath(); ec.arc(pt[0],pt[1],4,0,Math.PI*2); ec.fill(); }
+    }
+
+    // hình chiếu cực trị lên Oy
+    (function(){
+      const col2=gs.getPropertyValue('--accent2');
+      const n2=Math.ceil(r.width), x0w=screenToWorld(0,0)[0], x1w=screenToWorld(r.width,0)[0];
+      let bestY=Infinity, bestX=null;
+      if(state.mode==='abs_y'){
+        for(let i=0;i<=n2;i++){ const x=x0w+(x1w-x0w)*i/n2, fx=fQuad(x); if(fx>=0&&fx<bestY){ bestY=fx; bestX=x; } if(Math.abs(fx)<1e-9){ bestY=0; bestX=x; break; } }
+      } else {
+        for(let i=0;i<=n2;i++){ const x=x0w+(x1w-x0w)*i/n2, y=Math.abs(baseF(x))+outerOffset(); if(y<bestY){ bestY=y; bestX=x; } }
+      }
+      if(bestX!=null && isFinite(bestY)){
+        const p=w2s(bestX,bestY), oy=w2s(0,0)[0];
+        ec.fillStyle=col2; ec.beginPath(); ec.arc(p[0],p[1],4.5,0,Math.PI*2); ec.fill();
+        ec.setLineDash([6,4]); ec.strokeStyle=col2; ec.lineWidth=px2(2); ec.beginPath(); ec.moveTo(Math.min(p[0],oy),p[1]); ec.lineTo(Math.max(p[0],oy),p[1]); ec.stroke(); ec.setLineDash([]);
+        ec.strokeStyle=axis; ec.lineWidth=px2(2); ec.beginPath(); ec.moveTo(oy-6,p[1]); ec.lineTo(oy+6,p[1]); ec.stroke();
+      }
+    })();
+
+    const url = ex.toDataURL('image/png');
+    const a = document.createElement('a'); a.href=url; a.download='absolute-value-graph.png'; a.click();
+  });
+
+  // ========= Khởi tạo =========
+  function onResize(){ render(); }
+  window.addEventListener('resize', onResize);
+  document.fonts && document.fonts.ready.then(render);
+  modeSel.dispatchEvent(new Event('change'));
+  updateParamRows();
+  render();
+})();
+</script>
+</body>
+</html>
