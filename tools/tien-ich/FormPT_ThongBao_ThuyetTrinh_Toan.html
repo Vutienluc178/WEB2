@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FormPT — Thông báo chuẩn bị thuyết trình Toán học (THPT)</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#0b1220; --ink:#e5e7eb; --muted:#94a3b8;
+    --accent:#22c55e; --line:#1f2937; --shadow:0 10px 30px rgba(0,0,0,.25);
+    --warn:#f59e0b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    background:var(--bg); color:var(--ink);
+    display:grid; grid-template-columns:380px 1fr; gap:16px; min-height:100vh;
+  }
+  header{grid-column:1/-1; padding:16px 20px; border-bottom:1px solid #1e293b;
+    display:flex; align-items:center; gap:12px}
+  header h1{font-size:18px; margin:0}
+  header .tag{font-size:12px; padding:2px 8px; border:1px solid #334155; border-radius:99px; color:#cbd5e1}
+  .panel{background:var(--card); padding:16px; border:1px solid #1f2937; box-shadow:var(--shadow);}
+  .left{border-right:1px solid #1f2937;}
+  label{display:block; font-weight:600; margin:12px 0 6px; color:#cbd5e1}
+  input[type="text"], input[type="number"], input[type="date"], textarea, select{
+    width:100%; padding:10px 12px; background:#0a0f1a; color:var(--ink);
+    border:1px solid #334155; border-radius:8px; outline:none;
+  }
+  textarea{min-height:80px; resize:vertical}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .hint{color:var(--muted); font-size:12px; margin-top:4px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{border:1px solid #334155; padding:6px 10px; border-radius:999px; font-size:13px; cursor:pointer; user-select:none}
+  .chip input{display:none}
+  .chip.active{background:#0a1b12; border-color:#14532d; color:#bbf7d0}
+  .btns{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  button{padding:10px 14px; border-radius:10px; border:1px solid #334155; background:#0a0f1a; color:var(--ink); cursor:pointer}
+  button.primary{background:linear-gradient(180deg,#15803d,#16a34a); border-color:#065f46}
+  button.warn{background:#2b1a03; border-color:#7c3e06; color:#ffedd5}
+  .preview{white-space:pre-wrap; background:#050a14; border:1px dashed #334155; padding:14px; border-radius:12px; min-height:280px}
+  .title{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}
+  .title small{color:#a3a3a3}
+  .footer{margin-top:12px; color:#9ca3af; font-size:12px}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:#0b1220; border:1px solid #334155; border-radius:6px; padding:1px 6px}
+  .rubric-grid{display:grid; grid-template-columns:1fr 90px 1.6fr; gap:8px; border-top:1px solid #334155; padding-top:8px}
+  .rubric-grid div{border-bottom:1px dashed #334155; padding:6px 4px}
+  .tiny{font-size:12px; color:#9ca3af}
+  .sep{height:1px; background:#1f2937; margin:12px 0}
+  @media (max-width:980px){ body{grid-template-columns:1fr; } .left{border-right:none;} }
+</style>
+</head>
+<body>
+<header>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M12 2l3 7h7l-5.5 4 2.5 7-7-4.5L5 20l2.5-7L2 9h7l3-7z" stroke="#86efac" stroke-width="1.2" fill="none"/>
+  </svg>
+  <h1>FormPT — Thông báo chuẩn bị thuyết trình Toán học (THPT)</h1>
+  <span class="tag">3–5 phút • tích cực • đa vai trò</span>
+</header>
+
+<section class="panel left">
+  <div class="title">
+    <strong>1) Thông tin chung</strong>
+    <small class="tiny">Điền/đổi để cá nhân hoá</small>
+  </div>
+  <label>📘 Chủ đề</label>
+  <input id="topic" type="text" placeholder="VD: Ứng dụng đạo hàm trong chuyển động thực tế">
+
+  <div class="row">
+    <div>
+      <label>🏫 Lớp/Khối</label>
+      <input id="grade" type="text" placeholder="VD: 12A8 / Khối 12">
+    </div>
+    <div>
+      <label>🧪 Môn học</label>
+      <input id="subject" type="text" value="Toán (CTST)">
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>⏱ Thời lượng thuyết trình (phút)</label>
+      <input id="duration" type="text" value="3–5">
+      <div class="hint">Chuẩn: 3–5 phút / nhóm</div>
+    </div>
+    <div>
+      <label>👥 Hình thức</label>
+      <select id="mode">
+        <option value="nhóm">Nhóm</option>
+        <option value="cá nhân">Cá nhân</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>👤 Số người/nhóm</label>
+      <input id="groupSize" type="number" value="3" min="1" max="6">
+    </div>
+    <div>
+      <label>📅 Hạn nộp/Trình bày</label>
+      <input id="deadline" type="date">
+    </div>
+  </div>
+
+  <label>🧭 Khung trình bày (giây)</label>
+  <div class="row">
+    <div>
+      <input id="tIntro" type="number" value="30" min="15" max="90">
+      <div class="hint">Mở đầu (gợi vấn đề)</div>
+    </div>
+    <div>
+      <input id="tBody" type="number" value="180" min="120" max="240">
+      <div class="hint">Nội dung chính (giải thích + ví dụ)</div>
+    </div>
+  </div>
+  <div class="row">
+    <div>
+      <input id="tEnd" type="number" value="30" min="15" max="90">
+      <div class="hint">Kết luận (ý nghĩa + câu hỏi)</div>
+    </div>
+    <div>
+      <input id="tQnA" type="number" value="60" min="0" max="180">
+      <div class="hint">Hỏi–đáp (tuỳ lớp)</div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+  <div class="title">
+    <strong>2) Công cụ khuyến nghị</strong>
+    <small class="tiny">Chọn những công cụ cho phép</small>
+  </div>
+  <div class="chips" id="tools">
+    <label class="chip"><input type="checkbox" value="GeoGebra">GeoGebra</label>
+    <label class="chip"><input type="checkbox" value="Desmos">Desmos</label>
+    <label class="chip"><input type="checkbox" value="Canva">Canva</label>
+    <label class="chip"><input type="checkbox" value="Google Slides">Google Slides</label>
+    <label class="chip"><input type="checkbox" value="CapCut">CapCut</label>
+    <label class="chip"><input type="checkbox" value="Clipchamp">Clipchamp</label>
+    <label class="chip"><input type="checkbox" value="Gemini">Gemini</label>
+    <label class="chip"><input type="checkbox" value="ChatGPT">ChatGPT</label>
+  </div>
+
+  <div class="sep"></div>
+  <div class="title">
+    <strong>3) Vai trò sư phạm</strong>
+    <small class="tiny">Giữ nguyên để nhắc nhở “đa vai”</small>
+  </div>
+  <textarea id="roles" spellcheck="false">1) Giáo viên Toán THPT (định hướng mục tiêu, chuẩn đầu ra)
+2) Huấn luyện viên thuyết trình (giọng nói, ngôn ngữ cơ thể, thời gian)
+3) Nhà thiết kế trải nghiệm học tập (hình ảnh, mô phỏng, kể chuyện)
+4) Kỹ sư học tập công nghệ (GeoGebra/Desmos/Slides/Canva)
+5) Huấn luyện tư duy tích cực (2 khen – 1 góp ý; tự tin – vui vẻ)</textarea>
+
+  <div class="btns">
+    <button class="primary" id="gen">🪄 Tạo thông báo</button>
+    <button id="copy">📋 Sao chép</button>
+    <button id="downloadMd">⬇️ Tải .md</button>
+    <button id="downloadTxt">⬇️ Tải .txt</button>
+    <button class="warn" id="reset">♻️ Reset</button>
+  </div>
+  <div class="footer">Mẹo: Nhấn <span class="kbd">Tab</span> để di chuyển nhanh giữa các ô. Nội dung sinh ra ở khung bên phải.</div>
+</section>
+
+<section class="panel">
+  <div class="title">
+    <strong>📢 Xem trước — Thông báo gửi HS/PHHS (Markdown)</strong>
+    <small class="tiny">Có thể dán vào Zalo/Facebook/Google Classroom</small>
+  </div>
+  <div id="preview" class="preview"></div>
+
+  <div class="sep"></div>
+  <div class="title">
+    <strong>Rubric (8 điểm)</strong>
+    <small class="tiny">Dán cùng thông báo hoặc in kèm</small>
+  </div>
+  <div class="rubric-grid">
+    <div><b>Tiêu chí</b></div><div><b>Điểm</b></div><div><b>Mô tả</b></div>
+    <div>Nội dung toán học chính xác</div><div>2</div><div>Khái niệm, công thức, lập luận đúng; không sai lệch bản chất.</div>
+    <div>Diễn đạt – giọng nói</div><div>2</div><div>Nói rõ ràng, tốc độ hợp lý, có nhấn nhá; ngôn ngữ cơ thể tự nhiên.</div>
+    <div>Sáng tạo – minh hoạ</div><div>2</div><div>Có ví dụ thực tế/mô phỏng/đồ thị/hình ảnh; trình bày cuốn hút.</div>
+    <div>Quản lý thời gian</div><div>2</div><div>Đúng khung 3–5 phút (±30s); bố cục mở đầu–nội dung–kết luận.</div>
+  </div>
+</section>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const topic = $("topic"), grade=$("grade"), subject=$("subject");
+  const duration=$("duration"), mode=$("mode"), groupSize=$("groupSize"), deadline=$("deadline");
+  const tIntro=$("tIntro"), tBody=$("tBody"), tEnd=$("tEnd"), tQnA=$("tQnA");
+  const roles=$("roles"), preview=$("preview");
+  const toolsWrap=document.getElementById("tools");
+
+  // toggle chip ui
+  toolsWrap.querySelectorAll(".chip").forEach(ch=>{
+    ch.addEventListener("click", (e)=>{
+      if(e.target.tagName.toLowerCase()==="input") return;
+      ch.classList.toggle("active");
+      const cb = ch.querySelector("input"); cb.checked = ch.classList.contains("active");
+    });
+  });
+
+  function fmtDate(d){
+    try{
+      if(!d) return "…";
+      const dd = new Date(d+"T00:00:00");
+      const pad = n=> (n<10?"0":"")+n;
+      return `${pad(dd.getDate())}/${pad(dd.getMonth()+1)}/${dd.getFullYear()}`;
+    }catch{ return d || "…"}
+  }
+
+  function buildTools(){
+    const sel=[...toolsWrap.querySelectorAll("input:checked")].map(i=>i.value);
+    return sel.length? sel.join(", ") : "GeoGebra, Desmos, Canva/Slides, Gemini/ChatGPT, CapCut (tuỳ chọn)";
+  }
+
+  function buildNotice(){
+    const toolStr = buildTools();
+    const d = fmtDate(deadline.value);
+    const dur = duration.value.trim() || "3–5";
+    const gsize = mode.value==="nhóm" ? `; ${groupSize.value} HS/nhóm` : "";
+    const tIntroV=Number(tIntro.value||30), tBodyV=Number(tBody.value||180), tEndV=Number(tEnd.value||30), tQnAV=Number(tQnA.value||60);
+
+    const md = `### 📢 THÔNG BÁO CHUẨN BỊ THUYẾT TRÌNH TOÁN HỌC
+**Chủ đề:** *${topic.value || "… (GV sẽ xác định hoặc HS đề xuất)"}*  
+**Đối tượng:** ${grade.value || "THPT"} — **Môn:** ${subject.value || "Toán"}  
+**Hình thức:** ${mode.value}${gsize} — **Thời lượng:** ${dur} phút  
+**Thời gian trình bày/hạn nộp:** ${d}
+
+#### 🎯 Mục tiêu
+- Hiểu và truyền đạt đúng bản chất kiến thức Toán; biết liên hệ thực tế/ngữ cảnh.
+- Rèn kỹ năng nói ngắn gọn, rõ ràng; làm việc ${mode.value==="nhóm"?"nhóm hiệu quả":"tự lập"}.
+- Sử dụng công cụ trực quan để minh hoạ (đồ thị, mô phỏng, hình ảnh).
+
+#### 📚 Khung trình bày \`${dur} phút\`
+1) **Mở đầu** \`~${tIntroV}s\`: nêu tình huống/câu hỏi khơi gợi.  
+2) **Nội dung chính** \`~${tBodyV/60}’\`: giải thích khái niệm, công thức; ví dụ minh hoạ/đồ thị.  
+3) **Kết luận** \`~${tEndV}s\`: tóm tắt ý nghĩa; đặt 1 câu hỏi cho lớp.  
+4) **Q&A** \`~${tQnAV/60}’\` (nếu có lớp hỏi–đáp).
+
+#### 🧰 Công cụ khuyến nghị
+${toolStr}.
+
+#### 🗣 Rubric (8 điểm)
+- **Nội dung chính xác (2đ)** — không sai bản chất; ví dụ/phản ví dụ hợp lý.  
+- **Diễn đạt – giọng nói (2đ)** — rõ, mạch lạc, có điểm nhấn; ngôn ngữ cơ thể tự nhiên.  
+- **Sáng tạo – minh hoạ (2đ)** — hình ảnh/đồ thị/mô phỏng tăng hiểu biết.  
+- **Quản lý thời gian (2đ)** — bám khung \`${dur} phút\` (±30s).
+
+#### 👥 Tổ chức & nộp sản phẩm
+- ${mode.value==="nhóm"?"Mỗi nhóm chọn 1 thư ký và 1 người thuyết trình chính;":"Chuẩn bị cá nhân;"} gửi **slide/video** (nếu có) trước giờ học.  
+- Đặt tên file: \`${grade.value||"Lop"}_${topic.value||"ChuDe"}_nhom(or_ca-nhan).pdf/mp4\`.
+
+#### 🧑🏻‍🏫 Vai trò hỗ trợ của GV (đa vai)
+${roles.value.split("\n").map(s=>"- "+s.trim()).join("\n")}
+
+> Tự tin – tích cực – ngắn gọn. Mỗi bạn là một “nhà khoa học nhỏ”. Chúc cả lớp làm tốt! 🚀`;
+    return md;
+  }
+
+  function refresh(){ preview.textContent = buildNotice(); }
+
+  ["input","change","keyup"].forEach(ev=>{
+    document.body.addEventListener(ev, (e)=>{
+      const t = e.target;
+      if(t && (t.matches("input, textarea, select"))) refresh();
+    });
+  });
+
+  document.getElementById("gen").addEventListener("click", refresh);
+  document.getElementById("reset").addEventListener("click", ()=>{
+    document.querySelectorAll("input[type='text'], input[type='number'], input[type='date'], textarea").forEach(el=>{
+      if(el===subject) { el.value="Toán (CTST)"; return; }
+      if(el===duration){ el.value="3–5"; return;}
+      if(el===groupSize){ el.value=3; return;}
+      if(el===tIntro){ el.value=30; return;}
+      if(el===tBody){ el.value=180; return;}
+      if(el===tEnd){ el.value=30; return;}
+      if(el===tQnA){ el.value=60; return;}
+      if(el===roles){ el.value=`1) Giáo viên Toán THPT (định hướng mục tiêu, chuẩn đầu ra)
+2) Huấn luyện viên thuyết trình (giọng nói, ngôn ngữ cơ thể, thời gian)
+3) Nhà thiết kế trải nghiệm học tập (hình ảnh, mô phỏng, kể chuyện)
+4) Kỹ sư học tập công nghệ (GeoGebra/Desmos/Slides/Canva)
+5) Huấn luyện tư duy tích cực (2 khen – 1 góp ý; tự tin – vui vẻ)`; return;}
+      el.value="";
+    });
+    toolsWrap.querySelectorAll(".chip").forEach(ch=>{ ch.classList.remove("active"); ch.querySelector("input").checked=false; });
+    refresh();
+  });
+
+  document.getElementById("copy").addEventListener("click", async ()=>{
+    const txt = preview.textContent;
+    try{ await navigator.clipboard.writeText(txt);
+      alert("Đã sao chép thông báo vào Clipboard!");
+    }catch(e){ alert("Trình duyệt chặn Clipboard. Hãy chọn toàn bộ và Ctrl/Cmd+C."); }
+  });
+
+  function download(filename, content){
+    const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }
+
+  document.getElementById("downloadMd").addEventListener("click", ()=>{
+    download("ThongBao_ThuyetTrinh_Toan.md", preview.textContent);
+  });
+  document.getElementById("downloadTxt").addEventListener("click", ()=>{
+    download("ThongBao_ThuyetTrinh_Toan.txt", preview.textContent);
+  });
+
+  // initial render
+  refresh();
+</script>
+</body>
+</html>
