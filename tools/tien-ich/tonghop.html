@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Công cụ & Tin tức Toán học – CTST (Pro)</title>
+<meta name="color-scheme" content="light dark">
+<style>
+  :root{
+    --bg:#f6f7fb; --panel:#ffffff; --fg:#0f172a; --muted:#64748b; --brand:#2563eb; --ring:#93c5fd;
+    --card:#ffffff; --border:#e5e7eb; --shadow:0 10px 30px rgba(2,6,23,.08);
+    --chip:#eef2ff; --chipText:#3730a3;
+  }
+  .dark{
+    --bg:#0b1220; --panel:#0f172a; --fg:#e5e7eb; --muted:#94a3b8; --brand:#60a5fa; --ring:#1d4ed8;
+    --card:#0b1220; --border:#1f2937; --shadow:0 12px 28px rgba(0,0,0,.45);
+    --chip:#111827; --chipText:#c7d2fe;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg);line-height:1.55}
+  header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(160%) blur(8px);background:color-mix(in oklab, var(--panel) 85%, transparent);border-bottom:1px solid var(--border)}
+  .wrap{max-width:1200px;margin:0 auto;padding:14px 20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand h1{font-size:20px;margin:0}
+  .brand small{color:var(--muted)}
+  .controls{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .seg{display:inline-grid;grid-auto-flow:column;gap:4px;background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:4px;box-shadow:var(--shadow)}
+  .seg button{border:0;background:transparent;padding:8px 14px;border-radius:999px;color:var(--muted);cursor:pointer;font-weight:600;letter-spacing:.2px}
+  .seg button.active{background:var(--brand);color:white}
+  .search{flex:1;position:relative;min-width:240px}
+  .search input{width:100%;padding:10px 12px 10px 38px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--fg);outline:none;box-shadow:var(--shadow)}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.6}
+  .btn{border:1px solid var(--border);background:var(--panel);color:var(--fg);border-radius:12px;padding:10px 12px;cursor:pointer;box-shadow:var(--shadow)}
+  .btn:focus{outline:3px solid var(--ring);outline-offset:2px}
+  .btn.small{padding:6px 10px;border-radius:10px}
+  .chip{display:inline-flex;gap:6px;align-items:center;background:var(--chip);color:var(--chipText);border:1px solid var(--border);border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer}
+  .chip.active{outline:2px solid var(--brand)}
+  main{max-width:1200px;margin:20px auto;padding:0 20px 80px}
+  .topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .preview{border:1px solid var(--border);border-radius:14px;background:var(--panel);box-shadow:var(--shadow);padding:12px}
+  canvas{width:100%;aspect-ratio:16/9;display:block;border-radius:12px;background:linear-gradient(180deg, rgba(99,102,241,.06), transparent)}
+  h2.sec{display:flex;align-items:center;gap:10px;margin:22px 0 12px;font-size:18px}
+  .grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:12px}
+  @media(min-width:680px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(min-width:1024px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .card{border:1px solid var(--border);background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);transition:transform .15s ease, background .2s ease;cursor:pointer;position:relative}
+  .card:hover{transform:translateY(-3px)}
+  .ttl{font-weight:700;font-size:15px;display:flex;gap:8px;align-items:center}
+  .desc{color:var(--muted);font-size:13px;margin-top:6px;min-height:36px}
+  .ext{margin-left:auto;opacity:.7}
+  .meta{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .meta .star{cursor:pointer}
+  .meta .copy{cursor:pointer}
+  .badge{display:inline-flex;gap:6px;align-items:center;color:var(--muted);font-size:12px;margin-left:6px}
+  .tagbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .panel{border:1px solid var(--border);background:var(--panel);border-radius:12px;padding:10px;box-shadow:var(--shadow)}
+  .col2{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:1024px){.col2{grid-template-columns:2fr 1fr}}
+  footer{border-top:1px solid var(--border);color:var(--muted);text-align:center;padding:20px}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21 4 16.5v-9L12 3Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v8M8 10l8 4" stroke="currentColor" stroke-width="1.5"/></svg>
+      <div>
+        <h1>🧮 Công cụ & Tin tức Toán học – CTST (Pro)</h1>
+        <small>Tổng hợp – trình chiếu – quản lý liên kết</small>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="seg" role="tablist" aria-label="Chọn nhóm">
+        <button id="tab10" class="active" role="tab" aria-selected="true" onclick="switchTab('toan10')">Toán 10</button>
+        <button id="tab11" role="tab" aria-selected="false" onclick="switchTab('toan11')">Toán 11</button>
+        <button id="tab12" role="tab" aria-selected="false" onclick="switchTab('toan12')">Toán 12</button>
+        <button id="tabtools" role="tab" aria-selected="false" onclick="switchTab('tools')">Công cụ phổ biến</button>
+        <button id="tabnews" role="tab" aria-selected="false" onclick="switchTab('news')">Tin tức Toán học</button>
+        <button id="tabfav" role="tab" aria-selected="false" onclick="switchTab('favorites')">⭐ Yêu thích</button>
+        <button id="tabrec" role="tab" aria-selected="false" onclick="switchTab('recents')">🕒 Gần đây</button>
+      </div>
+
+      <div class="search" role="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        <input id="q" type="search" placeholder="Tìm tên / mô tả / tag (nhấn / để vào)" oninput="render()" aria-label="Tìm kiếm">
+      </div>
+
+      <button class="btn" id="modeBtn" onclick="toggleMode()" aria-pressed="false" title="Đổi nền sáng/tối">🌗 Projector</button>
+      <button class="btn" onclick="exportJSON()" title="Xuất dữ liệu JSON">📤 Export</button>
+      <label class="btn" title="Nhập JSON (kéo thả hoặc chọn file)">
+        📥 Import <input id="importFile" type="file" accept="application/json" hidden onchange="importJSON(this.files[0])">
+      </label>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="col2">
+    <section class="preview panel" aria-label="Canvas minh họa">
+      <canvas id="cv" width="960" height="540"></canvas>
+      <p class="sr" id="canvasStatus">Canvas sẵn sàng</p>
+    </section>
+
+    <aside class="panel" aria-label="Thêm nhanh">
+      <h3 style="margin:0 0 8px">➕ Thêm liên kết nhanh</h3>
+      <div style="display:grid;gap:8px">
+        <input id="addTitle" placeholder="Tiêu đề">
+        <input id="addPath" placeholder="URL (https://...)">
+        <input id="addDesc" placeholder="Mô tả ngắn">
+        <input id="addTags" placeholder="Tags, ngăn cách bằng dấu , (ví dụ: hinh hoc, giai tich)">
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="addTab">
+            <option value="toan10">Toán 10</option>
+            <option value="toan11">Toán 11</option>
+            <option value="toan12">Toán 12</option>
+            <option value="tools">Công cụ phổ biến</option>
+            <option value="news">Tin tức Toán học</option>
+          </select>
+          <button class="btn small" onclick="addQuick()">Lưu</button>
+        </div>
+        <small style="color:var(--muted)">Các mục tuỳ chỉnh sẽ lưu trên trình duyệt (localStorage). Có thể Export để backup.</small>
+      </div>
+    </aside>
+  </div>
+
+  <div class="topbar">
+    <div class="tagbar" id="tagbar"></div>
+    <button class="btn small" onclick="toggleFavFilter()" title="Chỉ hiển thị mục đã ⭐ (phím f)">⭐ Lọc yêu thích</button>
+    <span class="badge" id="countBadge">0 mục</span>
+  </div>
+
+  <div id="list" class="grid" aria-live="polite"></div>
+</main>
+
+<footer>© 2025 – GV: Vũ Tiến Lực – Trang tổng hợp công cụ & tin tức Toán học</footer>
+
+<script>
+/* ================== DỮ LIỆU MẪU (có tags) ================== */
+const baseData = {
+  "toan10":[
+    {"title":"I-1: Khái niệm vectơ","path":"https://www.congcutoanhoc.com/congcu/vecto/vecto.html","desc":"Thành phần vectơ; điểm đầu/cuối, phương, chiều, độ dài.","tags":["hinh hoc","vector"]},
+    {"title":"I-2: Tính toán với vectơ","path":"https://www.congcutoanhoc.com/congcu/vecto/tinhvecto.html","desc":"Cộng, trừ, nhân vectơ; ví dụ tương tác.","tags":["hinh hoc","vector","thuc hanh"]}
+  ],
+  "toan11":[
+    {"title":"III-1: Hàm số lượng giác","path":"https://www.congcutoanhoc.com/congcu/hamluonggiac/hamluonggiac.html","desc":"Đồ thị sin, cos, tan, cot; chu kỳ – biên độ.","tags":["luong giac","do thi"]},
+    {"title":"III-2: Tổ hợp – Xác suất","path":"https://www.congcutoanhoc.com/congcu/xacsuat/xacsuat.html","desc":"Mô phỏng xác suất; luật số lớn.","tags":["xac suat","thong ke"]}
+  ],
+  "toan12":[
+    {"title":"IV-3: Giải tam giác 2","path":"https://www.congcutoanhoc.com/congcu/giaitamgiac/giaitamgiac.html","desc":"Định lý sin – cos; dựng hình.","tags":["hinh hoc","giai tam giac"]},
+    {"title":"IV-4: Đường tiệm cận hàm số","path":"https://www.congcutoanhoc.com/congcu/tiemcan/tiemcan.html","desc":"Tiệm cận đứng, ngang, xiên.","tags":["giai tich","do thi"]}
+  ],
+  "tools":[
+    {"title":"GeoGebra","path":"https://www.geogebra.org/","desc":"Công cụ hình học/đại số tương tác.","tags":["tool","hinh hoc","do thi"]},
+    {"title":"Desmos","path":"https://www.desmos.com/","desc":"Đồ thị hàm, hoạt động lớp học.","tags":["tool","do thi"]},
+    {"title":"Wolfram Alpha","path":"https://www.wolframalpha.com/","desc":"Tính toán + tri thức.","tags":["tool","CAS"]}
+  ],
+  "news":[
+    {"title":"Toán học & ứng dụng – Tạp chí","path":"https://toanhocungdung.vn/","desc":"Tin/bài toán học ứng dụng.","tags":["news","vn"]},
+    {"title":"VnExpress – Khoa học/Toán","path":"https://vnexpress.net/khoa-hoc/toan-hoc","desc":"Mục Toán học của VnExpress.","tags":["news","vn"]},
+    {"title":"MathVN Blog","path":"https://mathvn.net/","desc":"Bài viết, mẹo, thảo luận.","tags":["news","blog","vn"]}
+  ]
+};
+
+/* ================== STATE & PERSIST ================== */
+let currentTab = 'toan10';
+const elList = document.getElementById('list');
+const elQ = document.getElementById('q');
+const elCount = document.getElementById('countBadge');
+const elTagbar = document.getElementById('tagbar');
+let favOnly = false;
+
+function loadData(){
+  const custom = JSON.parse(localStorage.getItem('customData')||'{}');
+  const merged = JSON.parse(JSON.stringify(baseData));
+  for(const k of Object.keys(custom)){
+    if(!merged[k]) merged[k]=[];
+    merged[k] = [...merged[k], ...custom[k]];
+  }
+  return merged;
+}
+function saveCustom(data){
+  localStorage.setItem('customData', JSON.stringify(data));
+}
+function getFavSet(){ return new Set(JSON.parse(localStorage.getItem('favorites')||'[]')); }
+function setFavSet(s){ localStorage.setItem('favorites', JSON.stringify([...s])); }
+function pushRecent(item){
+  const rec = JSON.parse(localStorage.getItem('recents')||'[]');
+  const key = item.path;
+  const filtered = rec.filter(r=>r.path!==key);
+  filtered.unshift({...item, ts:Date.now()});
+  localStorage.setItem('recents', JSON.stringify(filtered.slice(0,12)));
+}
+
+/* ================== MODE (Dark/Projector) ================== */
+(function initMode(){
+  const saved = localStorage.getItem('mode') || 'light';
+  if(saved==='dark') document.documentElement.classList.add('dark');
+  document.getElementById('modeBtn').setAttribute('aria-pressed', saved==='dark');
+})();
+function toggleMode(){
+  const root = document.documentElement;
+  const dark = root.classList.toggle('dark');
+  localStorage.setItem('mode', dark?'dark':'light');
+  document.getElementById('modeBtn').setAttribute('aria-pressed', dark);
+}
+
+/* ================== TAGS ================== */
+function allTagsOf(tabKey){
+  const d = loadData();
+  const items = tabKey==='favorites' ? allItems().filter(isFav) :
+                tabKey==='recents' ? getRecents() : (d[tabKey]||[]);
+  const set = new Set();
+  items.forEach(i => (i.tags||[]).forEach(t => set.add(t)));
+  return [...set].sort();
+}
+function renderTags(){
+  elTagbar.innerHTML = '';
+  const tags = allTagsOf(currentTab);
+  const active = new Set((new URLSearchParams(location.hash.slice(1))).getAll('tag'));
+  tags.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (active.has(t)?' active':'');
+    btn.textContent = `#${t}`;
+    btn.onclick = () => toggleTag(t);
+    elTagbar.appendChild(btn);
+  });
+}
+function toggleTag(tag){
+  const params = new URLSearchParams(location.hash.slice(1));
+  if(params.getAll('tag').includes(tag)){
+    const arr = params.getAll('tag').filter(x=>x!==tag);
+    params.delete('tag');
+    arr.forEach(v=>params.append('tag', v));
+  }else{
+    params.append('tag', tag);
+  }
+  location.hash = params.toString();
+  render(false);
+}
+
+/* ================== RENDER ================== */
+function switchTab(key){
+  currentTab = key;
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab10').classList.toggle('active', key==='toan10');
+  document.getElementById('tab11').classList.toggle('active', key==='toan11');
+  document.getElementById('tab12').classList.toggle('active', key==='toan12');
+  document.getElementById('tabtools').classList.toggle('active', key==='tools');
+  document.getElementById('tabnews').classList.toggle('active', key==='news');
+  document.getElementById('tabfav').classList.toggle('active', key==='favorites');
+  document.getElementById('tabrec').classList.toggle('active', key==='recents');
+  elQ.value='';
+  render(true);
+}
+function allItems(){
+  const d = loadData();
+  return Object.keys(d).flatMap(k => d[k].map(x => ({...x, _tab:k})));
+}
+function isFav(it){ return getFavSet().has(it.path); }
+function getRecents(){
+  return JSON.parse(localStorage.getItem('recents')||'[]');
+}
+function activeTags(){
+  return new Set((new URLSearchParams(location.hash.slice(1))).getAll('tag'));
+}
+function render(draw=true){
+  const d = loadData();
+  let list = [];
+  if(currentTab==='favorites'){ list = allItems().filter(isFav); }
+  else if(currentTab==='recents'){ list = getRecents(); }
+  else { list = d[currentTab] || []; }
+
+  // search
+  const q = (elQ.value||'').trim().toLowerCase();
+  list = list.filter(it=>{
+    const hay = (it.title||'')+' '+(it.desc||' ')+' '+(it.tags||[]).join(' ');
+    if(q && !hay.toLowerCase().includes(q)) return false;
+    if(favOnly && !isFav(it)) return false;
+    const chosen = activeTags();
+    if(chosen.size){
+      const tags = new Set((it.tags||[]));
+      for(const t of chosen){ if(!tags.has(t)) return false; }
+    }
+    return true;
+  });
+
+  // render cards
+  const favs = getFavSet();
+  elList.innerHTML='';
+  elCount.textContent = `${list.length} mục`;
+  list.forEach((it, idx)=>{
+    const card = document.createElement('article');
+    card.className='card';
+    card.tabIndex=0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-label', `${it.title}. Bấm Enter để mở.`);
+    const fav = favs.has(it.path);
+    const tags = (it.tags||[]).map(t=>`<span class="chip" style="pointer-events:none">${t}</span>`).join(' ');
+    card.innerHTML = `
+      <div class="ttl">
+        <span>🔗</span>
+        <span>${it.title}</span>
+        <span class="ext" title="Liên kết ngoài">↗</span>
+      </div>
+      <div class="desc">${it.desc||''}</div>
+      <div class="meta">
+        <span class="star" title="Đánh dấu yêu thích">${fav?'⭐':'☆'}</span>
+        <span class="copy" title="Sao chép liên kết">📋</span>
+        ${tags?`<div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${tags}</div>`:''}
+      </div>
+    `;
+    // events
+    card.addEventListener('click', (e)=>{
+      const t = e.target;
+      if(t.classList.contains('star')){
+        const set = getFavSet();
+        if(set.has(it.path)) set.delete(it.path); else set.add(it.path);
+        setFavSet(set); render(false); return;
+      }
+      if(t.classList.contains('copy')){
+        navigator.clipboard?.writeText(it.path);
+        t.textContent='✅'; setTimeout(()=>t.textContent='📋', 800);
+        return;
+      }
+      openTool(it, e.ctrlKey||e.metaKey);
+    });
+    card.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); openTool(it, true); }
+      else if(e.key==='Enter'){ e.preventDefault(); openTool(it, false); }
+    });
+    elList.appendChild(card);
+  });
+
+  renderTags();
+  if(draw) drawPreviewTitle(currentTab);
+}
+
+/* ================== CANVAS ================== */
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+function clearCanvas(){ ctx.clearRect(0,0,cv.width,cv.height); }
+function axes(){
+  const w=cv.width,h=cv.height;
+  ctx.save();
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--muted');
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(0,h/2);ctx.lineTo(w,h/2);
+  ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);
+  ctx.stroke();
+  // arrows
+  ctx.beginPath();
+  ctx.moveTo(w-18,h/2-6);ctx.lineTo(w,h/2);ctx.lineTo(w-18,h/2+6);
+  ctx.moveTo(w/2-6,18);ctx.lineTo(w/2,0);ctx.lineTo(w/2+6,18);
+  ctx.stroke();
+  ctx.restore();
+}
+function wave(color='#60a5fa',amp=80,freq=74){
+  const w=cv.width,h=cv.height;
+  ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=3; ctx.beginPath();
+  for(let x=0;x<w;x++){ const y=h/2-amp*Math.sin(x/freq); x?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+  ctx.stroke(); ctx.restore();
+}
+function label(text){
+  ctx.save(); ctx.font="20px ui-sans-serif, system-ui"; ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--fg');
+  ctx.fillText(text,24,34); ctx.restore();
+}
+function drawPreviewTitle(tabKey){
+  clearCanvas(); axes();
+  const col={toan10:'#38bdf8',toan11:'#22c55e',toan12:'#f59e0b',tools:'#a855f7',news:'#ef4444',favorites:'#f472b6',recents:'#14b8a6'}[tabKey]||'#60a5fa';
+  wave(col,70,74);
+  const titleMap={
+    toan10:'Toán 10 – Đại số & Hình học',
+    toan11:'Toán 11 – Lượng giác & Xác suất',
+    toan12:'Toán 12 – Giải tích & Ứng dụng',
+    tools:'Công cụ toán học phổ biến',
+    news:'Tin tức & blog Toán học',
+    favorites:'Mục đã đánh dấu ⭐',
+    recents:'Liên kết mở gần đây'
+  };
+  label(`💡 ${titleMap[tabKey]}`);
+}
+function openTool(item, newTab=false){
+  clearCanvas(); axes();
+  const col={toan10:'#38bdf8',toan11:'#22c55e',toan12:'#f59e0b',tools:'#a855f7',news:'#ef4444',favorites:'#f472b6',recents:'#14b8a6'}[currentTab]||'#60a5fa';
+  wave(col,100,60); label(item.title);
+  setTimeout(()=>{
+    pushRecent(item);
+    if(newTab) window.open(item.path,'_blank'); else window.location.href=item.path;
+  },600);
+}
+
+/* ================== IMPORT / EXPORT / ADD QUICK ================== */
+function exportJSON(){
+  const data = loadData();
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'math-links.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importJSON(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const js = JSON.parse(reader.result);
+      // Lưu phần khác biệt vào customData để không ghi đè base
+      const custom = {};
+      for(const k of Object.keys(js)){
+        // lọc item không trùng với base theo path
+        const base = (baseData[k]||[]);
+        const exist = new Set(base.map(x=>x.path));
+        custom[k] = (js[k]||[]).filter(x=>!exist.has(x.path));
+      }
+      saveCustom(custom);
+      render(true);
+      alert('✅ Đã nhập dữ liệu!');
+    }catch(e){ alert('❌ JSON không hợp lệ'); }
+  };
+  reader.readAsText(file);
+}
+function addQuick(){
+  const title = document.getElementById('addTitle').value.trim();
+  const path  = document.getElementById('addPath').value.trim();
+  const desc  = document.getElementById('addDesc').value.trim();
+  const tags  = document.getElementById('addTags').value.trim().split(',').map(s=>s.trim()).filter(Boolean);
+  const tab   = document.getElementById('addTab').value;
+  if(!title || !/^https?:\/\//i.test(path)){ alert('Vui lòng nhập Tiêu đề và URL hợp lệ (http/https).'); return;}
+  const custom = JSON.parse(localStorage.getItem('customData')||'{}');
+  if(!custom[tab]) custom[tab]=[];
+  // tránh trùng path
+  if(custom[tab].some(i=>i.path===path) || (baseData[tab]||[]).some(i=>i.path===path)){
+    alert('Liên kết đã tồn tại!'); return;
+  }
+  custom[tab].push({title,path,desc,tags});
+  saveCustom(custom);
+  // reset form
+  document.getElementById('addTitle').value='';
+  document.getElementById('addPath').value='';
+  document.getElementById('addDesc').value='';
+  document.getElementById('addTags').value='';
+  document.getElementById('addTab').value=currentTab;
+  render(true);
+}
+
+/* ================== FAV FILTER & SHORTCUTS ================== */
+function toggleFavFilter(){ favOnly=!favOnly; render(false); }
+window.addEventListener('keydown', (e)=>{
+  if(e.key==='/' && document.activeElement!==elQ){ e.preventDefault(); elQ.focus(); }
+  if(e.key.toLowerCase()==='f' && !e.target.matches('input,textarea')){ e.preventDefault(); toggleFavFilter(); }
+});
+
+/* ================== INIT ================== */
+render(true);
+// FIX: use correct case-sensitive function name
+drawPreviewTitle?.noop; // guard (optional chaining prevents ReferenceError)
+function drawPreviewTitleGuard(){ try{ drawPreviewTitle('toan10'); } catch(e){} }
+
+/* ================== SELF TESTS ================== */
+(function(){
+  const tests = [];
+  const assert = (name, fn) => {
+    try { fn(); tests.push({name, ok:true}); }
+    catch(e){ console.error('Test failed:', name, e); tests.push({name, ok:false, err: String(e)}); }
+  };
+  assert('drawPreviewTitle exists', ()=>{ if (typeof drawPreviewTitle !== 'function') throw new Error('missing'); });
+  assert('drawPreviewTitle runs for toan10', ()=>{ drawPreviewTitle('toan10'); });
+  console.log('Self-tests:', tests);
+})();
+
+drawPreviewTitle('toan10');
+
+// Drag & drop import
+document.addEventListener('dragover', e=>{ e.preventDefault(); });
+document.addEventListener('drop', e=>{
+  e.preventDefault();
+  if(e.dataTransfer.files?.[0]) importJSON(e.dataTransfer.files[0]);
+});
+</script>
+</body>
+</html>
