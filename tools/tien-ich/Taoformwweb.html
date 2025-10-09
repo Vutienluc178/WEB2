@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FormPT • Master Prompt Chủ đề Toán (MathJax-ready)</title>
+<meta name="color-scheme" content="light dark" />
+<style>
+  :root{
+    --bg:#f7f7fb; --card:#ffffff; --fg:#0f172a; --muted:#64748b;
+    --accent:#2563eb; --accent-2:#16a34a; --danger:#dc2626; --border:#e5e7eb;
+    --shadow:0 10px 30px rgba(2,6,23,.06);
+  }
+  body.dark{
+    --bg:#0b1020; --card:#0f172a; --fg:#e5e7eb; --muted:#a5b4fc; --border:#1f2a44; --shadow:0 12px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--fg); font:15.5px/1.6 system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif}
+  .wrap{max-width:1100px; margin:auto; padding:20px}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:6px 0 18px}
+  .brand{display:flex; gap:12px; align-items:center}
+  .logo{width:40px; height:40px; display:grid; place-items:center; border-radius:12px; font-weight:800; color:#fff;
+        background:linear-gradient(135deg,var(--accent),#7c3aed); box-shadow:var(--shadow)}
+  .title{font-weight:800}
+  .muted{color:var(--muted)}
+  .btn{border:1px solid var(--border); background:var(--card); color:var(--fg); padding:9px 12px; border-radius:10px; cursor:pointer; box-shadow:var(--shadow); transition:.15s}
+  .btn:hover{transform:translateY(-1px)}
+  .pill{font-size:.85rem; padding:3px 8px; border-radius:999px; border:1px solid var(--border); background:var(--bg)}
+  .grid{display:grid; gap:16px}
+  @media(min-width:980px){ .grid-2{grid-template-columns:1fr 1fr} .grid-3{grid-template-columns:1fr 1fr 1fr} }
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow:var(--shadow)}
+  .card h3{margin:.2rem 0 .6rem}
+  label{display:block; font-weight:600; margin:.2rem 0 .25rem}
+  input[type="text"], textarea, select{
+    width:100%; padding:10px 12px; background:transparent; color:inherit; border:1px solid var(--border); border-radius:10px;
+  }
+  textarea{min-height:90px; resize:vertical}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .note{color:var(--muted); font-size:.92rem}
+  .out{white-space:pre; font-family:ui-monospace, Menlo, SFMono-Regular, monospace; padding:12px; border-radius:12px; border:1px solid var(--border); background:var(--card)}
+  .footer{margin-top:16px; text-align:center; color:var(--muted); font-size:.92rem}
+  .ok{color:var(--accent-2); font-weight:700}
+  .bad{color:var(--danger); font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">PT</div>
+      <div>
+        <div class="title">FormPT • Master Prompt Chủ đề Toán</div>
+        <div class="muted">Điền [mô tả] → Tạo prompt đầy đủ (MathJax v3 ready)</div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn" id="toggleTheme">🌓 Giao diện</button>
+      <span class="pill">HTML một file</span>
+    </div>
+  </header>
+
+  <section class="card">
+    <h3>1) Thông tin chủ đề</h3>
+    <div class="grid grid-3">
+      <div>
+        <label>Chủ đề</label>
+        <input type="text" id="topic" placeholder="VD: Hệ thức lượng trong tam giác">
+      </div>
+      <div>
+        <label>Lớp</label>
+        <input type="text" id="grade" placeholder="VD: 10 / 11 / 12">
+      </div>
+      <div>
+        <label>Bộ sách</label>
+        <input type="text" id="series" placeholder="VD: CTST / KNTT / Cánh Diều">
+      </div>
+    </div>
+    <label style="margin-top:8px">Mục tiêu năng lực (3–5 ý, mỗi ý một dòng)</label>
+    <textarea id="goals" placeholder="- Nắm định lý cos/sin\n- Tính cạnh/góc từ dữ kiện\n- Vận dụng vào bài toán thực tế"></textarea>
+  </section>
+
+  <section class="card">
+    <h3>2) Công cụ Toán học (sẽ xuất hiện ở tab 🔧)</h3>
+    <div class="grid grid-3">
+      <div>
+        <label>Công cụ 1 – Mô tả</label>
+        <textarea id="tool1" placeholder="VD: Tính cạnh còn lại bằng định lý cos từ a,b,C"></textarea>
+      </div>
+      <div>
+        <label>Công cụ 2 – Mô tả</label>
+        <textarea id="tool2" placeholder="VD: Tính góc từ định lý sin khi biết 2 cạnh 1 góc"></textarea>
+      </div>
+      <div>
+        <label>Công cụ 3 – Mô tả</label>
+        <textarea id="tool3" placeholder="VD: Diện tích tam giác theo 1/2 ab sinC và công thức Heron"></textarea>
+      </div>
+    </div>
+    <div class="note" style="margin-top:6px">Bạn có thể để trống một số ô – hệ thống vẫn tạo prompt theo khung chuẩn.</div>
+  </section>
+
+  <section class="card">
+    <h3>3) Tuỳ chọn bổ sung (không bắt buộc)</h3>
+    <div class="grid grid-2">
+      <div>
+        <label>Yêu cầu bổ sung cho Kiểm tra</label>
+        <textarea id="quizExtra" placeholder="VD: Thêm 1 câu trắc nghiệm về nhận dạng dữ kiện đủ áp dụng định lý cos"></textarea>
+      </div>
+      <div>
+        <label>Ghi chú khác</label>
+        <textarea id="notes" placeholder="VD: Dùng ví dụ có số đẹp; tối ưu mobile; không dùng framework"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>4) Tạo Prompt</h3>
+    <div class="row">
+      <button class="btn" id="gen">⚙️ Tạo Prompt</button>
+      <button class="btn" id="copyBtn">📋 Copy</button>
+      <button class="btn" id="saveBtn">💾 Tải .txt</button>
+      <span id="status" class="note"></span>
+    </div>
+    <p class="note" style="margin:8px 0 6px">Kết quả (dán thẳng vào ChatGPT để nhận 1 file HTML hoàn chỉnh theo yêu cầu):</p>
+    <pre id="output" class="out" style="min-height:220px;"></pre>
+  </section>
+
+  <div class="footer">© 2025 • FormPT • Tạo Master Prompt chủ đề Toán (MathJax v3-ready)</div>
+</div>
+
+<script>
+  // ===== Theme toggle =====
+  const btnTheme = document.getElementById('toggleTheme');
+  const setTheme = (mode)=>{ document.body.classList.toggle('dark', mode==='dark'); localStorage.setItem('formpt_theme', mode); };
+  setTheme(localStorage.getItem('formpt_theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+  btnTheme.addEventListener('click',()=> setTheme(document.body.classList.contains('dark')?'light':'dark'));
+
+  const $ = (s)=>document.querySelector(s);
+  const nl = (s)=> (s||'').trim();
+
+  function makePrompt(){
+    const topic = nl($('#topic').value) || '[Tên chủ đề]';
+    const grade = nl($('#grade').value) || '[10/11/12]';
+    const series = nl($('#series').value) || '[CTST/…]';
+    const goals = nl($('#goals').value) || '[3–5 mục tiêu đo được]';
+
+    const tool1 = nl($('#tool1').value) || '[mô tả công cụ 1]';
+    const tool2 = nl($('#tool2').value) || '[mô tả công cụ 2]';
+    const tool3 = nl($('#tool3').value) || '[mô tả công cụ 3]';
+
+    const quizExtra = nl($('#quizExtra').value);
+    const notes = nl($('#notes').value);
+
+    // MASTER PROMPT (khung cố định, đã tối ưu MathJax v3)
+    const prompt = [
+      "ĐÓNG VAI: Giáo viên Toán THPT (20 năm kinh nghiệm) + Learning Experience Designer + Trợ giảng AI.",
+      "",
+      `CHỦ ĐỀ: ${topic} — Lớp ${grade} — Bộ sách ${series}`,
+      "MỤC TIÊU NĂNG LỰC:",
+      goals.split('\n').map(s=>'• '+s).join('\n'),
+      "",
+      "ĐẦU RA MONG MUỐN: Tạo MỘT file HTML duy nhất (copy–paste là chạy) có 3 tab:",
+      "1) 🔧 Công cụ Toán học (tối thiểu 3 công cụ nhỏ có ví dụ sẵn)",
+      "2) 📝 Kiểm tra (trắc nghiệm + tự luận ngắn, auto chấm với thang 10; hiển thị điểm)",
+      "3) 📚 Kiến thức (tóm tắt, công thức mẫu, ví dụ minh họa, mẹo sai lầm thường gặp)",
+      "",
+      "YÊU CẦU HIỂN THỊ CÔNG THỨC (MathJax v3 – BẮT BUỘC):",
+      "- Dùng \\( ... \\) cho inline và \\[ ... \\] cho display; KHÔNG dùng $...$.",
+      "- Chèn config MathJax v3 (tex-chtml) TRƯỚC thẻ script tải MathJax, có id=\"MathJax-script\" và async.",
+      "- options.skipHtmlTags thêm: script, noscript, style, textarea, pre, code.",
+      "- Mỗi khi cập nhật DOM hoặc đổi tab, gọi: MathJax.typesetPromise([node]) cho đúng vùng.",
+      "- Không render khi panel đang hidden; chỉ typeset sau khi panel được hiển thị.",
+      "",
+      "YÊU CẦU GIAO DIỆN/UX:",
+      "- Giao diện tối giản, trực quan, có Light/Dark; nút chuyển theme; responsive (mobile–desktop).",
+      "- Tabs ARIA role đầy đủ; panel ẩn/hiện đúng thuộc tính; kiểu chữ hệ thống.",
+      "- Không dùng framework; chỉ HTML+CSS+JS thuần; không phụ thuộc build tool.",
+      "",
+      "NỘI DUNG CỤ THỂ:",
+      "- TAB Công cụ:",
+      `  • Công cụ 1: ${tool1}`,
+      `  • Công cụ 2: ${tool2}`,
+      `  • Công cụ 3: ${tool3}`,
+      "- TAB Kiểm tra:",
+      "  • Trắc nghiệm: 2–4 câu, mỗi câu 2 điểm, đáp án & giải thích ngắn.",
+      "  • Tự luận ngắn: 2 câu, mỗi câu 3 điểm; kiểm tra từ khoá/kết quả để cộng điểm.",
+      "  • Nút “Chấm điểm” + “Làm lại”; hiển thị điểm /10; màu sắc theo mức điểm.",
+      "- TAB Kiến thức:",
+      "  • Công thức chuẩn của chủ đề (đúng LaTeX), ví dụ mẫu (1 inline, 1 display).",
+      "  • Sai lầm phổ biến & cách tránh.",
+      "  • “Mẫu công thức copy–paste” (5–7 mẫu thông dụng của chủ đề).",
+      "",
+      "ĐÁNH GIÁ & RUBRIC (10 điểm):",
+      "- 4đ trắc nghiệm; 6đ tự luận ngắn (mỗi câu 3đ, theo từ khoá/kết quả).",
+      "- Hiển thị thang điểm và tiêu chí chấm súc tích trong tab Kiểm tra (details/summary).",
+      "",
+      "BẢO ĐẢM KĨ THUẬT:",
+      "- Khi gán innerHTML có LaTeX, phải escape backslash trong JS chuỗi (\\\\ → \\\\\\\\).",
+      "- Không đặt công thức trong <pre>/<code>/<textarea>.",
+      "- Tệp chạy tốt qua file:// và trên GitHub Pages (CDN ổn định).",
+      "",
+      "KIỂM THỬ NHANH (bắt buộc có trong trang):",
+      "- Inline test: \\( \\Delta = b^2 - 4ac \\)",
+      "- Display test: \\[ x_{1,2} = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a} \\ ]",
+      "",
+      "ĐẦU RA: Trả về đúng 1 file HTML hoàn chỉnh (toàn bộ code). Không giải thích lan man."
+    ].join('\n');
+
+    // Chèn phần bổ sung nếu có
+    const extra = [];
+    if (quizExtra) extra.push("\nLƯU Ý THÊM CHO KIỂM TRA:\n- " + quizExtra.replace(/\n/g, "\n- "));
+    if (notes) extra.push("\nGHI CHÚ KHÁC:\n- " + notes.replace(/\n/g, "\n- "));
+    return prompt + (extra.length? ("\n" + extra.join("\n")) : "");
+  }
+
+  // ===== Actions =====
+  const out = $('#output');
+  const status = $('#status');
+
+  $('#gen').addEventListener('click', ()=>{
+    out.textContent = makePrompt();
+    status.textContent = 'Đã tạo prompt.';
+    status.className = 'note ok';
+    setTimeout(()=>{ status.textContent=''; status.className='note'; }, 1800);
+  });
+
+  $('#copyBtn').addEventListener('click', async ()=>{
+    if (!out.textContent.trim()){ out.textContent = makePrompt(); }
+    try{
+      await navigator.clipboard.writeText(out.textContent);
+      status.textContent = 'Đã copy vào clipboard.';
+      status.className = 'note ok';
+    }catch(e){
+      status.textContent = 'Không copy được. Hãy bôi đen và Ctrl+C.';
+      status.className = 'note bad';
+    }
+    setTimeout(()=>{ status.textContent=''; status.className='note'; }, 2000);
+  });
+
+  $('#saveBtn').addEventListener('click', ()=>{
+    if (!out.textContent.trim()){ out.textContent = makePrompt(); }
+    const blob = new Blob([out.textContent], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const t = ($('#topic').value || 'chu-de-toan').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+    a.download = `prompt-${t||'chu-de'}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+</script>
+</body>
+</html>
