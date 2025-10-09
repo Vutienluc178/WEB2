@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Cầu trượt - Vectơ và Tích vô hướng</title>
+    
+    <!-- MathJax v3 Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            },
+            chtml: {
+                scale: 1.0,
+                minScale: 0.5,
+                matchFontHeight: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 15px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #333;
+            overflow-x: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 140px);
+            min-height: 600px;
+        }
+
+        .simulation-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border: 3px solid #34495e;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #8B4513;
+            border-top: 3px solid #654321;
+        }
+
+        .incline {
+            position: absolute;
+            bottom: 50px;
+            left: 100px;
+            width: 400px;
+            height: 8px;
+            background: #A0522D;
+            border: 2px solid #654321;
+            transform-origin: left bottom;
+            transition: transform 0.3s ease;
+        }
+
+        .ball {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #ee5a52);
+            border-radius: 50%;
+            border: 2px solid #c44569;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .vector {
+            position: absolute;
+            stroke-width: 3;
+            marker-end: url(#arrowhead);
+        }
+
+        .gravity-vector { stroke: #e74c3c; }
+        .normal-vector { stroke: #3498db; }
+        .parallel-vector { stroke: #f39c12; }
+        .velocity-vector { stroke: #27ae60; }
+
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            flex-shrink: 0;
+        }
+
+        .control-group h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .value-display {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-left: 10px;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .info-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+
+        .vector-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .vector-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            font-size: 0.9em;
+        }
+
+        .vector-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .dot-product-display {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .simulation-area {
+                height: 400px;
+                margin-bottom: 20px;
+            }
+            
+            .controls-panel {
+                height: auto;
+                overflow-y: visible;
+            }
+            
+            .vector-info {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .title {
+                font-size: 1.4em;
+            }
+            
+            .simulation-area {
+                height: 300px;
+            }
+            
+            .vector-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎢 Mô phỏng Cầu trượt - Vectơ và Tích vô hướng</h1>
+        
+        <div class="main-content">
+            <div class="simulation-area" id="simulationArea">
+                <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none;">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                        </marker>
+                    </defs>
+                    
+                    <!-- Vectơ trọng lực -->
+                    <line id="gravityVector" class="vector gravity-vector" x1="0" y1="0" x2="0" y2="0"></line>
+                    
+                    <!-- Vectơ pháp tuyến -->
+                    <line id="normalVector" class="vector normal-vector" x1="0" y1="0" x2="0" y2="0"></line>
+                    
+                    <!-- Vectơ song song -->
+                    <line id="parallelVector" class="vector parallel-vector" x1="0" y1="0" x2="0" y2="0"></line>
+                    
+                    <!-- Vectơ vận tốc -->
+                    <line id="velocityVector" class="vector velocity-vector" x1="0" y1="0" x2="0" y2="0"></line>
+                </svg>
+                
+                <div class="ground"></div>
+                <div class="incline" id="incline"></div>
+                <div class="ball" id="ball"></div>
+            </div>
+
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3>⚙️ Điều khiển</h3>
+                    <div class="slider-container">
+                        <label for="angleSlider">Góc nghiêng (θ): <span class="value-display" id="angleValue">30°</span></label>
+                        <input type="range" id="angleSlider" class="slider" min="0" max="60" value="30">
+                    </div>
+                    <div class="slider-container">
+                        <label for="massSlider">Khối lượng (m): <span class="value-display" id="massValue">5 kg</span></label>
+                        <input type="range" id="massSlider" class="slider" min="1" max="10" value="5">
+                    </div>
+                    <button class="button" onclick="startAnimation()">▶️ Bắt đầu</button>
+                    <button class="button" onclick="stopAnimation()">⏸️ Dừng</button>
+                    <button class="button" onclick="resetSimulation()">🔄 Reset</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>📊 Thông tin Vectơ</h3>
+                    <div class="vector-info">
+                        <div class="vector-item">
+                            <div class="vector-color" style="background: #e74c3c;"></div>
+                            <strong>Trọng lực (mg)</strong><br>
+                            <span id="gravityMagnitude">49.0 N</span>
+                        </div>
+                        <div class="vector-item">
+                            <div class="vector-color" style="background: #3498db;"></div>
+                            <strong>Pháp tuyến (N)</strong><br>
+                            <span id="normalMagnitude">42.4 N</span>
+                        </div>
+                        <div class="vector-item">
+                            <div class="vector-color" style="background: #f39c12;"></div>
+                            <strong>Song song (mg sin θ)</strong><br>
+                            <span id="parallelMagnitude">24.5 N</span>
+                        </div>
+                        <div class="vector-item">
+                            <div class="vector-color" style="background: #27ae60;"></div>
+                            <strong>Vận tốc (v)</strong><br>
+                            <span id="velocityMagnitude">0.0 m/s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🧮 Công thức Vật lý</h3>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; border: 2px solid #e9ecef;">
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Lực trọng trường:</h4>
+                        \[ \vec{F_g} = m\vec{g} \]
+                        <p style="font-size: 0.85em; margin: 5px 0;">Với \( |\vec{g}| = 9.8 \, \text{m/s}^2 \)</p>
+                    </div>
+
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; border: 2px solid #e9ecef;">
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Phân tích lực:</h4>
+                        \[ F_{\parallel} = mg\sin\theta \]
+                        \[ F_{\perp} = mg\cos\theta \]
+                    </div>
+
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; border: 2px solid #e9ecef;">
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Tích vô hướng:</h4>
+                        \[ \vec{A} \cdot \vec{B} = |\vec{A}||\vec{B}|\cos\alpha \]
+                        <div class="dot-product-display">
+                            <div id="dotProductInfo">
+                                \( \vec{F_g} \cdot \vec{N} = \) <span id="dotProduct">0.0</span><br>
+                                <small>\( \cos 90° = 0 \) (vuông góc)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0; border: 2px solid #ffeaa7;">
+                        <h4 style="margin: 0 0 10px 0; color: #856404;">Kiểm thử - Phương trình bậc hai:</h4>
+                        <p style="margin: 5px 0;">Biệt thức: \( \Delta = b^2 - 4ac \)</p>
+                        \[ x_{1,2} = \frac{-b \pm \sqrt{\Delta}}{2a} \]
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🏷️ Chú thích</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85em;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="vector-color" style="background: #e74c3c; margin-right: 8px;"></div>
+                            Trọng lực (mg)
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div class="vector-color" style="background: #3498db; margin-right: 8px;"></div>
+                            Lực pháp tuyến (N)
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div class="vector-color" style="background: #f39c12; margin-right: 8px;"></div>
+                            Thành phần song song
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div class="vector-color" style="background: #27ae60; margin-right: 8px;"></div>
+                            Vận tốc (v)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let angle = 30;
+        let mass = 5;
+        let velocity = 0;
+        let position = 0;
+        let isAnimating = false;
+        let animationId;
+        const g = 9.8; // gia tốc trọng trường
+        const scale = 3; // tỷ lệ hiển thị vectơ
+
+        const angleSlider = document.getElementById('angleSlider');
+        const massSlider = document.getElementById('massSlider');
+        const ball = document.getElementById('ball');
+        const incline = document.getElementById('incline');
+
+        // Cập nhật góc nghiêng
+        angleSlider.addEventListener('input', function() {
+            angle = parseInt(this.value);
+            document.getElementById('angleValue').textContent = angle + '°';
+            updateSimulation();
+        });
+
+        // Cập nhật khối lượng
+        massSlider.addEventListener('input', function() {
+            mass = parseInt(this.value);
+            document.getElementById('massValue').textContent = mass + ' kg';
+            updateSimulation();
+        });
+
+        function updateSimulation() {
+            // Cập nhật góc nghiêng
+            incline.style.transform = `rotate(-${angle}deg)`;
+            
+            // Tính toán vị trí bóng
+            const inclineLength = 400;
+            const ballX = 100 + position * Math.cos(angle * Math.PI / 180);
+            const ballY = 450 - position * Math.sin(angle * Math.PI / 180) - 15;
+            
+            ball.style.left = ballX + 'px';
+            ball.style.top = ballY + 'px';
+            
+            updateVectors();
+            updateInfo();
+        }
+
+        function updateVectors() {
+            const ballRect = ball.getBoundingClientRect();
+            const simRect = document.getElementById('simulationArea').getBoundingClientRect();
+            
+            const ballCenterX = ballRect.left - simRect.left + 15;
+            const ballCenterY = ballRect.top - simRect.top + 15;
+            
+            // Vectơ trọng lực (hướng xuống)
+            const gravityLength = mass * g / scale;
+            document.getElementById('gravityVector').setAttribute('x1', ballCenterX);
+            document.getElementById('gravityVector').setAttribute('y1', ballCenterY);
+            document.getElementById('gravityVector').setAttribute('x2', ballCenterX);
+            document.getElementById('gravityVector').setAttribute('y2', ballCenterY + gravityLength);
+            
+            // Vectơ pháp tuyến (vuông góc với mặt nghiêng)
+            const normalLength = mass * g * Math.cos(angle * Math.PI / 180) / scale;
+            const normalX = ballCenterX - normalLength * Math.sin(angle * Math.PI / 180);
+            const normalY = ballCenterY - normalLength * Math.cos(angle * Math.PI / 180);
+            document.getElementById('normalVector').setAttribute('x1', ballCenterX);
+            document.getElementById('normalVector').setAttribute('y1', ballCenterY);
+            document.getElementById('normalVector').setAttribute('x2', normalX);
+            document.getElementById('normalVector').setAttribute('y2', normalY);
+            
+            // Vectơ song song với mặt nghiêng
+            const parallelLength = mass * g * Math.sin(angle * Math.PI / 180) / scale;
+            const parallelX = ballCenterX + parallelLength * Math.cos(angle * Math.PI / 180);
+            const parallelY = ballCenterY + parallelLength * Math.sin(angle * Math.PI / 180);
+            document.getElementById('parallelVector').setAttribute('x1', ballCenterX);
+            document.getElementById('parallelVector').setAttribute('y1', ballCenterY);
+            document.getElementById('parallelVector').setAttribute('x2', parallelX);
+            document.getElementById('parallelVector').setAttribute('y2', parallelY);
+            
+            // Vectơ vận tốc
+            if (velocity > 0) {
+                const velocityLength = velocity * 10; // tỷ lệ hiển thị
+                const velocityX = ballCenterX + velocityLength * Math.cos(angle * Math.PI / 180);
+                const velocityY = ballCenterY + velocityLength * Math.sin(angle * Math.PI / 180);
+                document.getElementById('velocityVector').setAttribute('x1', ballCenterX);
+                document.getElementById('velocityVector').setAttribute('y1', ballCenterY);
+                document.getElementById('velocityVector').setAttribute('x2', velocityX);
+                document.getElementById('velocityVector').setAttribute('y2', velocityY);
+            }
+        }
+
+        function updateInfo() {
+            const gravity = mass * g;
+            const normal = mass * g * Math.cos(angle * Math.PI / 180);
+            const parallel = mass * g * Math.sin(angle * Math.PI / 180);
+            
+            document.getElementById('gravityMagnitude').textContent = gravity.toFixed(1) + ' N';
+            document.getElementById('normalMagnitude').textContent = normal.toFixed(1) + ' N';
+            document.getElementById('parallelMagnitude').textContent = parallel.toFixed(1) + ' N';
+            document.getElementById('velocityMagnitude').textContent = velocity.toFixed(1) + ' m/s';
+            
+            // Tích vô hướng giữa trọng lực và pháp tuyến (luôn = 0 vì vuông góc)
+            const dotProduct = 0; // cos(90°) = 0
+            document.getElementById('dotProduct').textContent = dotProduct.toFixed(1);
+            
+            // Cập nhật MathJax sau khi thay đổi nội dung
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([document.getElementById('dotProductInfo')]).catch((err) => console.log(err.message));
+            }
+        }
+
+        function startAnimation() {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            function animate() {
+                if (!isAnimating) return;
+                
+                // Tính gia tốc theo mặt nghiêng
+                const acceleration = g * Math.sin(angle * Math.PI / 180);
+                velocity += acceleration * 0.02; // dt = 0.02s
+                position += velocity * 0.02;
+                
+                // Kiểm tra va chạm với đáy
+                if (position >= 350) {
+                    position = 350;
+                    velocity = 0;
+                    isAnimating = false;
+                }
+                
+                updateSimulation();
+                
+                if (isAnimating) {
+                    animationId = requestAnimationFrame(animate);
+                }
+            }
+            
+            animate();
+        }
+
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        function resetSimulation() {
+            stopAnimation();
+            velocity = 0;
+            position = 0;
+            updateSimulation();
+        }
+
+        // Khởi tạo mô phỏng
+        updateSimulation();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98bc38b032aefb86',t:'MTc1OTk5NTUzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
