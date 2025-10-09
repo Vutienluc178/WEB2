@@ -195,6 +195,11 @@
         "title": "Ví dụ tích vô hướng",
         "path": "tien-ich/tvh.html"
       }
+       ,
+      {
+        "title": "tạo form sinh công cụ",
+        "path": "tien-ich/Taoformwweb.html"
+      }
     ]
   }
 ]
