@@ -190,6 +190,11 @@
         "title": "Phân công  thuyết trình",
         "path": "tien-ich/FormPT_ThongBao_ThuyetTrinh_Toan.html"
       }
+         ,
+      {
+        "title": "Ví dụ tích vô hướng",
+        "path": "tien-ich/tvh.html"
+      }
     ]
   }
 ]
