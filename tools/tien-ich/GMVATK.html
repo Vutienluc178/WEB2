@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🧠 Generator Prompt 7 Vai Trò – Toán THPT</title>
+  <style>
+    :root{
+      --bg:#0b132b; --panel:#1c2541; --accent:#5bc0be; --text:#e6f1ff; --muted:#a8b2d1; --warn:#ffd166;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial}
+    header{padding:20px 24px;border-bottom:1px solid #2a335a;background:linear-gradient(180deg,#0b132b,#0b132b80)}
+    header h1{margin:0;font-size:20px}
+    header p{margin:6px 0 0;color:var(--muted)}
+    .container{max-width:1200px;margin:0 auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1.1fr 1.1fr;gap:16px}
+    @media (max-width:1000px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--panel);border:1px solid #2a335a;border-radius:16px;box-shadow:0 6px 20px #00000030}
+    .card h2{margin:0;padding:14px 16px;border-bottom:1px solid #2a335a;font-size:16px}
+    .card .body{padding:16px}
+    label{display:block;margin:8px 0 6px;color:var(--muted);font-weight:600}
+    input, textarea, select{width:100%;padding:12px 12px;border-radius:12px;border:1px solid #33406f;background:#0f1733;color:var(--text)}
+    textarea{min-height:88px;resize:vertical}
+    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid #2f3b69;background:#0f1733;color:var(--text);cursor:pointer;font-weight:600}
+    .btn:hover{border-color:var(--accent);box-shadow:0 0 0 3px #5bc0be22}
+    .btn.primary{background:var(--accent);color:#0b132b;border-color:transparent}
+    .btn.ghost{background:transparent}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .muted{color:var(--muted);font-size:13px}
+    details{border:1px dashed #33406f;border-radius:12px;padding:10px 12px;background:#0f1733}
+    details>summary{cursor:pointer;font-weight:600;color:#e6f1ff}
+    .out{font-family:var(--mono);white-space:pre-wrap;background:#0a0f25;border-radius:12px;border:1px solid #2a335a;padding:12px}
+    .role{border:1px solid #32406e;border-radius:14px;padding:12px;background:#0f1733}
+    .role h3{margin:0 0 8px;font-size:15px}
+    .copy{float:right;font-size:12px}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#12204b;border:1px solid #2a335a;color:#a8b2d1;font-size:12px;margin-right:6px}
+    .footer{padding:12px 16px;color:#8aa0d6;border-top:1px solid #2a335a}
+    .check{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧠 Generator Prompt 7 Vai Trò – Toán THPT</h1>
+    <p>Tạo prompt gợi mở & tổng kết bài học toán theo 7 vai trò: Sư phạm chiến lược · Kể chuyện · Hướng dẫn thực hành · Thiết kế tư duy · Thiết kế trải nghiệm · Truyền cảm hứng · Đổi mới số.</p>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <!-- INPUTS -->
+      <section class="card">
+        <h2>📥 Thông tin đầu vào</h2>
+        <div class="body">
+          <div class="row">
+            <div>
+              <label>Chủ đề / Bài học</label>
+              <input id="topic" placeholder="Ví dụ: Hệ thức lượng trong tam giác – lớp 10 (CTST)" />
+            </div>
+            <div>
+              <label>Lớp / Khối</label>
+              <input id="grade" placeholder="Ví dụ: 10 / 11 / 12" />
+            </div>
+          </div>
+
+          <label>Mục tiêu năng lực (ngắn gọn)</label>
+          <textarea id="objectives" placeholder="Ví dụ: Giải được tam giác; áp dụng vào đo đạc thực tế; trình bày lập luận logic."></textarea>
+
+          <label>Ngữ cảnh lớp học / Điều kiện (tùy chọn)</label>
+          <textarea id="context" placeholder="Ví dụ: 40 phút; lớp 45 HS; có máy chiếu 16:9; học sinh trung bình – khá; có điện thoại thông minh."></textarea>
+
+          <div class="row">
+            <div>
+              <label>Giọng điệu (tone)</label>
+              <select id="tone">
+                <option value="thân thiện, rõ ràng, khích lệ">Thân thiện – Rõ ràng – Khích lệ</option>
+                <option value="ngắn gọn, trực tiếp, thực dụng">Ngắn gọn – Trực tiếp – Thực dụng</option>
+                <option value="kể chuyện, truyền cảm hứng, gần gũi">Kể chuyện – Truyền cảm hứng – Gần gũi</option>
+                <option value="chuyên gia, nghiêm túc, hàn lâm">Chuyên gia – Nghiêm túc – Hàn lâm</option>
+              </select>
+            </div>
+            <div>
+              <label>Ngôn ngữ đầu ra</label>
+              <select id="lang">
+                <option value="vi">Tiếng Việt</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row3">
+            <div>
+              <label>Độ khó</label>
+              <select id="level">
+                <option value="cơ bản">Cơ bản</option>
+                <option value="trung bình">Trung bình</option>
+                <option value="nâng cao">Nâng cao</option>
+              </select>
+            </div>
+            <div>
+              <label>Thời lượng dự kiến</label>
+              <input id="duration" placeholder="Ví dụ: 40 phút" />
+            </div>
+            <div>
+              <label>Ràng buộc</label>
+              <input id="constraints" placeholder="Ví dụ: bảng phụ, không dùng Internet, kiểm tra nhanh 5’" />
+            </div>
+          </div>
+
+          <details style="margin-top:10px">
+            <summary>⚙️ Tuỳ chọn nâng cao</summary>
+            <label>Định dạng đầu ra mong muốn</label>
+            <input id="format" placeholder="Ví dụ: Danh sách 5 câu hỏi gợi mở + 5 câu tổng kết; kèm hoạt động ngắn" />
+            <label>Tiêu chí đánh giá (rubric tóm tắt)</label>
+            <textarea id="rubric" placeholder="Ví dụ: Đúng công thức (4đ) · Lập luận (3đ) · Ứng dụng (2đ) · Trình bày (1đ)"></textarea>
+          </details>
+
+          <div class="toolbar" style="margin-top:12px">
+            <button class="btn" onclick="applyPreset('he-thuc-luong')">Mẫu: Hệ thức lượng</button>
+            <button class="btn" onclick="applyPreset('dao-ham')">Mẫu: Đạo hàm – GTLN/NN</button>
+            <button class="btn" onclick="applyPreset('xac-suat')">Mẫu: Xác suất</button>
+          </div>
+
+          <div class="toolbar" style="margin-top:12px">
+            <button class="btn primary" onclick="generate()">🚀 Tạo Prompt</button>
+            <button class="btn" onclick="copyAll()">📋 Copy TẤT CẢ</button>
+            <label class="check"><input type="checkbox" id="includeQA" /> Bao gồm cả mục QA</label>
+            <button class="btn" onclick="downloadTxt()">💾 Tải .txt</button>
+            <span class="muted" id="status"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- OUTPUTS -->
+      <section class="card">
+        <h2>📤 Prompt đầu ra (7 vai trò)</h2>
+        <div class="body" id="outputs">
+          <p class="muted">Điền thông tin bên trái rồi bấm <b>“Tạo Prompt”</b>. Mỗi mục có nút copy riêng. Có thể chỉnh sửa trước khi copy.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:16px">
+      <h2>🧩 Hướng dẫn dùng với AI</h2>
+      <div class="body">
+        <ol>
+          <li>Điền thông tin bài học → <b>Tạo Prompt</b>.</li>
+          <li>Copy từng prompt theo vai trò hoặc copy tất cả để đưa vào AI (ChatGPT, Gemini, NotebookLM…).</li>
+          <li>Có thể yêu cầu AI: <i>“Tạo 5 câu hỏi gợi mở + 5 câu tổng kết, kèm 1 hoạt động vận dụng 5’ cho chủ đề…”</i>.</li>
+          <li>Chỉnh sửa nhanh ngay trong khung rồi copy lại.</li>
+        </ol>
+        <p class="muted">Mẹo: Dùng prompt “kiểm định chất lượng” ở cuối để AI tự-đánh-giá đầu ra theo rubric.</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h2>🧪 Prompt kiểm định chất lượng (QA)</h2>
+      <div class="body">
+        <div class="role">
+          <h3>🔍 Trọng tài chất lượng (Validator) <span class="pill">QA</span></h3>
+          <textarea id="qa" class="out" spellcheck="false" placeholder="Sau khi nhận được các đề xuất câu hỏi/hoạt động từ AI, dán vào đây và yêu cầu: 
+– So khớp mục tiêu – độ khó – thời lượng
+– Phát hiện trùng lặp / mơ hồ / thiếu thực tế
+– Sửa theo rubric và ràng buộc"></textarea>
+          <div class="toolbar" style="margin-top:8px">
+            <button class="btn" onclick="copyEl('qa')">📋 Copy</button>
+            <button class="btn" onclick="selectEl('qa')">🔎 Select</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h2>🧰 Chẩn đoán & Kiểm thử</h2>
+      <div class="body" id="diag">
+        <div class="toolbar">
+          <button class="btn" onclick="testClipboard()">🧪 Kiểm tra Clipboard API</button>
+          <button class="btn" onclick="testCopyOne()">🧪 Test Copy 1 mục</button>
+          <button class="btn" onclick="testCopyAll()">🧪 Test Copy TẤT CẢ</button>
+          <button class="btn" onclick="testBuildPrompts()">🧪 Test buildPrompts()</button>
+          <button class="btn" onclick="testJoinSeparator()">🧪 Test Join Separator</button>
+        </div>
+        <p class="muted" id="diagLog">Kết quả sẽ hiển thị tại đây.</p>
+      </div>
+    </section>
+
+    <div class="footer">Made for THPT – trình chiếu 16:9, chữ lớn, tối ưu dùng trên máy chiếu & điện thoại.</div>
+  </div>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const outputsEl = $('outputs');
+  const statusEl = $('status');
+  const SEP = '\n\n\n'; // dùng trong copyAll/downloadTxt để tránh lỗi chuỗi xuống dòng không hợp lệ
+
+  const ROLES = [
+    {key:'ld', icon:'🎓', name:'Nhà sư phạm chiến lược', hint:'Curiosity → Bridge → Outcome'},
+    {key:'story', icon:'📖', name:'Nhà kể chuyện toán học', hint:'Ngữ cảnh đời sống – nghề nghiệp'},
+    {key:'coach', icon:'🛠️', name:'Nhà hướng dẫn thực hành', hint:'Thử – Sai – Kiểm chứng'},
+    {key:'cog', icon:'🧠', name:'Nhà thiết kế tư duy', hint:'Scaffold – Phản biện – Tự kiểm chứng'},
+    {key:'lxd', icon:'🧩', name:'Nhà thiết kế trải nghiệm', hint:'Gamify – WOW – Hợp tác'},
+    {key:'mot', icon:'❤️', name:'Người truyền cảm hứng', hint:'Giá trị – Thái độ – Ý nghĩa'},
+    {key:'edtech', icon:'💻', name:'Nhà đổi mới số', hint:'Mô phỏng – Quiz – AI phụ tá'}
+  ];
+
+  function save(){
+    const data = collect();
+    localStorage.setItem('prompt7_settings', JSON.stringify(data));
+  }
+  function load(){
+    const raw = localStorage.getItem('prompt7_settings');
+    if(!raw) return;
+    try{
+      const d = JSON.parse(raw);
+      ['topic','grade','objectives','context','tone','lang','level','duration','constraints','format','rubric'].forEach(k=>{
+        if(d[k]!==undefined) $(k).value = d[k];
+      });
+    }catch(e){}
+  }
+
+  function collect(){
+    return {
+      topic: $('topic').value.trim(),
+      grade: $('grade').value.trim(),
+      objectives: $('objectives').value.trim(),
+      context: $('context').value.trim(),
+      tone: $('tone').value,
+      lang: $('lang').value,
+      level: $('level').value,
+      duration: $('duration').value.trim(),
+      constraints: $('constraints').value.trim(),
+      format: $('format').value.trim(),
+      rubric: $('rubric').value.trim()
+    }
+  }
+
+  function applyPreset(key){
+    const presets = {
+      'he-thuc-luong':{
+        topic:'Hệ thức lượng trong tam giác – ứng dụng đo đạc',
+        grade:'10',
+        objectives:'Giải được tam giác; áp dụng đo khoảng cách không đo trực tiếp; trình bày lập luận.',
+        context:'40 phút; lớp 45 HS; có máy chiếu 16:9; trung bình – khá.',
+        duration:'40 phút',
+        constraints:'Kiểm tra nhanh 5’; không dùng internet cho HS',
+        format:'5 câu mở bài + 5 câu tổng kết + 1 hoạt động vận dụng 5’',
+        rubric:'Đúng công thức (4) · Lập luận (3) · Ứng dụng (2) · Trình bày (1)'
+      },
+      'dao-ham':{
+        topic:'Đạo hàm – tìm GTLN/GTNN ứng dụng tối ưu hoá',
+        grade:'12',
+        objectives:'Hiểu ý nghĩa đạo hàm; tìm cực trị; áp dụng tối ưu chi phí – vật liệu.',
+        context:'45 phút; có GeoGebra/Desmos; HS khá.',
+        duration:'45 phút',
+        constraints:'Trình chiếu 16:9; kết thúc có exit-ticket 1’',
+        format:'4 câu mở bài + 4 câu tổng kết + 1 tình huống thực tế',
+        rubric:'Lập luận (4) · Đúng (3) · Mô hình hoá (2) · Rõ ràng (1)'
+      },
+      'xac-suat':{
+        topic:'Xác suất – mô hình hoá rủi ro đơn giản',
+        grade:'11',
+        objectives:'Tính xác suất biến cố độc lập; so sánh chiến lược ra quyết định.',
+        context:'35–40 phút; trò chơi rút thăm; HS trung bình.',
+        duration:'40 phút',
+        constraints:'Dụng cụ: thẻ màu; nhóm 4',
+        format:'3 câu mở bài + 5 câu tổng kết + 1 mini-game',
+        rubric:'Khái niệm (3) · Tính toán (3) · Giải thích (3) · Hợp tác (1)'
+      }
+    };
+    const p = presets[key];
+    if(!p) return;
+    $('topic').value = p.topic; $('grade').value=p.grade; $('objectives').value=p.objectives;
+    $('context').value=p.context; $('duration').value=p.duration; $('constraints').value=p.constraints;
+    $('format').value=p.format; $('rubric').value=p.rubric; status('Áp dụng mẫu.'); save();
+  }
+
+  function tmplBase(d){
+    const head = `Vai trò: $ROLE$\nNgôn ngữ: ${d.lang==='vi'?'Tiếng Việt':'English'}\nGiọng điệu: ${d.tone}\nBối cảnh: Lớp ${d.grade}; Thời lượng ${d.duration||'—'}; Độ khó ${d.level}; Ràng buộc: ${d.constraints||'—'}\nChủ đề: ${d.topic}\nMục tiêu: ${d.objectives}\nĐịnh dạng đầu ra mong muốn: ${d.format||'Danh sách câu hỏi gợi mở (mở bài) + câu hỏi tổng kết (vận dụng/reflect) + 1 hoạt động ngắn'}\nRubric: ${d.rubric||'Đúng kiến thức – Lập luận – Ứng dụng – Trình bày'}\n`;
+    return head;
+  }
+
+  function buildPrompts(d){
+    const prompts = {};
+
+    prompts.ld = tmplBase(d) + `\nYÊU CẦU CHUYÊN BIỆT (Nhà sư phạm chiến lược):\n1) Tạo 5 “câu hỏi tò mò” mở bài (Curiosity) dẫn vào ${d.topic}.\n2) Mỗi câu cần: gợi nhu cầu học – liên hệ thực tế – không lộ đáp án.\n3) Tạo 5 câu hỏi tổng kết (Transfer/Reflect) hướng tới ứng dụng thực tế tại trường/nhà.\n4) Thêm 1 hoạt động vận dụng 5’ (cặp/nhóm 3) phù hợp ${d.duration}.\n5) Gợi ý đáp án kỳ vọng (bullet).`;
+
+    prompts.story = tmplBase(d) + `\nYÊU CẦU CHUYÊN BIỆT (Nhà kể chuyện toán học):\n1) Viết 1 đoạn dẫn chuyện (100–150 từ) tạo bối cảnh đời sống/nghề nghiệp liên quan ${d.topic}.\n2) Tạo 4 câu hỏi gợi mở theo mạch câu chuyện (Why → How → What if → So what).\n3) Tạo 4 câu hỏi tổng kết gắn nhân vật/tình huống.\n4) Đề xuất 1 hình ảnh/đồ vật minh hoạ dễ tìm để trình chiếu.\n5) Không dùng thuật ngữ khó khi không cần thiết.`;
+
+    prompts.coach = tmplBase(d) + `\nYÊU CẦU CHUYÊN BIỆT (Nhà hướng dẫn thực hành):\n1) Đề xuất 1 thí nghiệm/mô phỏng mini với dụng cụ rẻ/dễ kiếm.\n2) Tạo 3 câu hỏi kiểm chứng – sai ở đâu – sửa thế nào.\n3) Tạo 3 câu hỏi tổng kết tập trung vào quy trình (quan sát → giả thuyết → kiểm chứng → kết luận).\n4) Đưa tiêu chí đánh giá nhanh (checklist 5 mục).`;
+
+    prompts.cog = tmplBase(d) + `\nYÊU CẦU CHUYÊN BIỆT (Nhà thiết kế tư duy):\n1) Tạo 4 câu hỏi scaffold tăng dần (nhận biết → liên hệ → khái quát → phản biện).\n2) Tạo 2 câu hỏi “nếu kết quả sai” để phát hiện sai lầm phổ biến.\n3) Tạo 2 câu hỏi “khái quát hoá” để rút quy tắc.\n4) Xuất 1 bảng KWL rỗng phù hợp chủ đề để học sinh điền nhanh.`;
+
+    prompts.lxd = tmplBase(d) + `\nYÊU CẦU CHUYÊN BIỆT (Nhà thiết kế trải nghiệm):\n1) Đề xuất 1 hoạt động gamified (điểm, huy hiệu, vai trò nhóm).\n2) Tạo 3 câu hỏi gợi mở dạng thử thách thời gian.\n3) Tạo 3 câu hỏi tổng kết kiểu “hùng biện 30s / exit-ticket”.\n4) Thêm 1 khoảnh khắc WOW (mô phỏng/ảo giác toán học/GeoGebra).`;
+
+    prompts.mot = tmplBase(d) + `\nYÊU CẦU CHUYÊN BIỆT (Người truyền cảm hứng):\n1) Viết 3 câu mở bài truyền cảm hứng (≤30 từ/câu).\n2) Viết 3 câu hỏi tổng kết gắn giá trị sống – thái độ học tập.\n3) Viết 1 thông điệp kết thúc 2 câu, dễ nhớ, gần gũi.\n4) Không lên gân; ưu tiên thân thiện, tôn trọng HS.`;
+
+    prompts.edtech = tmplBase(d) + `\nYÊU CẦU CHUYÊN BIỆT (Nhà đổi mới số):\n1) Gợi ý 1 mô phỏng (GeoGebra/Desmos) và 1 quiz nhanh (4 câu).\n2) Tạo 3 câu hỏi gợi mở dựa trên mô phỏng động.\n3) Tạo 3 câu hỏi tổng kết kèm “exit-ticket” Google Form (mô tả câu hỏi).\n4) Gợi ý cách dùng AI như trợ giảng: kiểm tra bước giải, gợi ý nhẹ, không cho đáp án ngay.`;
+
+    return prompts;
+  }
+
+  function render(prompts){
+    outputsEl.innerHTML = '';
+    for(const role of ROLES){
+      const key = role.key; const txt = prompts[key]||'';
+      const id = 'out_'+key;
+      const wrap = document.createElement('div');
+      wrap.className='role';
+      wrap.innerHTML = `
+        <h3>${role.icon} ${role.name} <span class="pill">${role.hint}</span>
+          <button class="btn copy" onclick="copyEl('${id}')">Copy</button>
+          <button class="btn copy" onclick="selectEl('${id}')">Select</button>
+        </h3>
+        <textarea id="${id}" class="out" spellcheck="false">${txt}</textarea>
+      `;
+      outputsEl.appendChild(wrap);
+    }
+  }
+
+  function generate(){
+    const d = collect();
+    if(!d.topic){ status('⚠️ Vui lòng nhập “Chủ đề/Bài học”.'); return; }
+    const prompts = buildPrompts(d);
+    render(prompts); save(); status('Đã tạo prompt theo 7 vai trò.');
+  }
+
+  // ===== Clipboard helpers with robust fallbacks =====
+  function canUseModernClipboard(){
+    return typeof navigator!=='undefined' && !!navigator.clipboard && window.isSecureContext === true;
+  }
+
+  async function safeWriteClipboard(text){
+    // Try modern API first (in user gesture context)
+    if(canUseModernClipboard()){
+      try {
+        await navigator.clipboard.writeText(text);
+        return {ok:true, method:'navigator.clipboard'};
+      } catch(err){
+        // fallthrough to legacy path
+      }
+    }
+    // Legacy fallback: temporary textarea + execCommand('copy')
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.top='-9999px';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand && document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok){ return {ok:true, method:'execCommand'}; }
+    }catch(err){ /* ignore */ }
+    return {ok:false};
+  }
+
+  function selectEl(id){
+    const el = $(id); if(!el) return;
+    el.focus(); el.select(); el.setSelectionRange(0, el.value.length);
+    status('Đã bôi đen văn bản – nhấn Ctrl/Cmd+C để sao chép.');
+  }
+
+  async function copyEl(id){
+    const v = $(id).value;
+    const res = await safeWriteClipboard(v);
+    if(res.ok){
+      status('Đã copy vào clipboard. ('+res.method+')');
+    } else {
+      selectEl(id);
+      status('⚠️ Trình duyệt chặn Clipboard. Đã bôi đen – nhấn Ctrl/Cmd+C để copy.');
+    }
+  }
+
+  async function copyAll(){
+    const ta = outputsEl.querySelectorAll('textarea');
+    const includeQA = $('includeQA')?.checked;
+    const qaText = includeQA ? ($('qa')?.value || '') : '';
+    if(!ta.length && !qaText){ status('Chưa có nội dung để copy.'); return; }
+    const all = [ ...Array.from(ta).map(t=>t.value), qaText ].filter(Boolean).join(SEP);
+    const res = await safeWriteClipboard(all);
+    if(res.ok){
+      status('Đã copy TẤT CẢ vào clipboard. ('+res.method+')');
+    } else {
+      // create a hidden blob anchor as another fallback path for environments that block clipboard
+      const blob = new Blob([all], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'prompt-7-vai-tro.txt';
+      a.click(); URL.revokeObjectURL(url);
+      status('⚠️ Clipboard bị chặn. Đã tự động tải .txt thay thế.');
+    }
+  }
+
+  function downloadTxt(){
+    const ta = outputsEl.querySelectorAll('textarea');
+    const includeQA = $('includeQA')?.checked;
+    const qaText = includeQA ? ($('qa')?.value || '') : '';
+    if(!ta.length && !qaText){ status('Chưa có nội dung để tải.'); return; }
+    const all = [ ...Array.from(ta).map(t=>t.value), qaText ].filter(Boolean).join(SEP);
+    const blob = new Blob([all], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'prompt-7-vai-tro.txt'; a.click(); URL.revokeObjectURL(url);
+  }
+  function status(msg){ statusEl.textContent = msg; setTimeout(()=>statusEl.textContent='', 4000); }
+
+  // ===== Diagnostics / Testcases =====
+  function log(msg){ const el = document.getElementById('diagLog'); if(el) el.textContent = msg; }
+
+  async function testClipboard(){
+    const canModern = canUseModernClipboard();
+    let note = `SecureContext: ${window.isSecureContext} · ModernAPI: ${canModern}`;
+    // attempt a harmless write
+    const res = await safeWriteClipboard('TEST_CLIPBOARD_'+Date.now());
+    note += res.ok ? ' · Write: OK ('+res.method+')' : ' · Write: BLOCKED (fall back to Select/Ctrl+C hoặc Tải .txt)';
+    log(note);
+  }
+  async function testCopyOne(){
+    // create a temporary textarea and try copy via helper
+    const tmp = 'TEST_ONE_'+Date.now();
+    const res = await safeWriteClipboard(tmp);
+    log(res.ok ? 'Copy 1 mục: OK ('+res.method+')' : 'Copy 1 mục: BLOCKED');
+  }
+  async function testCopyAll(){
+    const res = await safeWriteClipboard('TEST_ALL_'+Date.now());
+    log(res.ok ? 'Copy tất cả: OK ('+res.method+')' : 'Copy tất cả: BLOCKED');
+  }
+
+  // New tests to catch the earlier SyntaxError
+  function testBuildPrompts(){
+    try{
+      const d = {topic:'Test', grade:'10', objectives:'Obj', context:'Ctx', tone:'thân thiện', lang:'vi', level:'cơ bản', duration:'40 phút', constraints:'-', format:'-', rubric:'-'};
+      const p = buildPrompts(d);
+      const keysOk = ['ld','story','coach','cog','lxd','mot','edtech'].every(k=>typeof p[k]==='string' && p[k].length>10);
+      log(keysOk ? 'buildPrompts(): OK' : 'buildPrompts(): FAIL');
+    }catch(e){ log('buildPrompts(): ERROR '+e.message); }
+  }
+  function testJoinSeparator(){
+    try{
+      const joined = ['A','B','C'].join(SEP);
+      const ok = joined.indexOf('\n\n\n')>0 && !/\r/.test(joined);
+      log(ok ? 'Join Separator: OK' : 'Join Separator: FAIL');
+    }catch(e){ log('Join Separator: ERROR '+e.message); }
+  }
+
+  load();
+</script>
+</body>
+</html>
