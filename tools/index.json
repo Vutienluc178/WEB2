@@ -214,6 +214,11 @@
         "title": "tạo form sinh công cụ",
         "path": "tien-ich/Taoformwweb.html"
       }
+      ,
+      {
+        "title": "TẠO GỢI MỞ VÀ TỔNG KẾT BÀI HOC",
+        "path": "tien-ich/GNVATK.html"
+      }
     ]
   }
 ]
