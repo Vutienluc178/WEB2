@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Phép Toán Vector 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        #scene-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background-color: rgba(31, 41, 55, 0.8); /* bg-gray-800 with opacity */
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 12px;
+            color: white;
+            max-width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .control-group {
+            margin-bottom: 16px;
+        }
+        .vector-label {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .coord-label {
+            width: 20px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #4a5568;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        input[type="number"] {
+            width: 60px;
+            background-color: #2d3748;
+            border: 1px solid #4a5568;
+            color: white;
+            border-radius: 4px;
+            padding: 4px 8px;
+            text-align: center;
+        }
+        .slider-a::-webkit-slider-thumb { background: #63b3ed; } /* blue-400 */
+        .slider-a::-moz-range-thumb { background: #63b3ed; }
+        .slider-b::-webkit-slider-thumb { background: #f6ad55; } /* orange-300 */
+        .slider-b::-moz-range-thumb { background: #f6ad55; }
+        .btn {
+            background-color: #4a5568;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #718096;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .radio-label input {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <div id="scene-container"></div>
+
+    <div class="controls shadow-2xl">
+        <h1 class="text-2xl font-bold mb-4 text-center">Phép Toán Vector 3D</h1>
+
+        <!-- Vector a Controls -->
+        <div class="control-group">
+            <p class="vector-label" style="color:#63b3ed;">Vector a = (<span id="ax_val">5</span>, <span id="ay_val">5</span>, <span id="az_val">2</span>)</p>
+            <div class="flex items-center my-2">
+                <span class="coord-label text-red-400">x:</span>
+                <input type="range" min="-10" max="10" value="5" step="0.1" class="slider-a" id="ax_slider">
+                <input type="number" min="-10" max="10" value="5" step="0.1" id="ax_num">
+            </div>
+            <div class="flex items-center my-2">
+                <span class="coord-label text-green-400">y:</span>
+                <input type="range" min="-10" max="10" value="5" step="0.1" class="slider-a" id="ay_slider">
+                <input type="number" min="-10" max="10" value="5" step="0.1" id="ay_num">
+            </div>
+            <div class="flex items-center my-2">
+                <span class="coord-label text-blue-400">z:</span>
+                <input type="range" min="-10" max="10" value="2" step="0.1" class="slider-a" id="az_slider">
+                <input type="number" min="-10" max="10" value="2" step="0.1" id="az_num">
+            </div>
+        </div>
+
+        <!-- Vector b Controls -->
+        <div class="control-group">
+            <p class="vector-label" style="color:#f6ad55;">Vector b = (<span id="bx_val">-4</span>, <span id="by_val">3</span>, <span id="bz_val">5</span>)</p>
+            <div class="flex items-center my-2">
+                <span class="coord-label text-red-400">x:</span>
+                <input type="range" min="-10" max="10" value="-4" step="0.1" class="slider-b" id="bx_slider">
+                <input type="number" min="-10" max="10" value="-4" step="0.1" id="bx_num">
+            </div>
+            <div class="flex items-center my-2">
+                <span class="coord-label text-green-400">y:</span>
+                <input type="range" min="-10" max="10" value="3" step="0.1" class="slider-b" id="by_slider">
+                <input type="number" min="-10" max="10" value="3" step="0.1" id="by_num">
+            </div>
+            <div class="flex items-center my-2">
+                <span class="coord-label text-blue-400">z:</span>
+                <input type="range" min="-10" max="10" value="5" step="0.1" class="slider-b" id="bz_slider">
+                <input type="number" min="-10" max="10" value="5" step="0.1" id="bz_num">
+            </div>
+        </div>
+        
+        <hr class="border-gray-600 my-4">
+        
+        <!-- Dot Product -->
+        <div class="control-group">
+            <p class="text-lg font-bold">Tích vô hướng: <span class="text-green-400">a · b</span></p>
+            <p id="dot_product_result" class="text-xl font-mono text-green-400"></p>
+        </div>
+
+        <hr class="border-gray-600 my-4">
+
+        <!-- Resultant Vector -->
+        <div class="control-group">
+            <p id="result_title" class="text-lg font-bold">Kết quả phép toán</p>
+            <p id="result_vector" class="text-xl font-mono" style="color:#f6e05e;">(...)</span></p>
+        </div>
+        <button class="btn w-full bg-indigo-600 hover:bg-indigo-700 mt-2 font-bold py-2" id="calculate_btn">Thực hiện phép toán</button>
+
+
+        <hr class="border-gray-600 my-4">
+
+        <!-- Options Menus -->
+        <div class="control-group">
+             <!-- Operation Menu -->
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2">Phép toán:</h3>
+                <div class="flex space-x-4">
+                     <label class="radio-label"><input type="radio" name="operation" value="sum" checked> Tổng (a + b)</label>
+                     <label class="radio-label"><input type="radio" name="operation" value="diff"> Hiệu (a - b)</label>
+                </div>
+            </div>
+            <!-- Suggestions Menu -->
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2">Gợi ý:</h3>
+                <div class="flex flex-wrap">
+                    <button class="btn" id="preset_same_dir">Cùng phương</button>
+                    <button class="btn" id="preset_opp_dir">Ngược phương</button>
+                    <button class="btn" id="preset_perp">Vuông góc</button>
+                    <button class="btn" id="preset_reset">Mặc định</button>
+                </div>
+            </div>
+            <!-- Display Menu -->
+            <div>
+                <h3 class="font-semibold mb-2">Biểu diễn:</h3>
+                <div class="mb-2">
+                    <label class="radio-label"><input type="radio" name="rule" value="parallelogram" checked> Quy tắc hình bình hành</label>
+                    <label class="radio-label"><input type="radio" name="rule" value="triangle"> Quy tắc tam giác</label>
+                </div>
+                <div>
+                     <label class="radio-label"><input type="checkbox" id="toggle_helpers" checked> Hiện vector phụ</label>
+                    <label class="radio-label"><input type="checkbox" id="toggle_grid" checked> Hiện lưới</label>
+                    <label class="radio-label"><input type="checkbox" id="toggle_axes" checked> Hiện trục tọa độ</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // === State ===
+        let isResultVisible = false;
+
+        // === Basic Scene Setup ===
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(10, 10, 15);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('scene-container').appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // === Lighting ===
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        scene.add(directionalLight);
+
+        // === Helpers ===
+        const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x888888);
+        scene.add(gridHelper);
+        const axesHelper = new THREE.AxesHelper(10);
+        scene.add(axesHelper);
+
+        // === Vector Objects ===
+        const origin = new THREE.Vector3(0, 0, 0);
+        const colorA = 0x63b3ed; 
+        const colorB = 0xf6ad55;
+        const colorNegB = 0xff7b7b;
+        const colorSum = 0xf6e05e;
+        const colorHelper = 0xaaaaaa;
+
+        let vectorA = new THREE.Vector3(5, 5, 2);
+        let vectorB = new THREE.Vector3(-4, 3, 5);
+
+        function createThickArrow(color) {
+            const arrow = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), origin, 1, color);
+            arrow.line.material.linewidth = 10;
+            return arrow;
+        }
+
+        let arrowA = createThickArrow(colorA);
+        let arrowB = createThickArrow(colorB);
+        let arrowNegB = createThickArrow(colorNegB);
+        let arrowSum = createThickArrow(colorSum);
+        let helperA = createThickArrow(colorHelper);
+        let helperB = createThickArrow(colorHelper);
+        
+        scene.add(arrowA, arrowB, arrowNegB, arrowSum, helperA, helperB);
+
+        // === UI Elements & Event Listeners ===
+        const inputs = {
+            ax: { slider: document.getElementById('ax_slider'), num: document.getElementById('ax_num'), val: document.getElementById('ax_val') },
+            ay: { slider: document.getElementById('ay_slider'), num: document.getElementById('ay_num'), val: document.getElementById('ay_val') },
+            az: { slider: document.getElementById('az_slider'), num: document.getElementById('az_num'), val: document.getElementById('az_val') },
+            bx: { slider: document.getElementById('bx_slider'), num: document.getElementById('bx_num'), val: document.getElementById('bx_val') },
+            by: { slider: document.getElementById('by_slider'), num: document.getElementById('by_num'), val: document.getElementById('by_val') },
+            bz: { slider: document.getElementById('bz_slider'), num: document.getElementById('bz_num'), val: document.getElementById('bz_val') },
+        };
+        const resultDisplay = document.getElementById('result_vector');
+        const resultTitle = document.getElementById('result_title');
+        const dotProductDisplay = document.getElementById('dot_product_result');
+        const calculateBtn = document.getElementById('calculate_btn');
+        
+        function syncInputs(source, target) {
+            target.value = source.value;
+            isResultVisible = false; // Hide result when inputs change
+            updateVectors();
+        }
+
+        Object.keys(inputs).forEach(key => {
+            const { slider, num } = inputs[key];
+            slider.addEventListener('input', () => syncInputs(slider, num));
+            num.addEventListener('input', () => syncInputs(num, slider));
+        });
+        
+        calculateBtn.addEventListener('click', () => {
+            isResultVisible = true;
+            updateVectors();
+        });
+        
+        document.querySelectorAll('input[name="operation"]').forEach(radio => radio.addEventListener('change', () => {
+            isResultVisible = false;
+            updateVectors();
+        }));
+        
+        // --- Menu Listeners ---
+        document.getElementById('preset_same_dir').addEventListener('click', () => setVectorValues({x:2,y:3,z:4}, {x:4,y:6,z:8}));
+        document.getElementById('preset_opp_dir').addEventListener('click', () => setVectorValues({x:4,y:4,z:4}, {x:-4,y:-4,z:-4}));
+        document.getElementById('preset_perp').addEventListener('click', () => setVectorValues({x:5,y:0,z:0}, {x:0,y:6,z:0}));
+        document.getElementById('preset_reset').addEventListener('click', () => setVectorValues({x:5,y:5,z:2}, {x:-4,y:3,z:5}));
+        
+        document.querySelectorAll('input[name="rule"]').forEach(radio => radio.addEventListener('change', updateVectors));
+        document.getElementById('toggle_helpers').addEventListener('change', updateVectors);
+        document.getElementById('toggle_grid').addEventListener('change', (e) => gridHelper.visible = e.target.checked);
+        document.getElementById('toggle_axes').addEventListener('change', (e) => axesHelper.visible = e.target.checked);
+
+        function setVectorValues(vecA, vecB) {
+            Object.keys(vecA).forEach(key => inputs['a'+key].slider.value = inputs['a'+key].num.value = vecA[key]);
+            Object.keys(vecB).forEach(key => inputs['b'+key].slider.value = inputs['b'+key].num.value = vecB[key]);
+            isResultVisible = false;
+            updateVectors();
+        }
+
+        function updateArrow(arrow, vector) {
+            const length = vector.length();
+            if (length > 0.001) {
+                arrow.visible = true;
+                arrow.setDirection(vector.clone().normalize());
+                const headLength = Math.min(length * 0.2, 1.0);
+                const headWidth = headLength * 0.6;
+                arrow.setLength(length, headLength, headWidth);
+            } else {
+                arrow.visible = false;
+            }
+        }
+
+        // === Core Logic ===
+        function updateVectors() {
+            // 1. Always update base vectors and their text/arrows
+            vectorA.set(
+                parseFloat(inputs.ax.slider.value),
+                parseFloat(inputs.ay.slider.value),
+                parseFloat(inputs.az.slider.value)
+            );
+            vectorB.set(
+                parseFloat(inputs.bx.slider.value),
+                parseFloat(inputs.by.slider.value),
+                parseFloat(inputs.bz.slider.value)
+            );
+            updateArrow(arrowA, vectorA);
+            updateArrow(arrowB, vectorB);
+
+            ['x', 'y', 'z'].forEach(axis => {
+                inputs['a'+axis].val.textContent = vectorA[axis].toFixed(1);
+                inputs['b'+axis].val.textContent = vectorB[axis].toFixed(1);
+            });
+            
+            // 2. Always update dot product
+            const dotProduct = vectorA.dot(vectorB);
+            dotProductDisplay.textContent = dotProduct.toFixed(2);
+
+            // 3. Handle visibility of result vectors
+            const operation = document.querySelector('input[name="operation"]:checked').value;
+            const rule = document.querySelector('input[name="rule"]:checked').value;
+            const showHelpers = document.getElementById('toggle_helpers').checked;
+            
+            if (isResultVisible) {
+                let resultVector, activeVectorB, activeColorB;
+
+                if (operation === 'sum') {
+                    resultTitle.innerHTML = `Vector tổng: <span style="color:#${colorSum.toString(16)};">a + b</span>`;
+                    resultVector = new THREE.Vector3().addVectors(vectorA, vectorB);
+                    activeVectorB = vectorB;
+                    activeColorB = colorB;
+                    arrowB.visible = true;
+                    arrowNegB.visible = false;
+                } else { // diff
+                    resultTitle.innerHTML = `Vector hiệu: <span style="color:#${colorSum.toString(16)};">a - b</span>`;
+                    resultVector = new THREE.Vector3().subVectors(vectorA, vectorB);
+                    activeVectorB = vectorB.clone().negate();
+                    activeColorB = colorNegB;
+                    arrowB.visible = false;
+                    arrowNegB.visible = true;
+                    updateArrow(arrowNegB, activeVectorB);
+                }
+
+                updateArrow(arrowSum, resultVector);
+                resultDisplay.textContent = `(${resultVector.x.toFixed(2)}, ${resultVector.y.toFixed(2)}, ${resultVector.z.toFixed(2)})`;
+
+                if (rule === 'parallelogram') {
+                    helperA.visible = showHelpers;
+                    helperB.visible = showHelpers;
+                    helperA.position.copy(activeVectorB);
+                    updateArrow(helperA, vectorA);
+                    helperA.setColor(colorHelper);
+                    helperB.position.copy(vectorA);
+                    updateArrow(helperB, activeVectorB);
+                    helperB.setColor(colorHelper);
+                } else { // triangle
+                    helperA.visible = false;
+                    helperB.visible = showHelpers;
+                    helperB.position.copy(vectorA);
+                    updateArrow(helperB, activeVectorB);
+                    helperB.setColor(activeColorB);
+                }
+
+            } else {
+                // Hide all results
+                arrowSum.visible = false;
+                arrowNegB.visible = false;
+                helperA.visible = false;
+                helperB.visible = false;
+                arrowB.visible = true; // Always show original b when result is hidden
+                resultDisplay.textContent = "(...)";
+                resultTitle.textContent = "Kết quả phép toán";
+            }
+        }
+
+        // === Animation Loop ===
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // === Initial Call and Resize Handler ===
+        updateVectors();
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
+
+
